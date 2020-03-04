@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>diep.io</title>
+  <meta name="description" content="Survive and shoot at others while trying to keep your own tank alive!">
+  <script src="/socket.io/socket.io.js"></script>
+  <link href="style.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+
+  <div id="textInputContainer" class="text-input-div">
+    <input id="textInput" onkeypress="start()" class="text-input" autofocus>
+  </div>
+  <canvas id="canvas" width="800" height="800" style="display: none;"></canvas>
+  <script src="core.js"></script>
+  <script src="draw.js"></script>
+  <script src="vector.js"></script>
+  <script src="Object/dynamicObject.js"></script>
+  <script src="Object/staticObject.js"></script>
+  <script src="HealthShow/healthShowObject.js"></script>
+  <script src="Bullet/basicBullet.js"></script>
+  <script src="Bullet/droneBullet.js"></script>
+  <script src="Bullet/trapBullet.js"></script>
+  <script src="Bullet/minion.js"></script>
+  <script src="Bullet/otherBasicBullet.js"></script>
+  <script src="Shape/square.js"></script>
+  <script src="Shape/triangle.js"></script>
+  <script src="Shape/pentagon.js"></script>
+  <script src="Gun/gun.js"></script>
+  <script src="Gun/bolt.js"></script>
+  <script src="Gun/autoGun.js"></script>
+  <script src="Gun/bulletGun.js"></script>
+  <script src="Tank/tank.js"></script>
+  <script src="run.js"></script>
+</body>
+</html>
