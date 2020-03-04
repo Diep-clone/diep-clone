@@ -1,4 +1,4 @@
-var socket = io.connect({transports: ['websocket']});
+var socket = io.connect();
 
 let system;
 function start() {

@@ -1,0 +1,8 @@
+{
+  "gameMode": "sandbox",
+  "maxPlayer": 50,
+  "mapSize": {
+    "x": 1000,
+    "y": 1000
+  }
+}
