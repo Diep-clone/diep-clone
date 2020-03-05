@@ -4,20 +4,20 @@ import "time"
 
 // Camera is
 type Camera struct {
-	x float32
-	y float32
-	z float32
+	x float64
+	y float64
+	z float64
 }
 
 // Player is
 type Player struct {
 	id            string
-	moveRotate    float32
+	moveRotate    float64
 	isMove        bool
-	mx            float32
-	my            float32
+	mx            float64
+	my            float64
 	camera        Camera
-	keys          map[string]float32
+	keys          map[string]float64
 	startTime     int64
 	controlObject *Object
 }
@@ -36,7 +36,7 @@ func NewPlayer(id string) *Player {
 		z: 1,
 	}
 
-	p.keys = map[string]float32{}
+	p.keys = map[string]float64{}
 	p.startTime = time.Now().Unix()
 
 	return &p
@@ -44,26 +44,27 @@ func NewPlayer(id string) *Player {
 
 // Object is
 type Object struct {
-	owner     interface{}
+	owner     *interface{}
 	id        int
 	shapeType int
 	color     [3]int
 	team      string
 	name      string
-	x         float32
-	y         float32
-	dx        float32
-	dy        float32
-	r         float32
-	dir       float32
+	x         float64
+	y         float64
+	dx        float64
+	dy        float64
+	r         float64
+	dir       float64
 	exp       int
-	h         float32
-	mh        float32
-	damage    float32
-	speed     float32
-	bound     float32
-	stance    float32
-	opacity   float32
+	h         float64
+	mh        float64
+	lh        float64
+	damage    float64
+	speed     float64
+	bound     float64
+	stance    float64
+	opacity   float64
 	guns      []Gun
 	event     map[string]interface{}
 	variable  map[string]interface{}
@@ -77,24 +78,24 @@ type Object struct {
 
 var objID int = 0
 
-func Newobject(
+func NewObject(
 	own interface{},
 	team string,
 	name string,
-	x float32,
-	y float32,
-	r float32,
-	h float32,
-	da float32,
-	sp float32,
-	bo float32,
-	st float32,
+	x float64,
+	y float64,
+	r float64,
+	h float64,
+	da float64,
+	sp float64,
+	bo float64,
+	st float64,
 	event map[string]interface{},
 	variable map[string]interface{},
 	isBorder bool,
 	isOwnCol bool) *Object {
 	o := Object{}
-	o.owner = own
+	o.owner = &own
 	o.id = objID
 	objID++
 	o.team = team
@@ -105,6 +106,7 @@ func Newobject(
 	o.dy = 0
 	o.mh = h
 	o.h = h
+	o.lh = h
 	o.damage = da
 	o.speed = sp
 	o.bound = bo
@@ -126,14 +128,14 @@ type Gun struct {
 	object    Object
 	color     [3]int
 	paths     []interface{}
-	sx        float32
-	sy        float32
-	dir       float32
-	rdir      float32
-	reload    float32 // default delay
-	waitTime  float32 // first wait time
-	delayTime float32 // when shot
-	shotTime  float32 // click time to delay
+	sx        float64
+	sy        float64
+	dir       float64
+	rdir      float64
+	reload    float64 // default delay
+	waitTime  float64 // first wait time
+	delayTime float64 // when shot
+	shotTime  float64 // click time to delay
 	autoShot  bool
 	bullets   []Object
 }
