@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -10,8 +11,8 @@ import (
 	socketio "github.com/googollee/go-socket.io"
 )
 
-var sockets map[string]interface{}
-var users map[string]interface{}
+var sockets = make(map[string]interface{})
+var users = make(map[string]*lib.Player)
 
 var server, _ = socketio.NewServer(nil)
 
@@ -19,20 +20,39 @@ func main() {
 	// runtime.GOMAXPROCS(runtime.NumCPU()) 모든 CPU를 사용하게 해주는 코드
 
 	server.OnConnect("/", func(s socketio.Conn) error {
-		if _, ok := sockets[s.ID()]; !ok {
-			log.Println("INFO > Prevent " + s.ID() + " Login")
-			return nil
-		}
+		log.Println("INFO > " + s.ID() + " Connected")
 
-		sockets[s.ID()] = nil
-		log.Println("INFO > " + s.ID() + " connected")
-
-		users[s.ID()] = lib.Newplayer(s.ID())
 		return nil
 	})
 
 	server.OnEvent("/", "ping!", func(s socketio.Conn, data interface{}) {
 		s.Emit("pong!", data)
+	})
+
+	server.OnEvent("/", "login", func(s socketio.Conn, name string) {
+		if _, ok := sockets[s.ID()]; ok {
+			log.Println("INFO > Prevent " + s.ID() + " Login")
+			return
+		}
+		if len(name) > 15 {
+			name = ""
+		}
+
+		sockets[s.ID()] = nil
+		users[s.ID()] = lib.NewPlayer(s.ID())
+
+		log.Println("INFO > " + s.ID() + " Login")
+	})
+
+	server.OnEvent("/", "mousemove", func(s socketio.Conn, mouse interface{}) {
+		user, ok := users[s.ID()]
+		if ok {
+			fmt.Println(*user)
+		}
+	})
+
+	server.OnError("/", func(s socketio.Conn, err error) {
+		log.Println(err)
 	})
 
 	server.OnDisconnect("/", func(s socketio.Conn, _ string) {
@@ -42,6 +62,8 @@ func main() {
 		}
 
 		delete(sockets, s.ID())
+		delete(users, s.ID())
+
 		log.Println("INFO > " + s.ID() + " disconnected")
 	})
 
@@ -66,9 +88,9 @@ func main() {
 
 func moveloop(ticker time.Ticker) {
 	for range ticker.C {
-		for u := range users {
-
-		}
+		// for socketID, user := range users {
+		// 	socketID, user
+		// }
 	}
 }
 

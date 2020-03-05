@@ -22,7 +22,8 @@ type Player struct {
 	controlObject *Object
 }
 
-func Newplayer(id string) *Player {
+// NewPlayer is make player
+func NewPlayer(id string) *Player {
 	p := Player{}
 	p.id = id
 	p.moveRotate = 0
