@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"app/lib"
+
 	socketio "github.com/googollee/go-socket.io"
 )
 
@@ -25,8 +27,7 @@ func main() {
 		sockets[s.ID()] = nil
 		log.Println("INFO > " + s.ID() + " connected")
 
-		/*p := lib.newPlayer(s.ID())
-		println(p)*/
+		users[s.ID()] = lib.Newplayer(s.ID())
 		return nil
 	})
 
@@ -51,7 +52,7 @@ func main() {
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 
 	moveLoopTicker := time.NewTicker(time.Second / 60)
-	sendUpdatesTicker := time.NewTicker(time.Second / 30)
+	sendUpdatesTicker := time.NewTicker(time.Second / 40)
 
 	defer moveLoopTicker.Stop()
 	defer sendUpdatesTicker.Stop()
@@ -64,13 +65,15 @@ func main() {
 }
 
 func moveloop(ticker time.Ticker) {
-	for t := range ticker.C {
-		log.Println(t)
+	for range ticker.C {
+		for u := range users {
+
+		}
 	}
 }
 
 func sendUpdates(ticker time.Ticker) {
-	for t := range ticker.C {
-		log.Println(t)
+	for range ticker.C {
+
 	}
 }

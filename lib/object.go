@@ -22,7 +22,7 @@ type Player struct {
 	controlObject *Object
 }
 
-func newPlayer(id string) *Player {
+func Newplayer(id string) *Player {
 	p := Player{}
 	p.id = id
 	p.moveRotate = 0
@@ -76,7 +76,7 @@ type Object struct {
 
 var objID int = 0
 
-func newObject(
+func Newobject(
 	own interface{},
 	team string,
 	name string,
