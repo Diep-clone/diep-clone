@@ -2,12 +2,14 @@ package lib
 
 import "time"
 
+// Camera is
 type Camera struct {
 	x float32
 	y float32
 	z float32
 }
 
+// Player is
 type Player struct {
 	id            string
 	moveRotate    float32
@@ -32,11 +34,14 @@ func newPlayer(id string) *Player {
 		y: 0,
 		z: 1,
 	}
+
 	p.keys = map[string]float32{}
 	p.startTime = time.Now().Unix()
+
 	return &p
 }
 
+// Object is
 type Object struct {
 	owner     interface{}
 	id        int
@@ -115,6 +120,7 @@ func newObject(
 	return &o
 }
 
+// Gun is
 type Gun struct {
 	object    Object
 	color     [3]int
