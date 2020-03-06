@@ -46,7 +46,7 @@ func NewPlayer(id string) *Player {
 type Object struct {
 	owner     *interface{}
 	id        int
-	shapeType int
+	paths     []interface{}
 	color     [3]int
 	team      string
 	name      string
@@ -128,8 +128,8 @@ func NewObject(
 // Gun is
 type Gun struct {
 	object    Object
-	color     [3]int
 	paths     []interface{}
+	color     [3]int
 	sx        float64
 	sy        float64
 	dir       float64
@@ -139,5 +139,6 @@ type Gun struct {
 	delayTime float64 // when shot
 	shotTime  float64 // click time to delay
 	autoShot  bool
+	limit     int
 	bullets   []Object
 }

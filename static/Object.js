@@ -18,7 +18,7 @@ function Obj(id,name,paths,r,g,b){
     this.score;
     this.isDead;
 
-    this.animate = function (tick){
+    this.Animate = function (tick){
         if (this.isDead){
             this.opacity = Math.max(this.opacity - 0.13 * tick * 0.05, 0);
             this.radius += 0.4 * tick * 0.05;
@@ -48,16 +48,16 @@ function Obj(id,name,paths,r,g,b){
         //this.guns = guns;
     }
 
-    this.draw = function (ctx,camera){
+    this.Draw = function (ctx,camera){
 
     }
 
-    this.drawStatus = function (ctx,camera){
+    this.DrawStatus = function (ctx,camera){
         if (this.name) this.drawName(ctx,camera);
         this.drawHPBar(ctx,camera);
     }
 
-    this.drawName = function (ctx,camera){
+    this.DrawName = function (ctx,camera){
         ctx.save();
         ctx.font = "bold " + 0.8 * this.radius * camera.z + "px Ubuntu";
         ctx.lineWidth = 2.5 * camera.z;
@@ -84,7 +84,7 @@ function Obj(id,name,paths,r,g,b){
 
     this.showPercent = 1;
 
-    this.drawHPBar = function(ctx,camera){
+    this.DrawHPBar = function(ctx,camera){
         let healthPercent = this.health/this.maxHealth;
     
         ctx.save();

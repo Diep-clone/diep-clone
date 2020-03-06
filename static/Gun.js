@@ -6,11 +6,11 @@ function Gun(paths, dir, r, g, b){
     this.color = new RGB(r,g,b);
     this.back = 0;
 
-    this.animate = function (tick){
+    this.Animate = function (tick){
 
     }
 
-    this.draw = function (ctx, camera){
-        
+    this.Draw = function (ctx, camera){
+
     }
 }
