@@ -85,12 +85,12 @@ func NewObject(
 	name string,
 	x float64,
 	y float64,
-	r float64,
-	h float64,
-	da float64,
-	sp float64,
-	bo float64,
-	st float64,
+	r float64, // radius
+	h float64, // health
+	da float64, // damage
+	sp float64, // speed
+	bo float64, // bound
+	st float64, // stance
 	event map[string]interface{},
 	variable map[string]interface{},
 	isBorder bool,
