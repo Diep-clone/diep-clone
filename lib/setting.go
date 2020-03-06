@@ -19,7 +19,7 @@ type Setting struct {
 
 // ReadSetting returns Setting
 func ReadSetting() Setting {
-	settingFile, osErr := os.Open("./setting.json")
+	settingFile, osErr := os.Open("./config/setting.json")
 	if osErr != nil {
 		log.Fatal(osErr)
 	}

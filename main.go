@@ -89,7 +89,7 @@ func main() {
 	defer server.Close()
 
 	http.Handle("/socket.io/", server)
-	http.Handle("/", http.FileServer(http.Dir("./static")))
+	http.Handle("/", http.FileServer(http.Dir("./dist")))
 
 	moveLoopTicker := time.NewTicker(time.Second / 60)
 	sendUpdatesTicker := time.NewTicker(time.Second / 40)
