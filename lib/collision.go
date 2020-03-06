@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// CollisionEvent is
 func CollisionEvent(a *Object, b *Object) bool {
 	dir := math.Atan2(a.y-b.y, a.x-b.x)
 
@@ -47,8 +48,10 @@ func CollisionEvent(a *Object, b *Object) bool {
 	return true
 }
 
-var MAX_OBJ = 5
+// MaxObj is Object Max length
+var MaxObj = 5
 
+// Area is
 type Area struct {
 	x  float64
 	y  float64
@@ -56,6 +59,7 @@ type Area struct {
 	y2 float64
 }
 
+// Quadtree is
 type Quadtree struct {
 	x       float64
 	y       float64
@@ -66,6 +70,7 @@ type Quadtree struct {
 	nodes   []Quadtree
 }
 
+// NewQuadtree is
 func NewQuadtree(x float64, y float64, w float64, h float64, level int) *Quadtree {
 	q := Quadtree{
 		x:       x,
@@ -79,6 +84,7 @@ func NewQuadtree(x float64, y float64, w float64, h float64, level int) *Quadtre
 	return &q
 }
 
+// Split is
 func (q Quadtree) Split() {
 	xx := [4]float64{0, 1, 0, 1}
 	yy := [4]float64{0, 0, 1, 1}
@@ -95,6 +101,7 @@ func (q Quadtree) Split() {
 	}
 }
 
+// Getindex is
 func (q Quadtree) Getindex(area interface{}) int {
 	obj, b := area.(Object)
 	x := q.x + q.w/2
@@ -114,18 +121,18 @@ func (q Quadtree) Getindex(area interface{}) int {
 	if obj.x > x {
 		if obj.y > y {
 			return 4
-		} else {
-			return 1
 		}
-	} else {
-		if obj.y > y {
-			return 3
-		} else {
-			return 2
-		}
+		return 1
 	}
+
+	if obj.y > y {
+		return 3
+	}
+
+	return 2
 }
 
+// Insert insert quadtree
 func (q Quadtree) Insert(obj *Object) {
 	var i, index = 0, -1
 
@@ -146,7 +153,7 @@ func (q Quadtree) Insert(obj *Object) {
 
 	q.objects = append(q.objects, obj)
 
-	if len(q.objects) > MAX_OBJ {
+	if len(q.objects) > MaxObj {
 		if q.nodes != nil {
 			q.Split()
 		}
@@ -163,6 +170,7 @@ func (q Quadtree) Insert(obj *Object) {
 	}
 }
 
+// Retrieve is
 func (q Quadtree) Retrieve(area interface{}) []*Object {
 	index := q.Getindex(area)
 	var returnObject []*Object
@@ -195,6 +203,7 @@ func (q Quadtree) Retrieve(area interface{}) []*Object {
 	return returnObject
 }
 
+// Clear is
 func (q Quadtree) Clear() {
 	q.objects = nil
 

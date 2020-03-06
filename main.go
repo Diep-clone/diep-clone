@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -11,14 +10,16 @@ import (
 	socketio "github.com/googollee/go-socket.io"
 )
 
+var setting = lib.ReadSetting()
+
 var sockets = make(map[string]interface{})
+var objects []*lib.Object
 var users = make(map[string]*lib.Player)
 
 var server, _ = socketio.NewServer(nil)
 
 func main() {
 	// runtime.GOMAXPROCS(runtime.NumCPU()) 모든 CPU를 사용하게 해주는 코드
-
 	server.OnConnect("/", func(s socketio.Conn) error {
 		log.Println("INFO > " + s.ID() + " Connected")
 
@@ -40,14 +41,31 @@ func main() {
 
 		sockets[s.ID()] = nil
 		users[s.ID()] = lib.NewPlayer(s.ID())
+		objects = append(objects, lib.NewObject(
+			users[s.ID()],
+			"ffa",
+			name,
+			lib.RandomRange(-setting.MapSize.X, setting.MapSize.Y),
+			lib.RandomRange(-setting.MapSize.Y, setting.MapSize.X),
+			lib.RandomRange(100, 100),
+			lib.RandomRange(100, 100),
+			lib.RandomRange(100, 100),
+			lib.RandomRange(100, 100),
+			lib.RandomRange(100, 100),
+			lib.RandomRange(100, 100),
+			nil,
+			nil,
+			false,
+			false,
+		))
 
 		log.Println("INFO > " + s.ID() + " Login")
 	})
 
 	server.OnEvent("/", "mousemove", func(s socketio.Conn, mouse interface{}) {
-		user, ok := users[s.ID()]
+		_, ok := users[s.ID()]
 		if ok {
-			fmt.Println(*user)
+
 		}
 	})
 

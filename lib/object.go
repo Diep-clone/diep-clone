@@ -78,6 +78,7 @@ type Object struct {
 
 var objID int = 0
 
+// NewObject is
 func NewObject(
 	own interface{},
 	team string,
@@ -120,6 +121,7 @@ func NewObject(
 	o.isBorder = isBorder
 	o.isOwnCol = isOwnCol
 	o.isDead = false
+
 	return &o
 }
 
