@@ -82,8 +82,6 @@ func main() {
 	go moveloop(*moveLoopTicker)
 	go sendUpdates(*sendUpdatesTicker)
 
-	log.Println(len(lib.NewQuadtree().Test()))
-
 	log.Println("INFO > Server is Running Port 3000")
 	log.Fatal(http.ListenAndServe("localhost:3000", nil))
 }

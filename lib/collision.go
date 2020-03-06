@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func CollisionEvent(a Object, b Object) bool {
+func CollisionEvent(a *Object, b *Object) bool {
 	dir := math.Atan2(a.y-b.y, a.x-b.x)
 
 	if a == *b.owner || b == *a.owner {
@@ -24,8 +24,8 @@ func CollisionEvent(a Object, b Object) bool {
 	a.hitTime = time.Now().Unix()
 	b.hitTime = time.Now().Unix()
 
-	a.hitObject = &b
-	b.hitObject = &a
+	a.hitObject = b
+	b.hitObject = a
 
 	if b.lh-a.damage <= 0 {
 		a.h -= b.damage * (b.lh / a.damage)
@@ -79,10 +79,6 @@ func NewQuadtree(x float64, y float64, w float64, h float64, level int) *Quadtre
 	return &q
 }
 
-func (q Quadtree) Test() []Quadtree {
-	return q.nodes
-}
-
 func (q Quadtree) Split() {
 	xx := [4]float64{0, 1, 0, 1}
 	yy := [4]float64{0, 0, 1, 1}
@@ -113,6 +109,8 @@ func (q Quadtree) Getindex(area interface{}) int {
 			return -1
 		}
 	}
+	// 2 1
+	// 3 4
 	if obj.x > x {
 		if obj.y > y {
 			return 4
@@ -169,18 +167,27 @@ func (q Quadtree) Retrieve(area interface{}) []*Object {
 	index := q.Getindex(area)
 	var returnObject []*Object
 
-	if _, b := area.(Object); b {
-		returnObject = q.objects
+	if o, ok := area.(Object); ok {
+		for _, obj := range q.objects {
+			if !obj.isDead && (obj.owner != o.owner || obj.isOwnCol && o.isOwnCol) {
+				returnObject = append(returnObject, obj)
+			}
+		}
+
 	} else {
 		returnObject = q.objects
 	}
 
 	if q.nodes != nil {
 		if index != -1 {
-			returnObject = append(returnObject, q.nodes[index].Retrieve(area))
+			for _, obj := range q.nodes[index].Retrieve(area) {
+				returnObject = append(returnObject, obj)
+			}
 		} else {
 			for i := 0; i < 4; i++ {
-				returnObject = append(returnObject, q.nodes[i].Retrieve(area))
+				for _, obj := range q.nodes[i].Retrieve(area) {
+					returnObject = append(returnObject, obj)
+				}
 			}
 		}
 	}
