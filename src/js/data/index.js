@@ -1,9 +1,5 @@
 import { RGB } from '../lib/util';
 
-export const objectList = {};
-export const objectOrder = [];
-export const uiObjectList = [];
-
 export const colorList = [
   new RGB(230,176,138),
   new RGB(228,102,233),
@@ -63,10 +59,6 @@ export const expList = [
   23536
 ];
 
-export const tick = 0;
-export const lastTime = new Date();
-export const isControlRotate = true;
-
 export const input = {
   ctrl: false,
   isMouseOverUi: false,
@@ -75,7 +67,10 @@ export const input = {
   rShot: 0,
 
   moveRotate: null,
-  // moveVector: new Vector(0,0),
+  moveVector: {
+    x:0,
+    y:0,
+  },
 
   space: false,
 

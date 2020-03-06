@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"math"
 	"net/http"
 	"time"
 
@@ -41,8 +42,10 @@ func main() {
 
 		sockets[s.ID()] = nil
 		users[s.ID()] = lib.NewPlayer(s.ID())
-		objects = append(objects, lib.NewObject(
+		users[s.ID()].ControlObject = lib.NewObject(
 			users[s.ID()],
+			[]interface{}{},
+			[3]int{0, 0, 0},
 			"ffa",
 			name,
 			lib.RandomRange(-setting.MapSize.X, setting.MapSize.Y),
@@ -53,19 +56,49 @@ func main() {
 			lib.RandomRange(100, 100),
 			lib.RandomRange(100, 100),
 			lib.RandomRange(100, 100),
-			nil,
-			nil,
+			map[string]interface{}{
+				"Tick": func(obj *lib.Object) { // obj
+					obj.Speed = (0.07 + (0.007 * obj.Variable["Stats"].([]float64)[7])) * math.Pow(0.985, obj.Variable["Level"].(float64)-1)
+					obj.Damage = (20 + obj.Variable["Stats"].([]float64)[2]*4)
+					obj.R = (13 * math.Pow(1.01, (obj.Variable["Level"].(float64)-1)))
+					obj.Mh = (48 + obj.Variable["Level"].(float64)*2 + obj.Variable["Stats"].([]float64)[1]*20)
+				},
+				"KeyDown":   nil, // obj, keyType
+				"KeyPress":  nil, // obj, keyType, time
+				"KeyUp":     nil, // obj, keyType
+				"GetBound":  nil, // obj, enemyObj
+				"GetDamage": nil, // obj, enemyObj, damage
+				"KillEvent": nil, // obj, enemyObj
+				"DeadEvent": nil, // obj, enemyObj
+			},
+			map[string]interface{}{
+				"Level":         1,
+				"MaxStats":      []int{7, 7, 7, 7, 7, 7, 7, 7},
+				"Stats":         []int{0, 0, 0, 0, 0, 0, 0, 0},
+				"Stat":          0,
+				"Sight":         1.,
+				"InvisibleTime": 0.,
+			},
 			false,
 			false,
-		))
+		)
+		objects = append(objects, users[s.ID()].ControlObject)
 
 		log.Println("INFO > " + s.ID() + " Login")
 	})
 
-	server.OnEvent("/", "mousemove", func(s socketio.Conn, mouse interface{}) {
-		_, ok := users[s.ID()]
-		if ok {
+	server.OnEvent("/", "keyboard", func(s socketio.Conn, key string, time float64) {
+		if u, ok := users[s.ID()]; ok {
+			u.SetKey(key, time)
+		}
+	})
 
+	server.OnEvent("/", "mousemove", func(s socketio.Conn, mouse struct {
+		x float64
+		y float64
+	}) {
+		if u, ok := users[s.ID()]; ok {
+			u.SetMousePoint(mouse.x, mouse.y)
 		}
 	})
 
@@ -106,9 +139,15 @@ func main() {
 
 func moveloop(ticker time.Ticker) {
 	for range ticker.C {
-		// for socketID, user := range users {
-		// 	socketID, user
-		// }
+		for _, user := range users {
+			if user.ControlObject != nil {
+				if user.IsMove {
+					user.ControlObject.Dx += math.Cos(user.Keys["moveRotate"]) * user.ControlObject.Speed
+					user.ControlObject.Dy += math.Sin(user.Keys["moveRotate"]) * user.ControlObject.Speed
+				}
+
+			}
+		}
 	}
 }
 

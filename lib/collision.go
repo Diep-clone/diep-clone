@@ -7,42 +7,42 @@ import (
 
 // CollisionEvent is
 func CollisionEvent(a *Object, b *Object) bool {
-	dir := math.Atan2(a.y-b.y, a.x-b.x)
+	dir := math.Atan2(a.Y-b.Y, a.Y-b.Y)
 
-	if a == *b.owner || b == *a.owner {
+	if a == *b.Owner || b == *a.Owner {
 		return false
 	}
 
-	a.dx += math.Cos(dir) * math.Min(b.bound*a.stance, 6)
-	a.dy += math.Sin(dir) * math.Min(b.bound*a.stance, 6)
-	b.dx -= math.Cos(dir) * math.Min(a.bound*b.stance, 6)
-	b.dy -= math.Sin(dir) * math.Min(a.bound*b.stance, 6)
+	a.Dx += math.Cos(dir) * math.Min(b.Bound*a.Stance, 6)
+	a.Dy += math.Sin(dir) * math.Min(b.Bound*a.Stance, 6)
+	b.Dx -= math.Cos(dir) * math.Min(a.Bound*b.Stance, 6)
+	b.Dy -= math.Sin(dir) * math.Min(a.Bound*b.Stance, 6)
 
-	if a.team != "-1" && b.team != "-1" && a.team == b.team {
+	if a.Team != "ffa" && b.Team != "ffa" && a.Team == b.Team {
 		return false
 	}
 
-	a.hitTime = time.Now().Unix()
-	b.hitTime = time.Now().Unix()
+	a.HitTime = time.Now().Unix()
+	b.HitTime = time.Now().Unix()
 
-	a.hitObject = b
-	b.hitObject = a
+	a.HitObject = b
+	b.HitObject = a
 
-	if b.lh-a.damage <= 0 {
-		a.h -= b.damage * (b.lh / a.damage)
+	if b.Lh-a.Damage <= 0 {
+		a.H -= b.Damage * (b.Lh / a.Damage)
 	} else {
-		a.h -= b.damage
+		a.H -= b.Damage
 	}
-	if a.lh-b.damage <= 0 {
-		b.h -= a.damage * (a.lh / b.damage)
+	if a.Lh-b.Damage <= 0 {
+		b.H -= a.Damage * (a.Lh / b.Damage)
 	} else {
-		b.h -= a.damage
+		b.H -= a.Damage
 	}
-	if a.h < 0 {
-		a.h = 0
+	if a.H < 0 {
+		a.H = 0
 	}
-	if b.h < 0 {
-		b.h = 0
+	if b.H < 0 {
+		b.H = 0
 	}
 
 	return true
@@ -107,7 +107,7 @@ func (q Quadtree) Getindex(area interface{}) int {
 	x := q.x + q.w/2
 	y := q.y + q.h/2
 	if b {
-		if obj.x+obj.r >= x && obj.x-obj.r <= x || obj.y+obj.r >= y && obj.y-obj.r <= y {
+		if obj.X+obj.R >= x && obj.X-obj.R <= x || obj.Y+obj.R >= y && obj.Y-obj.R <= y {
 			return -1
 		}
 	} else {
@@ -118,14 +118,14 @@ func (q Quadtree) Getindex(area interface{}) int {
 	}
 	// 2 1
 	// 3 4
-	if obj.x > x {
-		if obj.y > y {
+	if obj.X > x {
+		if obj.Y > y {
 			return 4
 		}
 		return 1
 	}
 
-	if obj.y > y {
+	if obj.Y > y {
 		return 3
 	}
 
@@ -137,8 +137,8 @@ func (q Quadtree) Insert(obj *Object) {
 	var i, index = 0, -1
 
 	// obj가 this의 관할이 아닐 때
-	if obj.x+obj.r < q.x || obj.x-obj.r > q.x+q.w ||
-		obj.y+obj.r < q.y || obj.y-obj.r > q.y+q.h {
+	if obj.X+obj.R < q.x || obj.X-obj.R > q.x+q.w ||
+		obj.Y+obj.R < q.y || obj.Y-obj.R > q.y+q.h {
 		return
 	}
 
@@ -177,7 +177,7 @@ func (q Quadtree) Retrieve(area interface{}) []*Object {
 
 	if o, ok := area.(Object); ok {
 		for _, obj := range q.objects {
-			if !obj.isDead && (obj.owner != o.owner || obj.isOwnCol && o.isOwnCol) {
+			if !obj.IsDead && (obj.Owner != o.Owner || obj.IsOwnCol && o.IsOwnCol) {
 				returnObject = append(returnObject, obj)
 			}
 		}

@@ -1,19 +1,21 @@
-import { objectList, objectOrder, uiObjectList, colorList, expList, tick, lastTime, isControlRotate } from './data';
+import * as data from './data';
 
 export default class System {
   constructor({ name }) {
     this.name = name;
 
-    this.objectList = objectList;
-    this.objectOrder = objectOrder;
-    this.uiObjectList = uiObjectList;
+    this.objectList = {};
+    this.objectOrder = [];
+    this.uiObjectList = [];
 
-    this.colorList = colorList;
-    this.expList = expList;
+    this.colorList = data.colorList;
+    this.expList = data.expList;
 
-    this.tick = tick;
-    this.lastTime = lastTime;
-    this.isControlRotate = isControlRotate;
+    this.tick = 0;
+    this.lastTime = Date.now();
+    this.isControlRotate = true;
+
+    this.input = data.input;
   }
 
   insertComma = (number) => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
