@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"math"
 	"net/http"
 	"time"
 
@@ -44,50 +43,29 @@ func main() {
 		users[s.ID()] = lib.NewPlayer(s.ID())
 		users[s.ID()].ControlObject = lib.NewObject(
 			users[s.ID()],
-			[]interface{}{},
-			[3]int{0, 0, 0},
+			"",
 			"ffa",
 			name,
 			lib.RandomRange(-setting.MapSize.X, setting.MapSize.Y),
 			lib.RandomRange(-setting.MapSize.Y, setting.MapSize.X),
-			lib.RandomRange(100, 100),
-			lib.RandomRange(100, 100),
-			lib.RandomRange(100, 100),
-			lib.RandomRange(100, 100),
-			lib.RandomRange(100, 100),
-			lib.RandomRange(100, 100),
-			map[string]interface{}{
-				"Tick": func(obj *lib.Object) { // obj
-					obj.Speed = (0.07 + (0.007 * obj.Variable["Stats"].([]float64)[7])) * math.Pow(0.985, obj.Variable["Level"].(float64)-1)
-					obj.Damage = (20 + obj.Variable["Stats"].([]float64)[2]*4)
-					obj.R = (13 * math.Pow(1.01, (obj.Variable["Level"].(float64)-1)))
-					obj.Mh = (48 + obj.Variable["Level"].(float64)*2 + obj.Variable["Stats"].([]float64)[1]*20)
-				},
-				"KeyDown":   nil, // obj, keyType
-				"KeyPress":  nil, // obj, keyType, time
-				"KeyUp":     nil, // obj, keyType
-				"GetBound":  nil, // obj, enemyObj
-				"GetDamage": nil, // obj, enemyObj, damage
-				"KillEvent": nil, // obj, enemyObj
-				"DeadEvent": nil, // obj, enemyObj
-			},
-			map[string]interface{}{
-				"Level":         1,
-				"MaxStats":      []int{7, 7, 7, 7, 7, 7, 7, 7},
-				"Stats":         []int{0, 0, 0, 0, 0, 0, 0, 0},
-				"Stat":          0,
-				"Sight":         1.,
-				"InvisibleTime": 0.,
-			},
+			13,
+			48,
+			20,
+			0.07,
+			1,
+			1,
+			nil,
+			nil,
 			false,
 			false,
 		)
+		users[s.ID()].ControlObject.Tank()
 		objects = append(objects, users[s.ID()].ControlObject)
 
 		log.Println("INFO > " + s.ID() + " Login")
 	})
 
-	server.OnEvent("/", "keyboard", func(s socketio.Conn, key string, time float64) {
+	server.OnEvent("/", "keyboard", func(s socketio.Conn, key string, time interface{}) {
 		if u, ok := users[s.ID()]; ok {
 			u.SetKey(key, time)
 		}
@@ -139,13 +117,11 @@ func main() {
 
 func moveloop(ticker time.Ticker) {
 	for range ticker.C {
-		for _, user := range users {
-			if user.ControlObject != nil {
-				if user.IsMove {
-					user.ControlObject.Dx += math.Cos(user.Keys["moveRotate"]) * user.ControlObject.Speed
-					user.ControlObject.Dy += math.Sin(user.Keys["moveRotate"]) * user.ControlObject.Speed
-				}
-
+		for _, obj := range objects {
+			obj.X += obj.Dx
+			obj.Y += obj.Dy
+			if f, ok := obj.Event["Tick"].(func(obj *lib.Object)); ok {
+				f(obj)
 			}
 		}
 	}

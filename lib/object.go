@@ -2,83 +2,23 @@ package lib
 
 import "time"
 
-// Camera is
-type Camera struct {
-	x float64
-	y float64
-	z float64
+// Pos is
+type Pos struct {
+	X float64
+	Y float64
 }
 
-// Player is
-type Player struct {
-	Id            string
-	IsMove        bool
-	Mx            float64
-	My            float64
-	Camera        Camera
-	Keys          map[string]float64
-	StartTime     int64
-	ControlObject *Object
-}
-
-// NewPlayer is make player
-func NewPlayer(id string) *Player {
-	p := Player{}
-	p.Id = id
-	p.IsMove = false
-	p.Mx = 0
-	p.My = 0
-	p.Camera = Camera{
-		x: 0,
-		y: 0,
-		z: 1,
-	}
-	p.Keys = map[string]float64{}
-	p.StartTime = time.Now().Unix()
-
-	return &p
-}
-
-// Player's mouse point set
-func (p *Player) SetMousePoint(x float64, y float64) {
-	p.Mx = x
-	p.My = y
-}
-
-// Player's key set
-func (p *Player) SetKey(key string, value float64) {
-	p.Keys[key] = value
-	//obj := p.ControlObject
-	//ok := obj != nil
-	switch key {
-	case "moveRotate":
-		p.IsMove = value > 0
-		/*case "1":
-			if ok { obj.Variable["HealthRegen"]}
-		case "2":
-			if ok { obj.Variable["MaxHealth"]}
-		case "3":
-			if ok { obj.Variable["BodyDamage"]}
-		case "4":
-			if ok { obj.Variable["BulletSpeed"]}
-		case "5":
-			if ok { obj.Variable["BulletHealth"]}
-		case "6":
-			if ok { obj.Variable["BulletDamage"]}
-		case "7":
-			if ok { obj.Variable["Reload"]}
-		case "8":
-			if ok { obj.Variable["Movement"]}*/
-
-	}
+// Circle is
+type Circle struct {
+	Pos Pos
+	R   float64
 }
 
 // Object is
 type Object struct {
 	Owner     *interface{}
 	Id        int
-	Paths     []interface{}
-	Color     [3]int
+	Type      string
 	Team      string
 	Name      string
 	X         float64
@@ -99,6 +39,7 @@ type Object struct {
 	Guns      []Gun
 	Event     map[string]interface{}
 	Variable  map[string]interface{}
+	SpawnTime int64
 	HitTime   int64
 	DeadTime  int64
 	HitObject *Object
@@ -112,8 +53,7 @@ var objID int = 0
 // NewObject is
 func NewObject(
 	own interface{},
-	paths []interface{},
-	color [3]int,
+	t string,
 	team string,
 	name string,
 	x float64,
@@ -132,8 +72,7 @@ func NewObject(
 	o.Owner = &own
 	o.Id = objID
 	objID++
-	o.Paths = paths
-	o.Color = color
+	o.Type = t
 	o.Team = team
 	o.Name = name
 	o.X = x
@@ -150,6 +89,7 @@ func NewObject(
 	o.Guns = []Gun{}
 	o.Event = event
 	o.Variable = variable
+	o.SpawnTime = time.Now().Unix()
 	o.HitTime = time.Now().Unix()
 	o.DeadTime = -1
 	o.HitObject = &o
@@ -158,22 +98,4 @@ func NewObject(
 	o.IsDead = false
 
 	return &o
-}
-
-// Gun is
-type Gun struct {
-	Object    Object
-	Paths     []interface{}
-	Color     [3]int
-	Sx        float64
-	Sy        float64
-	Dir       float64
-	Rdir      float64
-	Reload    float64 // default delay
-	WaitTime  float64 // first wait time
-	DelayTime float64 // when shot
-	ShotTime  float64 // click time to delay
-	AutoShot  bool
-	Limit     int
-	Bullets   []Object
 }
