@@ -36,7 +36,7 @@ type Object struct {
 	Bound     float64
 	Stance    float64
 	Opacity   float64
-	Guns      []Gun
+	Guns      []*Gun
 	Event     map[string]interface{}
 	Variable  map[string]interface{}
 	SpawnTime int64
@@ -86,7 +86,7 @@ func NewObject(
 	o.Speed = sp
 	o.Bound = bo
 	o.Stance = st
-	o.Guns = []Gun{}
+	o.Guns = []*Gun{}
 	o.Event = event
 	o.Variable = variable
 	o.SpawnTime = time.Now().Unix()

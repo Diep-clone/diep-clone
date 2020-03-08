@@ -2,7 +2,7 @@ package lib
 
 // Gun is
 type Gun struct {
-	Object    Object
+	Object    *Object
 	Sx        float64
 	Sy        float64
 	Dir       float64
@@ -20,7 +20,7 @@ type Gun struct {
 }
 
 func NewGun(
-	obj Object,
+	obj *Object,
 	sx float64,
 	sy float64,
 	dir float64,

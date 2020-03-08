@@ -40,9 +40,10 @@ func (obj *Object) Tank() {
 	obj.IsOwnCol = false
 }
 
+// Basic is god
 func (obj *Object) Basic() {
 	obj.Type = "Basic"
-	obj.Guns = []Gun{
+	obj.Guns = []*Gun{
 		NewGun(
 			NewObject(
 				obj,
@@ -78,7 +79,7 @@ func (obj *Object) Basic() {
 			0,
 			map[string]interface{}{
 				"tick": func(obj *Object) {
-					obj.H
+					// obj.H
 				},
 			},
 			nil,
