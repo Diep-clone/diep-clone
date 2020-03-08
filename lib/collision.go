@@ -78,10 +78,10 @@ var MaxObj = 5
 
 // Area is
 type Area struct {
-	x  float64
-	y  float64
-	x2 float64
-	y2 float64
+	X  float64
+	Y  float64
+	X2 float64
+	Y2 float64
 }
 
 // Quadtree is
@@ -109,8 +109,8 @@ func NewQuadtree(x float64, y float64, w float64, h float64, level int) *Quadtre
 	return &q
 }
 
-// Split is
-func (q Quadtree) Split() {
+// split is
+func (q Quadtree) split() {
 	xx := [4]float64{0, 1, 0, 1}
 	yy := [4]float64{0, 0, 1, 1}
 	for i := 0; i < 4; i++ {
@@ -126,8 +126,8 @@ func (q Quadtree) Split() {
 	}
 }
 
-// Getindex is
-func (q Quadtree) Getindex(area interface{}) int {
+// getIndex is
+func (q Quadtree) getIndex(area interface{}) int {
 	obj, b := area.(Object)
 	x := q.x + q.w/2
 	y := q.y + q.h/2
@@ -137,7 +137,7 @@ func (q Quadtree) Getindex(area interface{}) int {
 		}
 	} else {
 		obj, _ := area.(Area)
-		if obj.x >= x && obj.x2 <= x || obj.y >= y && obj.y2 <= y {
+		if obj.X >= x && obj.X2 <= x || obj.Y >= y && obj.Y2 <= y {
 			return -1
 		}
 	}
@@ -169,7 +169,7 @@ func (q Quadtree) Insert(obj *Object) {
 
 	// 자식 노드가 있을 때
 	if q.nodes != nil {
-		index = q.Getindex(obj)
+		index = q.getIndex(obj)
 		if index != -1 {
 			q.nodes[index].Insert(obj)
 			return
@@ -180,11 +180,11 @@ func (q Quadtree) Insert(obj *Object) {
 
 	if len(q.objects) > MaxObj {
 		if q.nodes != nil {
-			q.Split()
+			q.split()
 		}
 
 		for i < len(q.objects) {
-			index = q.Getindex(q.objects[i])
+			index = q.getIndex(q.objects[i])
 			if index != -1 {
 				q.nodes[index].Insert(q.objects[i])
 				q.objects = q.objects[i:]
@@ -197,7 +197,7 @@ func (q Quadtree) Insert(obj *Object) {
 
 // Retrieve is
 func (q Quadtree) Retrieve(area interface{}) []*Object {
-	index := q.Getindex(area)
+	index := q.getIndex(area)
 	var returnObject []*Object
 
 	if o, ok := area.(Object); ok {

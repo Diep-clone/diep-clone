@@ -10,7 +10,7 @@ type Camera struct {
 
 // Player is
 type Player struct {
-	Id            string
+	ID            string
 	Mx            float64
 	My            float64
 	Camera        Camera
@@ -22,7 +22,7 @@ type Player struct {
 // NewPlayer is make player
 func NewPlayer(id string) *Player {
 	p := Player{}
-	p.Id = id
+	p.ID = id
 	p.Mx = 0
 	p.My = 0
 	p.Camera = Camera{
@@ -45,4 +45,15 @@ func (p *Player) SetMousePoint(x float64, y float64) {
 func (p *Player) SetKey(key string, value interface{}) {
 	p.Keys[key] = value
 
+}
+
+func (p *Player) SetCamera() {
+	if p.ControlObject != nil {
+		obj := *p.ControlObject
+		p.Camera.Pos = Pos{
+			X: obj.X,
+			Y: obj.Y,
+		}
+		p.Camera.Z = 1
+	}
 }

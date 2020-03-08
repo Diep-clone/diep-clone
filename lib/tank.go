@@ -1,15 +1,24 @@
 package lib
 
-import "math"
+import (
+	"math"
+)
 
 func (obj *Object) Tank() {
 	obj.Type = "Tank"
 	obj.Event = map[string]interface{}{
 		"Tick": func(obj *Object) { // obj
-			obj.Speed = (0.07 + (0.007 * obj.Variable["Stats"].([]float64)[7])) * math.Pow(0.985, obj.Variable["Level"].(float64)-1)
-			obj.Damage = (20 + obj.Variable["Stats"].([]float64)[2]*4)
-			obj.R = (13 * math.Pow(1.01, (obj.Variable["Level"].(float64)-1)))
-			obj.Mh = (48 + obj.Variable["Level"].(float64)*2 + obj.Variable["Stats"].([]float64)[1]*20)
+			p := *obj.Owner
+			if u, ok := p.(Player); ok {
+				obj.Speed = (0.07 + (0.007 * obj.Variable["Stats"].([]float64)[7])) * math.Pow(0.985, obj.Variable["Level"].(float64)-1)
+				obj.Damage = (20 + obj.Variable["Stats"].([]float64)[2]*4)
+				obj.R = (13 * math.Pow(1.01, (obj.Variable["Level"].(float64)-1)))
+				obj.Mh = (48 + obj.Variable["Level"].(float64)*2 + obj.Variable["Stats"].([]float64)[1]*20)
+
+				u.Camera.Z = 16 / 9 * math.Pow(0.995, obj.Variable["Level"].(float64)-1) / obj.Variable["Sight"].(float64)
+			} else {
+				obj.H -= obj.Mh / 60 / 10
+			}
 
 			obj.Dx *= 0.97
 			obj.Dy *= 0.97
@@ -43,9 +52,9 @@ func (obj *Object) Tank() {
 // Basic is god
 func (obj *Object) Basic() {
 	obj.Type = "Basic"
-	obj.Guns = []*Gun{
-		NewGun(
-			NewObject(
+	obj.Guns = []Gun{
+		*NewGun(
+			*NewObject(
 				obj,
 				"BasicBullet",
 				"ffa",
@@ -59,7 +68,10 @@ func (obj *Object) Basic() {
 				1,
 				1,
 				map[string]interface{}{
-					"tick": func(obj *Object) {
+					"Tick": func(obj *Object) {
+						obj.Dx += math.Cos(obj.Dir) * obj.Speed
+						obj.Dy += math.Sin(obj.Dir) * obj.Speed
+
 						obj.Dx *= 0.97
 						obj.Dy *= 0.97
 					},
@@ -78,7 +90,7 @@ func (obj *Object) Basic() {
 			0,
 			0,
 			map[string]interface{}{
-				"tick": func(obj *Object) {
+				"Tick": func(obj *Object) {
 					// obj.H
 				},
 			},

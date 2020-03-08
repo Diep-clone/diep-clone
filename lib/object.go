@@ -14,10 +14,17 @@ type Circle struct {
 	R   float64
 }
 
+// Scoreboard is
+type Scoreboard struct {
+	Name  string
+	Type  string
+	Score int
+}
+
 // Object is
 type Object struct {
 	Owner     *interface{}
-	Id        int
+	ID        int
 	Type      string
 	Team      string
 	Name      string
@@ -36,7 +43,7 @@ type Object struct {
 	Bound     float64
 	Stance    float64
 	Opacity   float64
-	Guns      []*Gun
+	Guns      []Gun
 	Event     map[string]interface{}
 	Variable  map[string]interface{}
 	SpawnTime int64
@@ -45,6 +52,7 @@ type Object struct {
 	HitObject *Object
 	IsBorder  bool
 	IsOwnCol  bool
+	IsCanDir  bool // is Can move Dir
 	IsDead    bool
 }
 
@@ -70,7 +78,7 @@ func NewObject(
 	isOwnCol bool) *Object {
 	o := Object{}
 	o.Owner = &own
-	o.Id = objID
+	o.ID = objID
 	objID++
 	o.Type = t
 	o.Team = team
@@ -86,7 +94,7 @@ func NewObject(
 	o.Speed = sp
 	o.Bound = bo
 	o.Stance = st
-	o.Guns = []*Gun{}
+	o.Guns = []Gun{}
 	o.Event = event
 	o.Variable = variable
 	o.SpawnTime = time.Now().Unix()
@@ -98,4 +106,28 @@ func NewObject(
 	o.IsDead = false
 
 	return &o
+}
+
+func (o Object) SocketObj() map[string]interface{} {
+	var id interface{}
+	if obj, ok := (*o.Owner).(Player); ok {
+		id = obj.ID
+	} else if obj, ok := (*o.Owner).(Object); ok {
+		id = obj.ID
+	}
+	return map[string]interface{}{
+		"id":        o.ID,
+		"type":      o.Type,
+		"x":         floor(o.X, 2),
+		"y":         floor(o.Y, 2),
+		"r":         floor(o.R, 1),
+		"dir":       floor(o.Dir, 2),
+		"maxhealth": floor(o.Mh, 1),
+		"health":    floor(o.H, 1),
+		"opacity":   floor(o.Opacity, 2),
+		"exp":       o.Exp,
+		"name":      o.Name,
+		"owner":     id,
+		"isDead":    o.IsDead,
+	}
 }
