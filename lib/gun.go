@@ -2,6 +2,7 @@ package lib
 
 // Gun is
 type Gun struct {
+	Owner     *Object
 	Object    Object
 	Sx        float64
 	Sy        float64
@@ -19,7 +20,9 @@ type Gun struct {
 	Bullets   []Object
 }
 
+// New Gun1!!!!!!!!!!11!!!
 func NewGun(
+	owner *Object,
 	obj Object,
 	sx float64,
 	sy float64,
@@ -35,6 +38,7 @@ func NewGun(
 	autoShot bool,
 	limit int) *Gun {
 	g := Gun{}
+	g.Owner = owner
 	g.Object = obj
 	g.Sx = sx
 	g.Sy = sy

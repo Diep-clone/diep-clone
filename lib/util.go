@@ -5,6 +5,8 @@ import (
 	"math/rand"
 )
 
+const Grid = 12.9
+
 // RandomRange return random value of range
 func RandomRange(x, y float64) float64 {
 	if x > y {

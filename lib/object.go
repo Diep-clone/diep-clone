@@ -14,11 +14,25 @@ type Circle struct {
 	R   float64
 }
 
-// Scoreboard is
-type Scoreboard struct {
+// Score is
+type Score struct {
 	Name  string
 	Type  string
 	Score int
+}
+
+// Scoreboard is
+type Scoreboard [10]Score
+
+// Scoreboard Push
+func (sc *Scoreboard) Push(value Score) {
+	var index = 0
+	for ; value.Score < sc[index+1].Score && index < 10; index++ {
+	}
+	for j := 9; j >= index; j-- {
+		sc[j-1] = sc[j]
+	}
+	sc[index] = value
 }
 
 // Object is

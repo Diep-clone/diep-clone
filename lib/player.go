@@ -44,7 +44,10 @@ func (p *Player) SetMousePoint(x float64, y float64) {
 // Player's key set
 func (p *Player) SetKey(key string, value interface{}) {
 	p.Keys[key] = value
+}
 
+func (p *Player) DisableKey(key string) {
+	delete(p.Keys, key)
 }
 
 func (p *Player) SetCamera() {

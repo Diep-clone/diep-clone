@@ -20,7 +20,7 @@ var users = make(map[string]*lib.Player)
 var server, _ = socketio.NewServer(nil)
 var quadtree lib.Quadtree
 
-var scoreboard []lib.Scoreboard
+var scoreboard lib.Scoreboard
 
 func main() {
 	// runtime.GOMAXPROCS(runtime.NumCPU()) 모든 CPU를 사용하게 해주는 코드
@@ -54,7 +54,7 @@ func main() {
 			name,
 			lib.RandomRange(-setting.MapSize.X, setting.MapSize.Y),
 			lib.RandomRange(-setting.MapSize.Y, setting.MapSize.X),
-			13,
+			lib.Grid,
 			48,
 			20,
 			0.07,
@@ -65,15 +65,42 @@ func main() {
 			false,
 			false,
 		)
-		users[s.ID()].ControlObject.Tank()
+		users[s.ID()].ControlObject.Basic()
 		objects = append(objects, users[s.ID()].ControlObject)
 
 		log.Println("INFO > " + s.ID() + " Login")
 	})
 
-	server.OnEvent("/", "keyboard", func(s socketio.Conn, key string, time interface{}) {
+	server.OnEvent("/", "keyboard", func(s socketio.Conn, key string, enable bool, value interface{}) {
 		if u, ok := users[s.ID()]; ok {
-			u.SetKey(key, time)
+			if enable {
+				u.SetKey(key, value)
+				if obj := u.ControlObject; obj != nil {
+					if f, ok := u.ControlObject.Event["KeyDown"].(map[string]func())[key]; ok {
+						f()
+					}
+				}
+			} else {
+				u.DisableKey(key)
+				if obj := u.ControlObject; obj != nil {
+					if f, ok := u.ControlObject.Event["KeyUp"].(map[string]func())[key]; ok {
+						f()
+					}
+				}
+			}
+		}
+	})
+
+	server.OnEvent("/", "stat", func(s socketio.Conn, n int) {
+		if u, ok := users[s.ID()]; ok {
+			if obj := u.ControlObject; obj != nil {
+				if obj.Variable["Stat"].(int) > 0 && obj.Variable["Stats"].([]int)[n] < obj.Variable["MaxStats"].([]int)[n] {
+					obj.Variable["Stats"].([]int)[n]++
+					if v, ok := obj.Variable["Stat"].(int); ok {
+						v--
+					}
+				}
+			}
 		}
 	})
 
@@ -124,47 +151,62 @@ func main() {
 func moveloop(ticker time.Ticker) {
 	for range ticker.C {
 
-		scoreboard := []lib.Scoreboard{}
+		scoreboard = lib.Scoreboard{}
+
+		for _, u := range users {
+
+			if obj := u.ControlObject; obj != nil {
+				for key, _ := range obj.Event {
+					if f, ok := u.ControlObject.Event["KeyPress"].(map[string]func())[key]; ok {
+						f()
+					}
+				}
+			}
+
+			scoreboard.Push(lib.Score{
+				Name:  u.ControlObject.Name,
+				Type:  u.ControlObject.Type,
+				Score: u.ControlObject.Exp,
+			})
+		}
+
 		quadtree.Clear()
 
 		for _, obj := range objects {
-			if obj.H <= 0 {
-				obj.IsDead = true
-			}
-
 			obj.X += obj.Dx
 			obj.Y += obj.Dy
+
+			obj.Dx *= 0.97
+			obj.Dy *= 0.97
 
 			if obj.IsDead {
 				continue
 			}
 
-			if _, ok := (*obj.Owner).(lib.Player); ok {
-				scoreboard = append(scoreboard, lib.Scoreboard{
-					Name:  obj.Name,
-					Type:  obj.Type,
-					Score: obj.Exp,
-				})
+			if obj.H <= 0 {
+				obj.IsDead = true
 			}
 
 			if obj.IsBorder { // 화면 밖으로 벗어나는가?
-				if obj.X > setting.MapSize.X+51.6 {
-					obj.X = setting.MapSize.X + 51.6
+				if obj.X > setting.MapSize.X+lib.Grid*4 {
+					obj.X = setting.MapSize.X + lib.Grid*4
 				}
-				if obj.X < -setting.MapSize.X-51.6 {
-					obj.X = -setting.MapSize.X - 51.6
+				if obj.X < -setting.MapSize.X-lib.Grid*4 {
+					obj.X = -setting.MapSize.X - lib.Grid*4
 				}
-				if obj.Y > setting.MapSize.Y+51.6 {
-					obj.Y = setting.MapSize.Y + 51.6
+				if obj.Y > setting.MapSize.Y+lib.Grid*4 {
+					obj.Y = setting.MapSize.Y + lib.Grid*4
 				}
-				if obj.Y < -setting.MapSize.Y-51.6 {
-					obj.Y = -setting.MapSize.Y - 51.6
+				if obj.Y < -setting.MapSize.Y-lib.Grid*4 {
+					obj.Y = -setting.MapSize.Y - lib.Grid*4
 				}
 			}
 
 			if time.Now().Unix()-30000 > obj.HitTime {
 				obj.H += obj.Mh / 60 / 10
 			}
+
+			imMh := obj.Mh
 
 			if f, ok := obj.Event["Tick"].(func(obj *lib.Object)); !obj.IsDead && ok {
 				f(obj)
@@ -175,7 +217,8 @@ func moveloop(ticker time.Ticker) {
 			for _, obj2 := range objList {
 				if math.Sqrt((obj.X-obj2.X)*(obj.X-obj2.X)+(obj.Y-obj2.Y)*(obj.Y-obj2.Y)) < obj.R+obj2.R {
 					if lib.CollisionEvent(obj, obj2) {
-						// socket send collision Event
+						server.BroadcastToRoom("/", "/", "collision", obj.ID)
+						server.BroadcastToRoom("/", "/", "collision", obj2.ID)
 					}
 				}
 			}
@@ -184,6 +227,10 @@ func moveloop(ticker time.Ticker) {
 
 			if obj.H > obj.Mh {
 				obj.H = obj.Mh
+			}
+
+			if obj.Mh != imMh {
+				obj.H *= obj.Mh / imMh
 			}
 		}
 	}
