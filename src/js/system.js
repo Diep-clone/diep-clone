@@ -4,8 +4,7 @@ export default class System {
   constructor({ name }) {
     this.name = name;
 
-    this.objectList = {};
-    this.objectOrder = [];
+    this.objectList = [];
     this.uiObjectList = [];
 
     this.colorList = data.colorList;
@@ -15,7 +14,7 @@ export default class System {
     this.lastTime = Date.now();
     this.isControlRotate = true;
 
-    this.input = data.input;
+    window.input = data.input;
   }
 
   insertComma = (number) => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');

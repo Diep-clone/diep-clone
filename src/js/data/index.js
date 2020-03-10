@@ -1,6 +1,6 @@
 import { RGB } from '../lib/util';
 
-export const colorList = [
+export const statColor = [
   new RGB(230,176,138),
   new RGB(228,102,233),
   new RGB(148,102,234),
@@ -9,6 +9,28 @@ export const colorList = [
   new RGB(231,103,98),
   new RGB(147,234,103),
   new RGB(103,233,233)
+];
+
+export const colorList = [
+  new RGB("#555555"), // smasher's bases color
+  new RGB("#999999"), // Barrles's color
+  new RGB("#00B1DE"), // FFA your's color
+  new RGB("#00B1DE"), // Blue
+  new RGB("#F14E54"), // Red
+  new RGB("#BE7FF5"), // Purple
+  new RGB("#00F46C"), // Green
+  new RGB("#D68163"), // 
+  new RGB("#89FF69"), // Shiny
+  new RGB("#FFE869"), // Square
+  new RGB("#FC7677"), // Triangle
+  new RGB("#768DFC"), // Pentagon
+  new RGB("#FF77DC"), // Crashers
+  new RGB("#FFE869"), // AC
+  new RGB("#44FFA0"), // Scoreboard
+  new RGB("#BBBBBB"), // Maze Walls
+  new RGB("#FF0000"), // FFA other's color
+  new RGB("#FF0000"), // Necromanser's Drone color
+  new RGB("#C0C0C0"), // Fallen
 ];
 
 export const expList = [
@@ -60,43 +82,16 @@ export const expList = [
 ];
 
 export const input = {
-  ctrl: false,
-  isMouseOverUi: false,
-
-  shot: 0,
-  rShot: 0,
-
-  moveRotate: null,
-  moveVector: {
-    x:0,
-    y:0,
-  },
-
-  space: false,
-
-  leftMouse: false,
-  rightMouse: false,
-
-  w: false,
-  a: false,
-  s: false,
-  d: false,
-
-  num:[false,false,false,false,false,false,false,false],
-
-  o: false,
-  k: false,
-  l: false,
-  e: false,
-  c: false,
-
-  autoE: false,
-  autoC: false,
-
-  changeTank: false,
-
-  target: {
-    x:0,
-    y:0
-  }
+  blur:function(){},
+  execute:function(v){},
+  flushInputHooks: function(){},
+  get_convar:function(key){},
+  keyDown: function(){},
+  keyUp:function(){},
+  mouse:function(){},
+  prevent_right_click: function(){},
+  print_convar_help: function(){},
+  set_convar: function(key,value){},
+  should_prevent_unload: function(){},
+  wheel: function(){},
 };

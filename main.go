@@ -1,6 +1,7 @@
 package main
 
 import (
+	//"database/sql"
 	"log"
 	"math"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"app/lib"
 
 	socketio "github.com/googollee/go-socket.io"
+	//sq "github.com/mattn/go-sqlite3"
 )
 
 var setting lib.Setting = lib.ReadSetting()
@@ -24,6 +26,12 @@ var scoreboard lib.Scoreboard
 
 func main() {
 	// runtime.GOMAXPROCS(runtime.NumCPU()) 모든 CPU를 사용하게 해주는 코드
+	/*database, _ := sql.Open("sqlite3","./bogo.db")
+	statement, _ := database.Prepare("CREATE TABLE IF NOT EXISTS people (id TEXT, nickname TEXT, password TEXT")
+	statement.Exec()
+	statement, _ = database.Prepare("INSERT INTO people (nickname) VALUES (?)")
+	statement.Exec("")
+	*/
 	quadtree = *lib.NewQuadtree(-1000, -1000, 2000, 2000, 1)
 
 	server.OnConnect("/", func(s socketio.Conn) error {

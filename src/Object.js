@@ -1,12 +1,9 @@
-function Obj(id,name,paths,r,g,b){
+function Obj(id,name,type){
     'use strict';
 
     this.id = id;
-    
     this.name = name;
-    this.paths = paths;
-    this.color = new RGB(r,g,b);
-    this.guns = [];
+    this.type = type;
 
     this.x;
     this.y;
@@ -18,12 +15,15 @@ function Obj(id,name,paths,r,g,b){
     this.score;
     this.isDead;
 
+    this.cv;
+    this.ctx;
+
     this.Animate = function (tick){
         if (this.isDead){
             this.opacity = Math.max(this.opacity - 0.13 * tick * 0.05, 0);
             this.radius += 0.4 * tick * 0.05;
             if (this.opacity == 0){
-                system.removeObject(this.id);
+                //system.removeObject(this.id);
                 return;
             }
         }
@@ -41,15 +41,12 @@ function Obj(id,name,paths,r,g,b){
         this.isDead = isDead;
     }
 
-    this.GraphicSet = function (name,vertex,r,g,b,guns){
-        this.name = name;
-        this.vertex = vertex;
-        this.color.SetRGB(r,g,b);
-        //this.guns = guns;
+    this.SetCanvasSize = function (camera){
+
     }
 
     this.Draw = function (ctx,camera){
-
+        this.SetCanvasSize(camera);
     }
 
     this.DrawStatus = function (ctx,camera){
