@@ -1,16 +1,17 @@
 import { RGB } from '../lib/util';
-import { drawCircle, drawPolygon, drawSC } from '../lib/draw';
+import { colorList } from '../data/index';
+import { drawC, drawObj } from '../lib/draw';
 
-export const Obj = function(id,name,type,guns){
+export const Obj = function(id, name, type, color, guns) {
     'use strict';
 
     this.id = id;
-    this.name = name;
-    this.type = type;
-    this.color;
-    this.point;
 
+    this.name = name;
     this.guns = guns;
+
+    this.type = type;
+    this.color = color;
 
     this.x;
     this.y;
@@ -25,7 +26,10 @@ export const Obj = function(id,name,type,guns){
     this.cv = document.createElement("canvas");
     this.ctx = cv.getContext("2d");
 
-    this.Animate = function (tick){
+    this.r = 0;
+    this.w = 0;
+
+    this.Animate = function (tick) {
         if (this.isDead){
             this.opacity = Math.max(this.opacity - 0.13 * tick * 0.05, 0);
             this.radius += 0.4 * tick * 0.05;
@@ -35,8 +39,16 @@ export const Obj = function(id,name,type,guns){
             }
         }
     }
+
+    this.ObjChange = function (name, type, color, guns) {
+        this.name = name;
+        this.guns = guns;
     
-    this.ObjSet = function (x,y,r,dir,h,mh,a,score,isDead){
+        this.type = type;
+        this.color = color;
+    }
+    
+    this.ObjSet = function (x, y, r, dir, h, mh, a, score, isDead) {
         this.x = x;
         this.y = y;
         this.r = r;
@@ -48,58 +60,86 @@ export const Obj = function(id,name,type,guns){
         this.isDead = isDead;
     }
 
-    this.GunSet = function (guns) {
-        this.guns = guns;
-    }
-
     this.DrawSet = function (camera) {
         return {
-            x:this.x - camera.x,
-            y:this.y - camera.y,
-            z:camera.z,
-            r:this.radius,
-            dir:this.dir,
-            o:this.opacity,
+            x: this.x - camera.x,
+            y: this.y - camera.y,
+            z: camera.z,
+            t: this.type,
+            c: colorList[this.color],
+            r: this.radius,
+            dir: this.dir,
+            o: this.opacity,
         };
     }
 
-    this.SetCanvasSize = function (camera){
-
+    this.SetCanvasSize = function (camera) {
+        var {z, t, c, r, dir, o} = this.DrawSet(camera);
+        var size = {x: r * z, y: r * z,};
+        var pos = {x: r * z / 2, y: r * z / 2,};
+        this.guns.forEach((g) => g.SetCanvasSize(camera, size, pos, r, dir));
+        this.cv.width = size.x + 4 * camera.z;
+        this.cv.height = size.y + 4 * camera.z;
+        pos.x += 2 * camera.z;
+        pos.y += 2 * camera.z;
+        this.ctx.lineWidth = 2 * camera.z;
+        this.ctx.lineCap = "round";
+        this.ctx.lineJoin = "round";
+        this.ctx.imageSmoothingEnabled = false;
+        return {
+            ctx: this.ctx,
+            x: pos.x,
+            y: pos.y,
+            z: z,
+            t: t,
+            c: c,
+            r: r,
+            dir: dir,
+            o: o,
+        }
     }
 
-    this.Draw = function (ctx,camera){
-        const {x,y,z,r,dir,o} = this.DrawSet(camera);
-        ctx.save();
-        ctx.globalAlpha = o;
-        const ctxx = ctx;
+    this.Draw = function (ctx,camera) {
         if (this.guns.length>0){
-            this.SetCanvasSize(camera);
-            ctxx = this.ctx;
+            var {ctxx, x, y, z, t, c, r, dir, o} = this.SetCanvasSize(camera);
+            this.guns.forEach((g) => {
+                if (!g.isFront) {
+                    g.Draw(ctxx, camera, x, y, r, dir);
+                }
+            });
+            drawObj(ctxx,
+                x + s.x * z - x - Math.floor(s.x * z - x),
+                y + s.y * z - y - Math.floor(s.y * z - y),
+            z, r, dir, t, 1, c);
+            this.guns.forEach((g) => {
+                if (g.isFront) {
+                    g.Draw(ctxx, camera, x, y, r, dir);
+                }
+            });
+            var s = this.DrawSet(camera);
+            ctx.drawImage(this.cv,Math.floor(s.x * z - x),Math.floor(s.y * z - y));
         } else {
-            
+            var {x, y, z, t, c, r, dir, o} = this.DrawSet(camera);
+            this.guns.forEach((g) => {
+                if (!g.isFront) {
+                    g.Draw(ctxx, camera, x, y, r, dir);
+                }
+            });
+            drawObj(ctx, x, y, z, r, dir, t, o, c);
+            this.guns.forEach((g) => {
+                if (g.isFront) {
+                    g.Draw(ctxx, camera, x, y, r, dir);
+                }
+            });
         }
-        
-
-        switch (this.type){
-            case "Bullet":
-                drawCircle(ctxx, x, y, z, (r + 4));
-                drawCircle(ctxx, x, y, z, r);
-                break;
-            case "Polygon":
-                drawPolygon(ctxx, x, y, z, r, dir, this.point);
-                break;
-            default:
-                break;
-        }
-        ctx.restore();
     }
 
-    this.DrawStatus = function (ctx,camera){
-        if (this.name) this.drawName(ctx,camera);
-        this.drawHPBar(ctx,camera);
+    this.DrawStatus = function (ctx, camera) {
+        if (this.name) this.drawName(ctx, camera);
+        this.drawHPBar(ctx, camera);
     }
 
-    this.DrawName = function (ctx,camera){
+    this.DrawName = function (ctx, camera) {
         /*ctx.save();
 
         const {x,y,z,r,o} = this.DrawSet(camera);
@@ -128,7 +168,7 @@ export const Obj = function(id,name,type,guns){
     this.hpBarP = 1;
     this.hpBarO = 0;
 
-    this.DrawHPBar = function(ctx,camera){
+    this.DrawHPBar = function(ctx, camera) {
         let healthPercent = this.health/this.maxHealth;
 
         this.hpBarP -= (this.hpBarP - healthPercent) / 3;
@@ -143,13 +183,13 @@ export const Obj = function(id,name,type,guns){
             ctx.save();
             ctx.globalAlpha = this.opacity * this.hpBarO;
 
-            const {x,y,z,r} = this.DrawSet(camera);
+            const {x, y, z, r} = this.DrawSet(camera);
 
             ctx.beginPath();
             ctx.moveTo((x + r) * z, (y + r * 5 / 3) * z);
             ctx.lineTo((x - r) * z, (y + r * 5 / 3) * z);
             ctx.closePath();
-            drawSC(ctx,"#444444");
+            drawC(ctx,"#444444");
             ctx.lineWidth = 4.1 * z;
             ctx.stroke();
         
@@ -157,7 +197,7 @@ export const Obj = function(id,name,type,guns){
             ctx.moveTo((x - r) * z, (y + r * 5 / 3) * z);
             ctx.lineTo((x - r + this.hpBarP * r * 2) * z, (y + r * 5 / 3) * z);
             ctx.closePath();
-            drawSC(ctx,"#86e27f");
+            drawC(ctx,"#86e27f");
             ctx.lineWidth = 2.6 * z;
             ctx.stroke();
 

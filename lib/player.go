@@ -53,10 +53,7 @@ func (p *Player) DisableKey(key string) {
 func (p *Player) SetCamera() {
 	if p.ControlObject != nil {
 		obj := *p.ControlObject
-		p.Camera.Pos = Pos{
-			X: obj.X,
-			Y: obj.Y,
-		}
+		p.Camera.Pos = obj.C.Pos
 		p.Camera.Z = 1
 	}
 }

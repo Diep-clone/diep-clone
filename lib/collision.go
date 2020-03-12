@@ -7,7 +7,7 @@ import (
 
 // CollisionEvent is
 func CollisionEvent(a *Object, b *Object) bool {
-	dir := math.Atan2(a.Y-b.Y, a.Y-b.Y)
+	dir := math.Atan2(a.C.Pos.Y-b.C.Pos.Y, a.C.Pos.Y-b.C.Pos.Y)
 
 	if a == *b.Owner || b == *a.Owner {
 		return false
@@ -132,7 +132,7 @@ func (q Quadtree) getIndex(area interface{}) int {
 	x := q.x + q.w/2
 	y := q.y + q.h/2
 	if b {
-		if obj.X+obj.R >= x && obj.X-obj.R <= x || obj.Y+obj.R >= y && obj.Y-obj.R <= y {
+		if obj.C.Pos.X+obj.C.R >= x && obj.C.Pos.X-obj.C.R <= x || obj.C.Pos.Y+obj.C.R >= y && obj.C.Pos.Y-obj.C.R <= y {
 			return -1
 		}
 	} else {
@@ -143,14 +143,14 @@ func (q Quadtree) getIndex(area interface{}) int {
 	}
 	// 2 1
 	// 3 4
-	if obj.X > x {
-		if obj.Y > y {
+	if obj.C.Pos.X > x {
+		if obj.C.Pos.Y > y {
 			return 4
 		}
 		return 1
 	}
 
-	if obj.Y > y {
+	if obj.C.Pos.Y > y {
 		return 3
 	}
 
@@ -162,8 +162,8 @@ func (q Quadtree) Insert(obj *Object) {
 	var i, index = 0, -1
 
 	// obj가 this의 관할이 아닐 때
-	if obj.X+obj.R < q.x || obj.X-obj.R > q.x+q.w ||
-		obj.Y+obj.R < q.y || obj.Y-obj.R > q.y+q.h {
+	if obj.C.Pos.X+obj.C.R < q.x || obj.C.Pos.X-obj.C.R > q.x+q.w ||
+		obj.C.Pos.Y+obj.C.R < q.y || obj.C.Pos.Y-obj.C.R > q.y+q.h {
 		return
 	}
 

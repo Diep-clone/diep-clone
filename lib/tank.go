@@ -5,14 +5,14 @@ import (
 )
 
 func (obj *Object) Tank() {
-	obj.Type = "Tank"
+	obj.Type = 0
 	obj.Event = map[string]interface{}{
 		"Tick": func(obj *Object) { // obj
 			p := *obj.Owner
 			if u, ok := p.(Player); ok {
 				obj.Speed = (0.07 + (0.007 * obj.Variable["Stats"].([]float64)[7])) * math.Pow(0.985, obj.Variable["Level"].(float64)-1)
 				obj.Damage = (20 + obj.Variable["Stats"].([]float64)[2]*4)
-				obj.R = (13 * math.Pow(1.01, (obj.Variable["Level"].(float64)-1)))
+				obj.C.R = (13 * math.Pow(1.01, (obj.Variable["Level"].(float64)-1)))
 				obj.Mh = (48 + obj.Variable["Level"].(float64)*2 + obj.Variable["Stats"].([]float64)[1]*20)
 				obj.H += obj.Mh / 60 / 30 * (0.03 + 0.12*obj.Variable["Stats"].([]float64)[0])
 
@@ -49,13 +49,13 @@ func (obj *Object) Tank() {
 
 // Basic is god
 func (obj *Object) Basic() {
-	obj.Type = "Basic"
 	obj.Guns = []Gun{
 		*NewGun(
 			obj,
 			*NewObject(
 				obj,
-				"BasicBullet",
+				0,
+				2,
 				"ffa",
 				"",
 				0,

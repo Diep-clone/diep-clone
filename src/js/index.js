@@ -2,12 +2,12 @@ import '../styles/index.css';
 
 import io from 'socket.io-client';
 import System from './system';
-
+/*
 const socket = io();
 
 const run = (e) => {
     console.log(e ,15)
-    if (e.keyCode == 13) { /* 13 = Enter Key */
+    if (e.keyCode == 13) { // 13 = Enter Key 
         document.getElementById('name-input').style.display = 'none';
         document.getElementById('canvas').style.display = 'block';
 
@@ -19,3 +19,4 @@ const run = (e) => {
 };
 
 document.getElementById('name-input').onkeypress = run;
+*/

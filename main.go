@@ -57,7 +57,8 @@ func main() {
 		users[s.ID()] = lib.NewPlayer(s.ID())
 		users[s.ID()].ControlObject = lib.NewObject(
 			users[s.ID()],
-			"",
+			0,
+			3,
 			"ffa",
 			name,
 			lib.RandomRange(-setting.MapSize.X, setting.MapSize.Y),
@@ -174,6 +175,7 @@ func moveloop(ticker time.Ticker) {
 			scoreboard.Push(lib.Score{
 				Name:  u.ControlObject.Name,
 				Type:  u.ControlObject.Type,
+				Color: u.ControlObject.Color,
 				Score: u.ControlObject.Exp,
 			})
 		}
@@ -181,8 +183,8 @@ func moveloop(ticker time.Ticker) {
 		quadtree.Clear()
 
 		for _, obj := range objects {
-			obj.X += obj.Dx
-			obj.Y += obj.Dy
+			obj.C.Pos.X += obj.Dx
+			obj.C.Pos.Y += obj.Dy
 
 			obj.Dx *= 0.97
 			obj.Dy *= 0.97
@@ -196,17 +198,17 @@ func moveloop(ticker time.Ticker) {
 			}
 
 			if obj.IsBorder { // 화면 밖으로 벗어나는가?
-				if obj.X > setting.MapSize.X+lib.Grid*4 {
-					obj.X = setting.MapSize.X + lib.Grid*4
+				if obj.C.Pos.X > setting.MapSize.X+lib.Grid*4 {
+					obj.C.Pos.X = setting.MapSize.X + lib.Grid*4
 				}
-				if obj.X < -setting.MapSize.X-lib.Grid*4 {
-					obj.X = -setting.MapSize.X - lib.Grid*4
+				if obj.C.Pos.X < -setting.MapSize.X-lib.Grid*4 {
+					obj.C.Pos.X = -setting.MapSize.X - lib.Grid*4
 				}
-				if obj.Y > setting.MapSize.Y+lib.Grid*4 {
-					obj.Y = setting.MapSize.Y + lib.Grid*4
+				if obj.C.Pos.Y > setting.MapSize.Y+lib.Grid*4 {
+					obj.C.Pos.Y = setting.MapSize.Y + lib.Grid*4
 				}
-				if obj.Y < -setting.MapSize.Y-lib.Grid*4 {
-					obj.Y = -setting.MapSize.Y - lib.Grid*4
+				if obj.C.Pos.Y < -setting.MapSize.Y-lib.Grid*4 {
+					obj.C.Pos.Y = -setting.MapSize.Y - lib.Grid*4
 				}
 			}
 
@@ -223,7 +225,7 @@ func moveloop(ticker time.Ticker) {
 			objList := quadtree.Retrieve(obj)
 
 			for _, obj2 := range objList {
-				if math.Sqrt((obj.X-obj2.X)*(obj.X-obj2.X)+(obj.Y-obj2.Y)*(obj.Y-obj2.Y)) < obj.R+obj2.R {
+				if math.Sqrt((obj.C.Pos.X-obj2.C.Pos.X)*(obj.C.Pos.X-obj2.C.Pos.X)+(obj.C.Pos.Y-obj2.C.Pos.Y)*(obj.C.Pos.Y-obj2.C.Pos.Y)) < obj.C.R+obj2.C.R {
 					if lib.CollisionEvent(obj, obj2) {
 						server.BroadcastToRoom("/", "/", "collision", obj.ID)
 						server.BroadcastToRoom("/", "/", "collision", obj2.ID)
@@ -255,10 +257,10 @@ func sendUpdates(ticker time.Ticker) {
 			})
 			var visibleObj []map[string]interface{}
 			for _, obj := range objList {
-				if obj.X < u.Camera.Pos.X+1280/u.Camera.Z+obj.R &&
-					obj.X > u.Camera.Pos.X+1280/u.Camera.Z-obj.R &&
-					obj.Y < u.Camera.Pos.Y+720/u.Camera.Z+obj.R &&
-					obj.Y > u.Camera.Pos.Y+720/u.Camera.Z-obj.R && obj.Opacity > 0 {
+				if obj.C.Pos.X < u.Camera.Pos.X+1280/u.Camera.Z+obj.C.R &&
+					obj.C.Pos.X > u.Camera.Pos.X+1280/u.Camera.Z-obj.C.R &&
+					obj.C.Pos.Y < u.Camera.Pos.Y+720/u.Camera.Z+obj.C.R &&
+					obj.C.Pos.Y > u.Camera.Pos.Y+720/u.Camera.Z-obj.C.R && obj.Opacity > 0 {
 					visibleObj = append(visibleObj, obj.SocketObj())
 				}
 			}

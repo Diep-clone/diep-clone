@@ -17,7 +17,8 @@ type Circle struct {
 // Score is
 type Score struct {
 	Name  string
-	Type  string
+	Type  int
+	Color int
 	Score int
 }
 
@@ -39,14 +40,13 @@ func (sc *Scoreboard) Push(value Score) {
 type Object struct {
 	Owner     *interface{}
 	ID        int
-	Type      string
+	Type      int
+	Color     int
 	Team      string
 	Name      string
-	X         float64
-	Y         float64
+	C         Circle
 	Dx        float64
 	Dy        float64
-	R         float64
 	Dir       float64
 	Exp       int
 	H         float64
@@ -75,7 +75,8 @@ var objID int = 0
 // NewObject is
 func NewObject(
 	own interface{},
-	t string,
+	t int,
+	c int,
 	team string,
 	name string,
 	x float64,
@@ -95,10 +96,10 @@ func NewObject(
 	o.ID = objID
 	objID++
 	o.Type = t
+	o.Color = c
 	o.Team = team
 	o.Name = name
-	o.X = x
-	o.Y = y
+	o.C = Circle{Pos{x, y}, r}
 	o.Dx = 0
 	o.Dy = 0
 	o.Mh = h
@@ -132,9 +133,10 @@ func (o Object) SocketObj() map[string]interface{} {
 	return map[string]interface{}{
 		"id":        o.ID,
 		"type":      o.Type,
-		"x":         floor(o.X, 2),
-		"y":         floor(o.Y, 2),
-		"r":         floor(o.R, 1),
+		"color":     o.Color,
+		"x":         floor(o.C.Pos.X, 2),
+		"y":         floor(o.C.Pos.Y, 2),
+		"r":         floor(o.C.R, 1),
 		"dir":       floor(o.Dir, 2),
 		"maxhealth": floor(o.Mh, 1),
 		"health":    floor(o.H, 1),
