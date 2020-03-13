@@ -1,10 +1,12 @@
 import '../styles/index.css';
 
-import io from 'socket.io-client';
 import System from './system';
-/*
-const socket = io();
 
+const system = new System();
+
+system.loop();
+
+/*
 const run = (e) => {
     console.log(e ,15)
     if (e.keyCode == 13) { // 13 = Enter Key 

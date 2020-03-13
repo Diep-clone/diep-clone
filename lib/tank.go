@@ -5,7 +5,7 @@ import (
 )
 
 func (obj *Object) Tank() {
-	obj.Type = 0
+	obj.Type = "Tank"
 	obj.Event = map[string]interface{}{
 		"Tick": func(obj *Object) { // obj
 			p := *obj.Owner
@@ -54,7 +54,7 @@ func (obj *Object) Basic() {
 			obj,
 			*NewObject(
 				obj,
-				0,
+				"Bullet",
 				2,
 				"ffa",
 				"",

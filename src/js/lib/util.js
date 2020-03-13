@@ -59,7 +59,5 @@ export const RGB = function(r, g, b) {
         
         return new RGB(r,g,b);
     }
-
-    
 }
 

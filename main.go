@@ -57,7 +57,7 @@ func main() {
 		users[s.ID()] = lib.NewPlayer(s.ID())
 		users[s.ID()].ControlObject = lib.NewObject(
 			users[s.ID()],
-			0,
+			"",
 			3,
 			"ffa",
 			name,
@@ -255,18 +255,18 @@ func sendUpdates(ticker time.Ticker) {
 				X2: u.Camera.Pos.X - 1280/u.Camera.Z,
 				Y2: u.Camera.Pos.Y - 720/u.Camera.Z,
 			})
-			var visibleObj []map[string]interface{}
+			var visibleObject = []map[string]interface{}{}
 			for _, obj := range objList {
 				if obj.C.Pos.X < u.Camera.Pos.X+1280/u.Camera.Z+obj.C.R &&
 					obj.C.Pos.X > u.Camera.Pos.X+1280/u.Camera.Z-obj.C.R &&
 					obj.C.Pos.Y < u.Camera.Pos.Y+720/u.Camera.Z+obj.C.R &&
 					obj.C.Pos.Y > u.Camera.Pos.Y+720/u.Camera.Z-obj.C.R && obj.Opacity > 0 {
-					visibleObj = append(visibleObj, obj.SocketObj())
+					visibleObject = append(visibleObject, obj.SocketObj())
 				}
 			}
 
 			if s, ok := sockets[u.ID].(socketio.Conn); ok {
-				s.Emit("objectList", visibleObj)
+				s.Emit("objectList", visibleObject)
 				s.Emit("playerSet", map[string]interface{}{
 					"level":    u.ControlObject.Variable["Level"],
 					"camera":   u.Camera,

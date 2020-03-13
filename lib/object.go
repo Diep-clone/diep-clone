@@ -17,7 +17,7 @@ type Circle struct {
 // Score is
 type Score struct {
 	Name  string
-	Type  int
+	Type  string
 	Color int
 	Score int
 }
@@ -40,7 +40,7 @@ func (sc *Scoreboard) Push(value Score) {
 type Object struct {
 	Owner     *interface{}
 	ID        int
-	Type      int
+	Type      string
 	Color     int
 	Team      string
 	Name      string
@@ -75,7 +75,7 @@ var objID int = 0
 // NewObject is
 func NewObject(
 	own interface{},
-	t int,
+	t string,
 	c int,
 	team string,
 	name string,

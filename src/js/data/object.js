@@ -1,17 +1,17 @@
 import { RGB } from '../lib/util';
-import { colorList } from '../data/index';
+import { colorList, gunList } from '../data/index';
 import { drawC, drawObj } from '../lib/draw';
+import { Socket, System } from '../system';
 
-export const Obj = function(id, name, type, color, guns) {
+export const Obj = function(id) {
     'use strict';
 
     this.id = id;
 
-    this.name = name;
-    this.guns = guns;
-
-    this.type = type;
-    this.color = color;
+    this.name;
+    this.type;
+    this.guns;
+    this.color;
 
     this.x;
     this.y;
@@ -26,48 +26,64 @@ export const Obj = function(id, name, type, color, guns) {
     this.cv = document.createElement("canvas");
     this.ctx = cv.getContext("2d");
 
-    this.r = 0;
-    this.w = 0;
+    this.hitTime = 0;
 
     this.Animate = function (tick) {
         if (this.isDead){
             this.opacity = Math.max(this.opacity - 0.13 * tick * 0.05, 0);
             this.radius += 0.4 * tick * 0.05;
             if (this.opacity == 0){
-                //system.removeObject(this.id);
+                System.RemoveObject(this.id);
                 return;
             }
         }
+        this.guns.forEach((g) => g.Animate());
+
+        this.hitTime = Math.max(this.hitTime - tick,0);
     }
 
-    this.ObjChange = function (name, type, color, guns) {
-        this.name = name;
-        this.guns = guns;
-    
-        this.type = type;
-        this.color = color;
-    }
-    
-    this.ObjSet = function (x, y, r, dir, h, mh, a, score, isDead) {
-        this.x = x;
-        this.y = y;
-        this.r = r;
-        this.dir = dir;
-        this.h = h;
-        this.mh = mh;
-        this.a = a;
-        this.score = score;
-        this.isDead = isDead;
-    }
+    Socket.on("collision", function (id) {
+        if (this.id === id){
+            this.guns.forEach((g) => g.Hit());
+            this.hitTime = 100;
+        }
+    }.bind(this));
+
+    this.ObjSet = function (data) {
+        if (data.id === this.id) {
+            this.x = data.x;
+            this.y = data.y;
+            this.r = data.r;
+            this.dir = data.dir;
+            this.h = data.h;
+            this.mh = data.mh;
+            this.a = data.a;
+            this.score = data.score;
+            this.isDead = data.isDead;
+
+            this.name = data.name;
+            if (this.type !== data.type){
+                this.guns = gunList[data.type];
+            }
+            this.type = data.type;
+            this.color = data.color;
+        }
+    };
 
     this.DrawSet = function (camera) {
+        let c = colorList[this.color];
+        if (this.hitTime > 60) {
+            c.getLightRGB(1 - (this.hitTime - 60) / 40);
+        } else if (this.hitTime > 0) {
+            c.getRedRGB(1 - this.hitTime / 60);
+        }
         return {
             x: this.x - camera.x,
             y: this.y - camera.y,
             z: camera.z,
             t: this.type,
-            c: colorList[this.color],
-            r: this.radius,
+            c: c,
+            r: this.r,
             dir: this.dir,
             o: this.opacity,
         };
@@ -165,8 +181,8 @@ export const Obj = function(id, name, type, color, guns) {
         ctx.restore();*/
     }
 
-    this.hpBarP = 1;
-    this.hpBarO = 0;
+    this.hpBarP = 1; // hp bar Percent
+    this.hpBarO = 0; // hp bar Opacity
 
     this.DrawHPBar = function(ctx, camera) {
         let healthPercent = this.health/this.maxHealth;
