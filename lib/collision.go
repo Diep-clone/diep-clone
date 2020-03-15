@@ -104,7 +104,7 @@ func NewQuadtree(x float64, y float64, w float64, h float64, level int) *Quadtre
 		h:       h,
 		level:   level,
 		objects: []*Object{},
-		nodes:   []Quadtree{},
+		nodes:   nil,
 	}
 	return &q
 }

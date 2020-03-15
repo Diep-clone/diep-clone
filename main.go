@@ -268,13 +268,14 @@ func sendUpdates(ticker time.Ticker) {
 			if s, ok := sockets[u.ID].(socketio.Conn); ok {
 				s.Emit("objectList", visibleObject)
 				s.Emit("playerSet", map[string]interface{}{
-					"level":    u.ControlObject.Variable["Level"],
-					"camera":   u.Camera,
-					"isRotate": u.ControlObject.IsCanDir,
-					"stat":     u.ControlObject.Variable["Stat"],
-					"stats":    u.ControlObject.Variable["Stats"],
-					"maxstats": u.ControlObject.Variable["MaxStats"],
-				})
+					"id":          u.ControlObject.ID,
+					"level":       u.ControlObject.Variable["Level"],
+					"sight":       u.ControlObject.Variable["Sight"],
+					"isCanRotate": u.ControlObject.IsCanDir,
+					"stat":        u.ControlObject.Variable["Stat"],
+					"stats":       u.ControlObject.Variable["Stats"],
+					"maxstats":    u.ControlObject.Variable["MaxStats"],
+				}, u.Camera)
 			}
 		}
 		server.BroadcastToRoom("/", "/", "scoreboard", scoreboard)

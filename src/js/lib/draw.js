@@ -1,4 +1,4 @@
-import { colorList, backgroundColor } from '../data/index'
+import { backgroundColor } from '../data/index'
 
 export const drawCircle = function (ctx, x, y, z, r) {
     ctx.beginPath();

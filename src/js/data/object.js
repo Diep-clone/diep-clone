@@ -150,11 +150,6 @@ export const Obj = function(id) {
         }
     }
 
-    this.DrawStatus = function (ctx, camera) {
-        if (this.name) this.drawName(ctx, camera);
-        this.drawHPBar(ctx, camera);
-    }
-
     this.DrawName = function (ctx, camera) {
         /*ctx.save();
 
