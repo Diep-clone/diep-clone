@@ -1,7 +1,7 @@
 import { RGB } from '../lib/util';
 import { colorList, gunList } from '../data/index';
 import { drawC, drawObj } from '../lib/draw';
-import { Socket, System } from '../system';
+import System, { Socket } from '../system';
 
 export const Obj = function(id) {
     'use strict';

@@ -4,7 +4,7 @@ import io from 'socket.io-client';
 import { Obj } from './data/object';
 import { drawBackground } from './lib/draw';
 
-export const Socket = io();
+export var Socket = io();
 
 export default class System {
     constructor() {
