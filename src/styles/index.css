@@ -17,6 +17,7 @@ html, body, #canvas {
 
 #canvas {
 	position: absolute;
+
 	top: 0;
 	left: 0;
 	right: 0;
@@ -26,10 +27,53 @@ html, body, #canvas {
 	cursor: default;
 }
 
+.name-input-container {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+
+	width: 100vw;
+	height: 93vh;
+
+	animation-duration: 0.75s;
+	animation-name: slide-to-center;
+	position: relative;
+	z-index: 2;
+
+	/* height: 90vh; */
+}
+
+.name-input-container > .start {
+	font-size: 40px;
+	font-weight: bold;
+	color: white;
+
+	text-shadow:
+	-2px -2px 0 #000000,
+	2px -2px 0 #000000,
+	-2px 2px 0 #000000,
+	2px 2px 0 #000000;  
+}
+
+.name-input-container > .end {
+	margin-top: 4px;
+
+	font-size: 20px;
+	font-weight: bold;
+	color: white;
+
+	text-shadow:
+	-1.25px -1.25px 0 #000000,
+	1.25px -1.25px 0 #000000,
+	-1.25px 1.25px 0 #000000,
+	1.25px 1.25px 0 #000000;  
+}
 
 .name-input {
 	width: 493.568px;
 	height: 64px;
+
 	line-height: 57.6px;
 	
 	font-size: 57.6px;
@@ -38,9 +82,22 @@ html, body, #canvas {
 	padding-left: 5px;
 	padding-right: 5px;
 
-	border: 6px solid black;
+	border: 8px solid black;
+	border-radius: 5px;
 
 	margin : 0 auto;
 	display: block;
 	/* border-color: 10px solid black; */
+}
+
+/* name input animation */
+
+@keyframes slide-to-center {
+	from {
+		height: 0vh;
+	}
+
+	to {
+		height: 90vh;
+	}
 }
