@@ -27,6 +27,7 @@ export default class System {
             "gameMode": "sandbox",
             "gameSet": "Loading",
         };
+        
 
         this.playerSetting = {
             "id": -1,
