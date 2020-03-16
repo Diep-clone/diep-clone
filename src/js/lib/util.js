@@ -34,7 +34,7 @@ export const RGB = function(r, g, b) {
         }
     }
     
-    this.getRGB = () => {return `rgb(${Math.round(this.r)}, ${Math.round(this.g)}',${Math.round(this.b)})`;}
+    this.getRGB = () => {return `rgb(${Math.round(this.r)}, ${Math.round(this.g)}, ${Math.round(this.b)})`;}
 
     this.getDarkRGB = (per = 0.25) => {
         let r = -this.r*per + this.r;

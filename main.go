@@ -15,7 +15,7 @@ import (
 
 var setting lib.Setting = lib.ReadSetting()
 
-var sockets = make(map[string]interface{})
+var sockets = map[string]socketio.Conn{}
 var objects []*lib.Object
 var users = make(map[string]*lib.Player)
 
@@ -53,7 +53,7 @@ func main() {
 			name = ""
 		}
 
-		sockets[s.ID()] = nil
+		sockets[s.ID()] = s
 		users[s.ID()] = lib.NewPlayer(s.ID())
 		users[s.ID()].ControlObject = lib.NewObject(
 			users[s.ID()],
@@ -74,6 +74,7 @@ func main() {
 			false,
 			false,
 		)
+		users[s.ID()].ControlObject.Tank()
 		users[s.ID()].ControlObject.Basic()
 		objects = append(objects, users[s.ID()].ControlObject)
 
@@ -165,11 +166,8 @@ func moveloop(ticker time.Ticker) {
 		for _, u := range users {
 
 			if obj := u.ControlObject; obj != nil {
-				for key, _ := range obj.Event {
-					if f, ok := u.ControlObject.Event["KeyPress"].(map[string]func())[key]; ok {
-						f()
-					}
-				}
+				u.Camera.Pos = obj.C.Pos
+				u.Camera.Z = 16 / 9 // * math.Pow(0.995, obj.Variable["Level"].(float64)) / obj.Variable["Sight"].(float64)
 			}
 
 			scoreboard.Push(lib.Score{

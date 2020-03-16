@@ -21,14 +21,7 @@ func (obj *Object) Tank() {
 				obj.H -= obj.Mh / 60 / 10
 			}
 		},
-		"KeyDown": nil, // obj, keyType
-		"KeyPress": map[string]func(obj *Object, value interface{}){
-			"moveRotate": func(obj *Object, value interface{}) {
-				v := value.(float64)
-				obj.Dx += math.Cos(v) * obj.Speed
-				obj.Dy += math.Sin(v) * obj.Speed
-			},
-		}, // obj, keyType
+		"KeyDown":   nil, // obj, keyType
 		"KeyUp":     nil, // obj, keyType
 		"Collision": nil, // obj, enemyObj
 		"GetDamage": nil, // obj, enemyObj, damage

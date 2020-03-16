@@ -25,9 +25,9 @@ export default class System {
 
         this.gameSetting = {
             "gameMode": "sandbox",
-            "gameSet": "Loading",
+            "gameSet": "Gaming",
         };
-        
+
 
         this.playerSetting = {
             "id": -1,
@@ -50,12 +50,18 @@ export default class System {
 
         window.input = data.input;
 
+        Socket.emit("login");
+
         Socket.on("playerSet", function (data, camera) {
+            console.log(camera);
             this.playerSetting = data;
-            this.camera = camera;
+            this.camera.x = camera.Pos.Y;
+            this.camera.y = camera.Pos.Y;
+            this.camera.z = camera.Z;
         });
 
         Socket.on("objectList", function (list) {
+            //console.log(list);
             list.forEach((obj) => {
                 let isObjEnable = false;
                 this.objectList.forEach((obi) => {
@@ -79,13 +85,11 @@ export default class System {
         const tick = Date.now() - this.lastTime;
         this.lastTime = Date.now();
 
-        console.log(this.playerSetting);
-
         switch (this.gameSetting.gameSet){
             case "Connecting":
                 break;
             case "Gaming":
-                drawBackground(this.ctx, this.camera.x, this.camera.y, this.camera.z, this.cv.clientWidth, this.cv.clientWidth, []);
+                drawBackground(this.ctx, this.camera.x, this.camera.y, this.camera.z, this.cv.width, this.cv.height, [{x:-100,y:-100,w:200,h:200}]);
 
                 this.objectList.forEach((o) => {
                     o.Animite(tick);
