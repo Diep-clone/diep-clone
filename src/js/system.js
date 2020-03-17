@@ -24,8 +24,8 @@ export default class System {
         this.uiList = [];
 
         this.gameSetting = {
-            "gameMode": "sandbox",
-            "gameSet": "Gaming",
+            "gamemode": "sandbox",
+            "gameset": "Gaming",
         };
 
         this.playerSetting = {
@@ -38,6 +38,10 @@ export default class System {
             "maxStats": [],
         };
 
+        this.inputSetting = {
+            "moveVector": {x:0,y:0},
+        }
+
         this.lastTime = Date.now();
         this.isControlRotate = true;
 
@@ -48,7 +52,52 @@ export default class System {
             uiz: 1,
         }
 
-        window.input = data.input;
+        this.keys = {};
+
+        window.input = {
+            blur:function(){},
+            execute:function(v){},
+            flushInputHooks: function(){},
+            get_convar:function(key){},
+            keyDown: function(){
+                if (this.keys[arguments[0]]) return;
+                this.keys[arguments[0]] = true;
+                switch (arguments[0]){
+                    case 37:
+                        break;
+                    case 38:
+                        break;
+                    case 39:
+                        break;
+                    case 40:
+                        break;
+                    default:
+                        break;
+                }
+            },
+            keyUp:function(){
+                if (!this.keys[arguments[0]]) return;
+                this.keys[arguments[0]] = false;
+                switch (arguments[0]){
+                    case 37:
+                        break;
+                    case 38:
+                        break;
+                    case 39:
+                        break;
+                    case 40:
+                        break;
+                    default:
+                        break;
+                }
+            },
+            mouse:function(){},
+            prevent_right_click: function(){},
+            print_convar_help: function(){},
+            set_convar: function(key,value){},
+            should_prevent_unload: function(){},
+            wheel: function(){},
+        };
 
         Socket.emit("login");
 
@@ -67,12 +116,9 @@ export default class System {
 
             this.camera.x = camera.Pos.X - this.cv.width / 2 / this.camera.uiz / camera.Z;
             this.camera.y = camera.Pos.Y - this.cv.height / 2 / this.camera.uiz / camera.Z;
-
-            console.log(this.camera);
         }.bind(this));
 
         Socket.on("objectList", function (list) {
-            console.log(list);
             list.forEach((obj) => {
                 let isObjEnable = false;
                 this.objectList.forEach((obi) => {
@@ -104,7 +150,7 @@ export default class System {
         this.hpcv.height =
         this.uicv.height = this.cv.height;
 
-        switch (this.gameSetting.gameSet){
+        switch (this.gameSetting.gameset){
             case "Connecting":
                 break;
             case "Gaming":

@@ -87,18 +87,3 @@ export const expList = [
     21849,
     23536
 ];
-
-export const input = {
-    blur:function(){},
-    execute:function(v){},
-    flushInputHooks: function(){},
-    get_convar:function(key){},
-    keyDown: function(){},
-    keyUp:function(){},
-    mouse:function(){},
-    prevent_right_click: function(){},
-    print_convar_help: function(){},
-    set_convar: function(key,value){},
-    should_prevent_unload: function(){},
-    wheel: function(){},
-};

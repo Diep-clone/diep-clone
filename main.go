@@ -114,6 +114,12 @@ func main() {
 		}
 	})
 
+	server.OnEvent("/", "rotate", func(s socketio.Conn, rotate float64) {
+		if u, ok := users[s.ID()]; ok {
+			u.SetKey("moveRotate", rotate)
+		}
+	})
+
 	server.OnEvent("/", "mousemove", func(s socketio.Conn, mouse struct {
 		x float64
 		y float64
