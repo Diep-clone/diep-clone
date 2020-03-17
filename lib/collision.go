@@ -110,7 +110,7 @@ func NewQuadtree(x float64, y float64, w float64, h float64, level int) *Quadtre
 }
 
 // split is
-func (q Quadtree) split() {
+func (q *Quadtree) split() {
 	xx := [4]float64{0, 1, 0, 1}
 	yy := [4]float64{0, 0, 1, 1}
 	for i := 0; i < 4; i++ {
@@ -158,16 +158,14 @@ func (q Quadtree) getIndex(area interface{}) int {
 }
 
 // Insert insert quadtree
-func (q Quadtree) Insert(obj *Object) {
-	var i, index = 0, -1
+func (q *Quadtree) Insert(obj *Object) {
+	var index = -1
 
-	// obj가 this의 관할이 아닐 때
 	if obj.C.Pos.X+obj.C.R < q.x || obj.C.Pos.X-obj.C.R > q.x+q.w ||
 		obj.C.Pos.Y+obj.C.R < q.y || obj.C.Pos.Y-obj.C.R > q.y+q.h {
 		return
 	}
 
-	// 자식 노드가 있을 때
 	if q.nodes != nil {
 		index = q.getIndex(obj)
 		if index != -1 {
@@ -183,7 +181,7 @@ func (q Quadtree) Insert(obj *Object) {
 			q.split()
 		}
 
-		for i < len(q.objects) {
+		for i := 0; i < len(q.objects); {
 			index = q.getIndex(q.objects[i])
 			if index != -1 {
 				q.nodes[index].Insert(q.objects[i])
@@ -206,7 +204,6 @@ func (q Quadtree) Retrieve(area interface{}) []*Object {
 				returnObject = append(returnObject, obj)
 			}
 		}
-
 	} else {
 		returnObject = q.objects
 	}
@@ -229,7 +226,7 @@ func (q Quadtree) Retrieve(area interface{}) []*Object {
 }
 
 // Clear is
-func (q Quadtree) Clear() {
+func (q *Quadtree) Clear() {
 	q.objects = nil
 
 	if q.nodes != nil {

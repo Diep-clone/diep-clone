@@ -1,4 +1,5 @@
 import { backgroundColor } from '../data/index'
+import { RGB } from './util';
 
 export const drawCircle = function (ctx, x, y, z, r) {
     ctx.beginPath();
@@ -54,6 +55,7 @@ export const drawObj = function (ctx, x, y, z, r, dir, t, o, c) {
 }
 
 export const drawBackground = function (ctx, x, y, z, w, h, area) {
+    ctx.save();
     drawC(ctx, backgroundColor.getDarkRGB());
     ctx.fillRect(0,0,w,h);
     drawC(ctx, backgroundColor);
@@ -77,4 +79,5 @@ export const drawBackground = function (ctx, x, y, z, w, h, area) {
     ctx.globalAlpha = 0.1;
     ctx.lineWidth = 0.4;
     ctx.stroke();
+    ctx.restore();
 }

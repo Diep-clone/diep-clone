@@ -253,12 +253,13 @@ func sendUpdates(ticker time.Ticker) {
 				X2: u.Camera.Pos.X - 1280/u.Camera.Z,
 				Y2: u.Camera.Pos.Y - 720/u.Camera.Z,
 			})
+			log.Println(objList)
 			var visibleObject = []map[string]interface{}{}
 			for _, obj := range objList {
 				if obj.C.Pos.X < u.Camera.Pos.X+1280/u.Camera.Z+obj.C.R &&
-					obj.C.Pos.X > u.Camera.Pos.X+1280/u.Camera.Z-obj.C.R &&
+					obj.C.Pos.X > u.Camera.Pos.X-1280/u.Camera.Z-obj.C.R &&
 					obj.C.Pos.Y < u.Camera.Pos.Y+720/u.Camera.Z+obj.C.R &&
-					obj.C.Pos.Y > u.Camera.Pos.Y+720/u.Camera.Z-obj.C.R && obj.Opacity > 0 {
+					obj.C.Pos.Y > u.Camera.Pos.Y-720/u.Camera.Z-obj.C.R && obj.Opacity > 0 {
 					visibleObject = append(visibleObject, obj.SocketObj())
 				}
 			}

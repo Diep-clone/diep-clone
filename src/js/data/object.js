@@ -10,7 +10,7 @@ export const Obj = function(id) {
 
     this.name;
     this.type;
-    this.guns;
+    this.guns = [];
     this.color;
 
     this.x;
@@ -24,7 +24,7 @@ export const Obj = function(id) {
     this.isDead;
 
     this.cv = document.createElement("canvas");
-    this.ctx = cv.getContext("2d");
+    this.ctx = this.cv.getContext("2d");
 
     this.hitTime = 0;
 
@@ -118,11 +118,13 @@ export const Obj = function(id) {
     this.Draw = function (ctx,camera) {
         if (this.guns.length>0){
             var {ctxx, x, y, z, t, c, r, dir, o} = this.SetCanvasSize(camera);
+            ctxx.save();
             this.guns.forEach((g) => {
                 if (!g.isFront) {
                     g.Draw(ctxx, camera, x, y, r, dir);
                 }
             });
+            drawC(ctxx,c,c.getDarkRGB());
             drawObj(ctxx,
                 x + s.x * z - x - Math.floor(s.x * z - x),
                 y + s.y * z - y - Math.floor(s.y * z - y),
@@ -132,21 +134,25 @@ export const Obj = function(id) {
                     g.Draw(ctxx, camera, x, y, r, dir);
                 }
             });
+            ctxx.restore();
             var s = this.DrawSet(camera);
             ctx.drawImage(this.cv,Math.floor(s.x * z - x),Math.floor(s.y * z - y));
         } else {
             var {x, y, z, t, c, r, dir, o} = this.DrawSet(camera);
+            ctx.save();
             this.guns.forEach((g) => {
                 if (!g.isFront) {
-                    g.Draw(ctxx, camera, x, y, r, dir);
+                    g.Draw(ctx, camera, x, y, r, dir);
                 }
             });
+            drawC(ctx,c,c.getDarkRGB());
             drawObj(ctx, x, y, z, r, dir, t, o, c);
             this.guns.forEach((g) => {
                 if (g.isFront) {
-                    g.Draw(ctxx, camera, x, y, r, dir);
+                    g.Draw(ctx, camera, x, y, r, dir);
                 }
             });
+            ctx.restore();
         }
     }
 
@@ -200,7 +206,7 @@ export const Obj = function(id) {
             ctx.moveTo((x + r) * z, (y + r * 5 / 3) * z);
             ctx.lineTo((x - r) * z, (y + r * 5 / 3) * z);
             ctx.closePath();
-            drawC(ctx,"#444444");
+            drawC(ctx, new RGB("#444444"));
             ctx.lineWidth = 4.1 * z;
             ctx.stroke();
         
@@ -208,7 +214,7 @@ export const Obj = function(id) {
             ctx.moveTo((x - r) * z, (y + r * 5 / 3) * z);
             ctx.lineTo((x - r + this.hpBarP * r * 2) * z, (y + r * 5 / 3) * z);
             ctx.closePath();
-            drawC(ctx,"#86e27f");
+            drawC(ctx, new RGB("#86e27f"));
             ctx.lineWidth = 2.6 * z;
             ctx.stroke();
 

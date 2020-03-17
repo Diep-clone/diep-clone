@@ -109,6 +109,7 @@ func NewObject(
 	o.Speed = sp
 	o.Bound = bo
 	o.Stance = st
+	o.Opacity = 1
 	o.Guns = []Gun{}
 	o.Event = event
 	o.Variable = variable

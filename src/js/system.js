@@ -28,7 +28,6 @@ export default class System {
             "gameSet": "Gaming",
         };
 
-
         this.playerSetting = {
             "id": -1,
             "level": 0,
@@ -46,6 +45,7 @@ export default class System {
             x: 0,
             y: 0,
             z: 2,
+            uiz: 1,
         }
 
         window.input = data.input;
@@ -53,15 +53,26 @@ export default class System {
         Socket.emit("login");
 
         Socket.on("playerSet", function (data, camera) {
-            console.log(camera);
             this.playerSetting = data;
-            this.camera.x = camera.Pos.Y;
-            this.camera.y = camera.Pos.Y;
-            this.camera.z = camera.Z;
-        });
+
+            if (this.cv.width <= this.cv.height/9*16){
+                this.camera.z = this.cv.height / 900;
+            } else {
+                this.camera.z = this.cv.width / 1600;
+            } 
+
+            this.camera.uiz = this.camera.z;
+
+            this.camera.z *= camera.Z;
+
+            this.camera.x = camera.Pos.X - this.cv.width / 2 / this.camera.uiz / camera.Z;
+            this.camera.y = camera.Pos.Y - this.cv.height / 2 / this.camera.uiz / camera.Z;
+
+            console.log(this.camera);
+        }.bind(this));
 
         Socket.on("objectList", function (list) {
-            //console.log(list);
+            console.log(list);
             list.forEach((obj) => {
                 let isObjEnable = false;
                 this.objectList.forEach((obi) => {
@@ -76,7 +87,7 @@ export default class System {
                     this.objectList.push(obi);
                 }
             });
-        });
+        }.bind(this));
     }
 
     insertComma = (number) => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -85,14 +96,22 @@ export default class System {
         const tick = Date.now() - this.lastTime;
         this.lastTime = Date.now();
 
+        this.namecv.width =
+        this.hpcv.width =
+        this.uicv.width = this.cv.width;
+
+        this.namecv.height =
+        this.hpcv.height =
+        this.uicv.height = this.cv.height;
+
         switch (this.gameSetting.gameSet){
             case "Connecting":
                 break;
             case "Gaming":
-                drawBackground(this.ctx, this.camera.x, this.camera.y, this.camera.z, this.cv.width, this.cv.height, [{x:-100,y:-100,w:200,h:200}]);
+                drawBackground(this.ctx, this.camera.x, this.camera.y, this.camera.z, this.cv.width, this.cv.height, [{x:-1000,y:-1000,w:2000,h:2000}]);
 
                 this.objectList.forEach((o) => {
-                    o.Animite(tick);
+                    o.Animate(tick);
                     o.Draw(this.ctx, this.camera);
                     o.DrawName(this.namectx, this.camera);
                     o.DrawHPBar(this.hpctx, this.camera);
@@ -115,25 +134,5 @@ export default class System {
                 this.objectList.splice(i,1);
             }
         }
-    }
-
-    Resize() {
-        this.cv.width =
-        this.namecv.width =
-        this.hpcv.width =
-        this.uicv.width = window.innerWidth * window.devicePixelRatio;
-
-        this.cv.height =
-        this.namecv.height =
-        this.hpcv.height =
-        this.uicv.height = window.innerHeight * window.devicePixelRatio;
-
-        this.hpctx.lineCap = this.uictx.lineCap = "round";
-        this.hpctx.lineJoin = this.uictx.lineJoin = "round";
-
-        this.ctx.imageSmoothingEnabled = 
-        this.namectx.imageSmoothingEnabled = 
-        this.hpctx.imageSmoothingEnabled = 
-        this.uictx.imageSmoothingEnabled = false;
     }
 }
