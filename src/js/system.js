@@ -62,34 +62,70 @@ export default class System {
             keyDown: function(){
                 if (this.keys[arguments[0]]) return;
                 this.keys[arguments[0]] = true;
+                let key = "";
                 switch (arguments[0]){
                     case 37:
+                        this.input.moveVector.x-=1;
+                        key = "moveVector";
                         break;
                     case 38:
+                        this.input.moveVector.y-=1;
+                        key = "moveVector";
                         break;
                     case 39:
+                        this.input.moveVector.x+=1;
+                        key = "moveVector";
                         break;
                     case 40:
+                        this.input.moveVector.y+=1;
+                        key = "moveVector";
                         break;
                     default:
                         break;
                 }
+                let value = true;
+                switch (key){
+                    case "moveVector":
+                        value = Math.atan2(this.input.moveVector.y,this.input.moveVector.x);
+                        break;
+                    default:
+                        break;
+                }
+                Socket.emit(key, value);
             },
             keyUp:function(){
                 if (!this.keys[arguments[0]]) return;
                 this.keys[arguments[0]] = false;
+                let key = "";
                 switch (arguments[0]){
                     case 37:
+                        this.input.moveVector.x+=1;
+                        key = "moveVector";
                         break;
                     case 38:
+                        this.input.moveVector.y+=1;
+                        key = "moveVector";
                         break;
                     case 39:
+                        this.input.moveVector.x-=1;
+                        key = "moveVector";
                         break;
                     case 40:
+                        this.input.moveVector.y-=1;
+                        key = "moveVector";
                         break;
                     default:
                         break;
                 }
+                let value = false;
+                switch (key){
+                    case "moveVector":
+                        value = Math.atan2(this.input.moveVector.y,this.input.moveVector.x);
+                        break;
+                    default:
+                        break;
+                }
+                Socket.emit(key, value);
             },
             mouse:function(){},
             prevent_right_click: function(){},

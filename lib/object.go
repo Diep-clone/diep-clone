@@ -38,7 +38,8 @@ func (sc *Scoreboard) Push(value Score) {
 
 // Object is
 type Object struct {
-	Owner     *interface{}
+	Controler *Player
+	Owner     *Object
 	ID        int
 	Type      string
 	Color     int
@@ -58,8 +59,6 @@ type Object struct {
 	Stance    float64
 	Opacity   float64
 	Guns      []Gun
-	Event     map[string]interface{}
-	Variable  map[string]interface{}
 	SpawnTime int64
 	HitTime   int64
 	DeadTime  int64
@@ -74,7 +73,8 @@ var objID int = 0
 
 // NewObject is
 func NewObject(
-	own interface{},
+	con *Player,
+	own *Object,
 	t string,
 	c int,
 	team string,
@@ -87,12 +87,11 @@ func NewObject(
 	sp float64, // speed
 	bo float64, // bound
 	st float64, // stance
-	event map[string]interface{},
-	variable map[string]interface{},
 	isBorder bool,
 	isOwnCol bool) *Object {
 	o := Object{}
-	o.Owner = &own
+	o.Controler = con
+	o.Owner = own
 	o.ID = objID
 	objID++
 	o.Type = t
@@ -111,8 +110,6 @@ func NewObject(
 	o.Stance = st
 	o.Opacity = 1
 	o.Guns = []Gun{}
-	o.Event = event
-	o.Variable = variable
 	o.SpawnTime = time.Now().Unix()
 	o.HitTime = time.Now().Unix()
 	o.DeadTime = -1
@@ -125,12 +122,6 @@ func NewObject(
 }
 
 func (o Object) SocketObj() map[string]interface{} {
-	var id interface{}
-	if obj, ok := (*o.Owner).(Player); ok {
-		id = obj.ID
-	} else if obj, ok := (*o.Owner).(Object); ok {
-		id = obj.ID
-	}
 	return map[string]interface{}{
 		"id":        o.ID,
 		"type":      o.Type,
@@ -144,7 +135,7 @@ func (o Object) SocketObj() map[string]interface{} {
 		"opacity":   floor(o.Opacity, 2),
 		"exp":       o.Exp,
 		"name":      o.Name,
-		"owner":     id,
+		"owner":     o.Owner.ID,
 		"isDead":    o.IsDead,
 	}
 }

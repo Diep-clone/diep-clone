@@ -14,7 +14,7 @@ type Player struct {
 	Mx            float64
 	My            float64
 	Camera        Camera
-	Keys          map[string]interface{}
+	MoveDir       float64
 	StartTime     int64
 	ControlObject *Object
 }
@@ -29,7 +29,6 @@ func NewPlayer(id string) *Player {
 		Pos: Pos{0, 0},
 		Z:   1,
 	}
-	p.Keys = map[string]interface{}{}
 	p.StartTime = time.Now().Unix()
 
 	return &p
@@ -39,15 +38,6 @@ func NewPlayer(id string) *Player {
 func (p *Player) SetMousePoint(x float64, y float64) {
 	p.Mx = x
 	p.My = y
-}
-
-// Player's key set
-func (p *Player) SetKey(key string, value interface{}) {
-	p.Keys[key] = value
-}
-
-func (p *Player) DisableKey(key string) {
-	delete(p.Keys, key)
 }
 
 func (p *Player) SetCamera() {

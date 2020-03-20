@@ -9,17 +9,18 @@ import (
 func CollisionEvent(a *Object, b *Object) bool {
 	dir := math.Atan2(a.C.Pos.Y-b.C.Pos.Y, a.C.Pos.Y-b.C.Pos.Y)
 
-	if a == *b.Owner || b == *a.Owner {
+	if a == b.Owner || b == a.Owner {
 		return false
 	}
 
-	if f, ok := a.Event["Collision"].(func(a *Object, b *Object)); ok {
-		f(a, b)
-	}
-	if f, ok := b.Event["Collision"].(func(a *Object, b *Object)); ok {
-		f(b, a)
-	}
-
+	/*
+		if f, ok := a.Event["Collision"].(func(a *Object, b *Object)); ok {
+			f(a, b)
+		}
+		if f, ok := b.Event["Collision"].(func(a *Object, b *Object)); ok {
+			f(b, a)
+		}
+	*/
 	a.Dx += math.Cos(dir) * math.Min(b.Bound*a.Stance, 6)
 	a.Dy += math.Sin(dir) * math.Min(b.Bound*a.Stance, 6)
 	b.Dx -= math.Cos(dir) * math.Min(a.Bound*b.Stance, 6)
@@ -45,29 +46,35 @@ func CollisionEvent(a *Object, b *Object) bool {
 	} else {
 		b.H -= a.Damage
 	}
-	if f, ok := a.Event["GetDamage"].(func(a *Object, b *Object)); ok {
-		f(a, b)
-	}
-	if f, ok := b.Event["GetDamage"].(func(a *Object, b *Object)); ok {
-		f(b, a)
-	}
-	if a.H < 0 {
-		a.H = 0
-		if f, ok := a.Event["DeadEvent"].(func(a *Object, b *Object)); ok {
+	/*
+		if f, ok := a.Event["GetDamage"].(func(a *Object, b *Object)); ok {
 			f(a, b)
 		}
-		if f, ok := b.Event["KillEvent"].(func(a *Object, b *Object)); ok {
+		if f, ok := b.Event["GetDamage"].(func(a *Object, b *Object)); ok {
 			f(b, a)
 		}
+	*/
+	if a.H < 0 {
+		a.H = 0
+		/*
+			if f, ok := a.Event["DeadEvent"].(func(a *Object, b *Object)); ok {
+				f(a, b)
+			}
+			if f, ok := b.Event["KillEvent"].(func(a *Object, b *Object)); ok {
+				f(b, a)
+			}
+		*/
 	}
 	if b.H < 0 {
 		b.H = 0
-		if f, ok := a.Event["DeadEvent"].(func(a *Object, b *Object)); ok {
-			f(b, a)
-		}
-		if f, ok := b.Event["KillEvent"].(func(a *Object, b *Object)); ok {
-			f(a, b)
-		}
+		/*
+			if f, ok := a.Event["DeadEvent"].(func(a *Object, b *Object)); ok {
+				f(b, a)
+			}
+			if f, ok := b.Event["KillEvent"].(func(a *Object, b *Object)); ok {
+				f(a, b)
+			}
+		*/
 	}
 
 	return true

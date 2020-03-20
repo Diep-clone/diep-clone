@@ -57,6 +57,7 @@ func main() {
 		users[s.ID()] = lib.NewPlayer(s.ID())
 		users[s.ID()].ControlObject = lib.NewObject(
 			users[s.ID()],
+			nil,
 			"",
 			3,
 			"ffa",
@@ -69,8 +70,6 @@ func main() {
 			0.07,
 			1,
 			1,
-			nil,
-			nil,
 			false,
 			false,
 		)
@@ -81,43 +80,12 @@ func main() {
 		log.Println("INFO > " + s.ID() + " Login")
 	})
 
-	server.OnEvent("/", "keyboard", func(s socketio.Conn, key string, enable bool, value interface{}) {
-		if u, ok := users[s.ID()]; ok {
-			if enable {
-				u.SetKey(key, value)
-				if obj := u.ControlObject; obj != nil {
-					if f, ok := u.ControlObject.Event["KeyDown"].(map[string]func())[key]; ok {
-						f()
-					}
-				}
-			} else {
-				u.DisableKey(key)
-				if obj := u.ControlObject; obj != nil {
-					if f, ok := u.ControlObject.Event["KeyUp"].(map[string]func())[key]; ok {
-						f()
-					}
-				}
-			}
-		}
+	server.OnEvent("/", "moveVector", func(s socketio.Conn, value float64) {
+		users[s.ID()].MoveDir = value
 	})
 
 	server.OnEvent("/", "stat", func(s socketio.Conn, n int) {
-		if u, ok := users[s.ID()]; ok {
-			if obj := u.ControlObject; obj != nil {
-				if obj.Variable["Stat"].(int) > 0 && obj.Variable["Stats"].([]int)[n] < obj.Variable["MaxStats"].([]int)[n] {
-					obj.Variable["Stats"].([]int)[n]++
-					if v, ok := obj.Variable["Stat"].(int); ok {
-						v--
-					}
-				}
-			}
-		}
-	})
 
-	server.OnEvent("/", "rotate", func(s socketio.Conn, rotate float64) {
-		if u, ok := users[s.ID()]; ok {
-			u.SetKey("moveRotate", rotate)
-		}
 	})
 
 	server.OnEvent("/", "mousemove", func(s socketio.Conn, mouse struct {
@@ -222,9 +190,11 @@ func moveloop(ticker time.Ticker) {
 
 			imMh := obj.Mh
 
-			if f, ok := obj.Event["Tick"].(func(obj *lib.Object)); !obj.IsDead && ok {
-				f(obj)
-			}
+			/*
+				if f, ok := obj.Event["Tick"].(func(obj *lib.Object)); !obj.IsDead && ok {
+					f(obj)
+				}
+			*/
 
 			objList := quadtree.Retrieve(obj)
 
@@ -274,12 +244,12 @@ func sendUpdates(ticker time.Ticker) {
 				s.Emit("objectList", visibleObject)
 				s.Emit("playerSet", map[string]interface{}{
 					"id":          u.ControlObject.ID,
-					"level":       u.ControlObject.Variable["Level"],
-					"sight":       u.ControlObject.Variable["Sight"],
+					"level":       1,      // u.ControlObject.Variable["Level"],
+					"sight":       16 / 9, // u.ControlObject.Variable["Sight"],
 					"isCanRotate": u.ControlObject.IsCanDir,
-					"stat":        u.ControlObject.Variable["Stat"],
-					"stats":       u.ControlObject.Variable["Stats"],
-					"maxstats":    u.ControlObject.Variable["MaxStats"],
+					"stat":        0,   // u.ControlObject.Variable["Stat"],
+					"stats":       nil, // u.ControlObject.Variable["Stats"],
+					"maxstats":    nil, // u.ControlObject.Variable["MaxStats"],
 				}, u.Camera)
 			}
 		}
