@@ -3,7 +3,6 @@ package main
 import (
 	//"database/sql"
 	"log"
-	"math"
 	"net/http"
 	"time"
 
@@ -16,7 +15,8 @@ import (
 var setting lib.Setting = lib.ReadSetting()
 
 var sockets = map[string]socketio.Conn{}
-var objects []*lib.Object
+var tanks []lib.Tank
+var bullets []lib.Bullet
 var users = make(map[string]*lib.Player)
 
 var server, _ = socketio.NewServer(nil)
@@ -55,27 +55,16 @@ func main() {
 
 		sockets[s.ID()] = s
 		users[s.ID()] = lib.NewPlayer(s.ID())
-		users[s.ID()].ControlObject = lib.NewObject(
-			users[s.ID()],
-			nil,
-			"",
-			3,
-			"ffa",
-			name,
-			lib.RandomRange(-setting.MapSize.X, setting.MapSize.Y),
-			lib.RandomRange(-setting.MapSize.Y, setting.MapSize.X),
-			lib.Grid,
-			48,
-			20,
-			0.07,
-			1,
-			1,
-			false,
-			false,
-		)
-		users[s.ID()].ControlObject.Tank()
-		users[s.ID()].ControlObject.Basic()
-		objects = append(objects, users[s.ID()].ControlObject)
+		tanks = append(tanks, *lib.NewTank(map[string]interface{}{
+			"Controller": users[s.ID()],
+			"Type":       "Circle",
+			"Color":      3,
+			"Team":       "ffa",
+			"Name":       name,
+			"X":          lib.RandomRange(-setting.MapSize.X, setting.MapSize.Y),
+			"Y":          lib.RandomRange(-setting.MapSize.Y, setting.MapSize.X),
+			"R":          lib.Grid,
+		}))
 
 		log.Println("INFO > " + s.ID() + " Login")
 	})
@@ -137,86 +126,47 @@ func moveloop(ticker time.Ticker) {
 
 		scoreboard = lib.Scoreboard{}
 
-		for _, u := range users {
+		/*
+			for _, u := range users {
 
-			if obj := u.ControlObject; obj != nil {
-				u.Camera.Pos = obj.C.Pos
-				u.Camera.Z = 16 / 9 // * math.Pow(0.995, obj.Variable["Level"].(float64)) / obj.Variable["Sight"].(float64)
+				scoreboard.Push(lib.Score{
+					Name:  u.ControlObject.Name,
+					Type:  u.ControlObject.Type,
+					Color: u.ControlObject.Color,
+					Score: u.ControlObject.Exp,
+				})
 			}
-
-			scoreboard.Push(lib.Score{
-				Name:  u.ControlObject.Name,
-				Type:  u.ControlObject.Type,
-				Color: u.ControlObject.Color,
-				Score: u.ControlObject.Exp,
-			})
-		}
+		*/
 
 		quadtree.Clear()
-
-		for _, obj := range objects {
-			obj.C.Pos.X += obj.Dx
-			obj.C.Pos.Y += obj.Dy
-
-			obj.Dx *= 0.97
-			obj.Dy *= 0.97
-
-			if obj.IsDead {
-				continue
-			}
-
-			if obj.H <= 0 {
-				obj.IsDead = true
-			}
-
-			if obj.IsBorder { // 화면 밖으로 벗어나는가?
-				if obj.C.Pos.X > setting.MapSize.X+lib.Grid*4 {
-					obj.C.Pos.X = setting.MapSize.X + lib.Grid*4
-				}
-				if obj.C.Pos.X < -setting.MapSize.X-lib.Grid*4 {
-					obj.C.Pos.X = -setting.MapSize.X - lib.Grid*4
-				}
-				if obj.C.Pos.Y > setting.MapSize.Y+lib.Grid*4 {
-					obj.C.Pos.Y = setting.MapSize.Y + lib.Grid*4
-				}
-				if obj.C.Pos.Y < -setting.MapSize.Y-lib.Grid*4 {
-					obj.C.Pos.Y = -setting.MapSize.Y - lib.Grid*4
-				}
-			}
-
-			if time.Now().Unix()-30000 > obj.HitTime {
-				obj.H += obj.Mh / 60 / 10
-			}
-
-			imMh := obj.Mh
-
-			/*
-				if f, ok := obj.Event["Tick"].(func(obj *lib.Object)); !obj.IsDead && ok {
-					f(obj)
-				}
-			*/
-
-			objList := quadtree.Retrieve(obj)
-
-			for _, obj2 := range objList {
-				if math.Sqrt((obj.C.Pos.X-obj2.C.Pos.X)*(obj.C.Pos.X-obj2.C.Pos.X)+(obj.C.Pos.Y-obj2.C.Pos.Y)*(obj.C.Pos.Y-obj2.C.Pos.Y)) < obj.C.R+obj2.C.R {
-					if lib.CollisionEvent(obj, obj2) {
-						server.BroadcastToRoom("/", "/", "collision", obj.ID)
-						server.BroadcastToRoom("/", "/", "collision", obj2.ID)
+		/*
+			for _, obj := range objects {
+				if obj.IsBorder { // 화면 밖으로 벗어나는가?
+					if obj.X > setting.MapSize.X+lib.Grid*4 {
+						obj.X = setting.MapSize.X + lib.Grid*4
+					}
+					if obj.X < -setting.MapSize.X-lib.Grid*4 {
+						obj.X = -setting.MapSize.X - lib.Grid*4
+					}
+					if obj.Y > setting.MapSize.Y+lib.Grid*4 {
+						obj.Y = setting.MapSize.Y + lib.Grid*4
+					}
+					if obj.Y < -setting.MapSize.Y-lib.Grid*4 {
+						obj.Y = -setting.MapSize.Y - lib.Grid*4
 					}
 				}
-			}
 
-			quadtree.Insert(obj)
+				objList := quadtree.Retrieve(obj)
 
-			if obj.H > obj.Mh {
-				obj.H = obj.Mh
-			}
+				for _, obj2 := range objList {
+					if math.Sqrt((obj.X-obj2.X)*(obj.X-obj2.X)+(obj.Y-obj2.Y)*(obj.Y-obj2.Y)) < obj.R+obj2.R {
+						// Collision Event
+					}
+				}
 
-			if obj.Mh != imMh {
-				obj.H *= obj.Mh / imMh
+				quadtree.Insert(obj)
 			}
-		}
+		*/
 	}
 }
 
@@ -231,11 +181,11 @@ func sendUpdates(ticker time.Ticker) {
 			})
 			log.Println(objList)
 			var visibleObject = []map[string]interface{}{}
-			for _, obj := range objList {
-				if obj.C.Pos.X < u.Camera.Pos.X+1280/u.Camera.Z+obj.C.R &&
-					obj.C.Pos.X > u.Camera.Pos.X-1280/u.Camera.Z-obj.C.R &&
-					obj.C.Pos.Y < u.Camera.Pos.Y+720/u.Camera.Z+obj.C.R &&
-					obj.C.Pos.Y > u.Camera.Pos.Y-720/u.Camera.Z-obj.C.R && obj.Opacity > 0 {
+			for _, obj := range tanks {
+				if obj.X < u.Camera.Pos.X+1280/u.Camera.Z+obj.R &&
+					obj.X > u.Camera.Pos.X-1280/u.Camera.Z-obj.R &&
+					obj.Y < u.Camera.Pos.Y+720/u.Camera.Z+obj.R &&
+					obj.Y > u.Camera.Pos.Y-720/u.Camera.Z-obj.R && obj.Opacity > 0 {
 					visibleObject = append(visibleObject, obj.SocketObj())
 				}
 			}
@@ -243,10 +193,10 @@ func sendUpdates(ticker time.Ticker) {
 			if s, ok := sockets[u.ID].(socketio.Conn); ok {
 				s.Emit("objectList", visibleObject)
 				s.Emit("playerSet", map[string]interface{}{
-					"id":          u.ControlObject.ID,
+					"id":          u.ControlObjectID,
 					"level":       1,      // u.ControlObject.Variable["Level"],
 					"sight":       16 / 9, // u.ControlObject.Variable["Sight"],
-					"isCanRotate": u.ControlObject.IsCanDir,
+					"isCanRotate": u.IsCanDir,
 					"stat":        0,   // u.ControlObject.Variable["Stat"],
 					"stats":       nil, // u.ControlObject.Variable["Stats"],
 					"maxstats":    nil, // u.ControlObject.Variable["MaxStats"],

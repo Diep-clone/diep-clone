@@ -1,85 +1,5 @@
 package lib
 
-import (
-	"math"
-	"time"
-)
-
-// CollisionEvent is
-func CollisionEvent(a *Object, b *Object) bool {
-	dir := math.Atan2(a.C.Pos.Y-b.C.Pos.Y, a.C.Pos.Y-b.C.Pos.Y)
-
-	if a == b.Owner || b == a.Owner {
-		return false
-	}
-
-	/*
-		if f, ok := a.Event["Collision"].(func(a *Object, b *Object)); ok {
-			f(a, b)
-		}
-		if f, ok := b.Event["Collision"].(func(a *Object, b *Object)); ok {
-			f(b, a)
-		}
-	*/
-	a.Dx += math.Cos(dir) * math.Min(b.Bound*a.Stance, 6)
-	a.Dy += math.Sin(dir) * math.Min(b.Bound*a.Stance, 6)
-	b.Dx -= math.Cos(dir) * math.Min(a.Bound*b.Stance, 6)
-	b.Dy -= math.Sin(dir) * math.Min(a.Bound*b.Stance, 6)
-
-	if a.Team != "ffa" && b.Team != "ffa" && a.Team == b.Team {
-		return false
-	}
-
-	a.HitTime = time.Now().Unix()
-	b.HitTime = time.Now().Unix()
-
-	a.HitObject = b
-	b.HitObject = a
-
-	if b.Lh-a.Damage <= 0 {
-		a.H -= b.Damage * (b.Lh / a.Damage)
-	} else {
-		a.H -= b.Damage
-	}
-	if a.Lh-b.Damage <= 0 {
-		b.H -= a.Damage * (a.Lh / b.Damage)
-	} else {
-		b.H -= a.Damage
-	}
-	/*
-		if f, ok := a.Event["GetDamage"].(func(a *Object, b *Object)); ok {
-			f(a, b)
-		}
-		if f, ok := b.Event["GetDamage"].(func(a *Object, b *Object)); ok {
-			f(b, a)
-		}
-	*/
-	if a.H < 0 {
-		a.H = 0
-		/*
-			if f, ok := a.Event["DeadEvent"].(func(a *Object, b *Object)); ok {
-				f(a, b)
-			}
-			if f, ok := b.Event["KillEvent"].(func(a *Object, b *Object)); ok {
-				f(b, a)
-			}
-		*/
-	}
-	if b.H < 0 {
-		b.H = 0
-		/*
-			if f, ok := a.Event["DeadEvent"].(func(a *Object, b *Object)); ok {
-				f(b, a)
-			}
-			if f, ok := b.Event["KillEvent"].(func(a *Object, b *Object)); ok {
-				f(a, b)
-			}
-		*/
-	}
-
-	return true
-}
-
 // MaxObj is Object Max length
 var MaxObj = 5
 
@@ -139,7 +59,7 @@ func (q Quadtree) getIndex(area interface{}) int {
 	x := q.x + q.w/2
 	y := q.y + q.h/2
 	if b {
-		if obj.C.Pos.X+obj.C.R >= x && obj.C.Pos.X-obj.C.R <= x || obj.C.Pos.Y+obj.C.R >= y && obj.C.Pos.Y-obj.C.R <= y {
+		if obj.X+obj.R >= x && obj.X-obj.R <= x || obj.Y+obj.R >= y && obj.Y-obj.R <= y {
 			return -1
 		}
 	} else {
@@ -150,14 +70,14 @@ func (q Quadtree) getIndex(area interface{}) int {
 	}
 	// 2 1
 	// 3 4
-	if obj.C.Pos.X > x {
-		if obj.C.Pos.Y > y {
+	if obj.X > x {
+		if obj.Y > y {
 			return 4
 		}
 		return 1
 	}
 
-	if obj.C.Pos.Y > y {
+	if obj.Y > y {
 		return 3
 	}
 
@@ -168,8 +88,8 @@ func (q Quadtree) getIndex(area interface{}) int {
 func (q *Quadtree) Insert(obj *Object) {
 	var index = -1
 
-	if obj.C.Pos.X+obj.C.R < q.x || obj.C.Pos.X-obj.C.R > q.x+q.w ||
-		obj.C.Pos.Y+obj.C.R < q.y || obj.C.Pos.Y-obj.C.R > q.y+q.h {
+	if obj.X+obj.R < q.x || obj.X-obj.R > q.x+q.w ||
+		obj.Y+obj.R < q.y || obj.Y-obj.R > q.y+q.h {
 		return
 	}
 
@@ -205,9 +125,9 @@ func (q Quadtree) Retrieve(area interface{}) []*Object {
 	index := q.getIndex(area)
 	var returnObject []*Object
 
-	if o, ok := area.(Object); ok {
+	if o, ok := area.(*Object); ok {
 		for _, obj := range q.objects {
-			if !obj.IsDead && (obj.Owner != o.Owner || obj.IsOwnCol && o.IsOwnCol) {
+			if !obj.IsDead && (obj.Owner != o.Owner || obj.IsOwnCol && o.IsOwnCol) && o != obj.Owner && obj != o.Owner {
 				returnObject = append(returnObject, obj)
 			}
 		}

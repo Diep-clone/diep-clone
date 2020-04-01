@@ -11,9 +11,6 @@ export default class System {
         this.cv = document.getElementById("canvas");
         this.ctx = this.cv.getContext("2d");
 
-        this.namecv = document.createElement("canvas");
-        this.namectx = this.namecv.getContext("2d");
-
         this.hpcv = document.createElement("canvas");
         this.hpctx = this.hpcv.getContext("2d");
 
@@ -38,7 +35,7 @@ export default class System {
             "maxStats": [],
         };
 
-        this.inputSetting = {
+        this.input = {
             "moveVector": {x:0,y:0},
         }
 
@@ -126,13 +123,13 @@ export default class System {
                         break;
                 }
                 Socket.emit(key, value);
-            },
-            mouse:function(){},
+            }.bind(this),
+            mouse:function(){}.bind(this),
             prevent_right_click: function(){},
             print_convar_help: function(){},
             set_convar: function(key,value){},
             should_prevent_unload: function(){},
-            wheel: function(){},
+            wheel: function(){}.bind(this),
         };
 
         Socket.emit("login");
@@ -178,11 +175,9 @@ export default class System {
         const tick = Date.now() - this.lastTime;
         this.lastTime = Date.now();
 
-        this.namecv.width =
         this.hpcv.width =
         this.uicv.width = this.cv.width;
 
-        this.namecv.height =
         this.hpcv.height =
         this.uicv.height = this.cv.height;
 
@@ -195,7 +190,6 @@ export default class System {
                 this.objectList.forEach((o) => {
                     o.Animate(tick);
                     o.Draw(this.ctx, this.camera);
-                    o.DrawName(this.namectx, this.camera);
                     o.DrawHPBar(this.hpctx, this.camera);
                 });
 

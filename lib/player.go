@@ -10,13 +10,16 @@ type Camera struct {
 
 // Player is
 type Player struct {
-	ID            string
-	Mx            float64
-	My            float64
-	Camera        Camera
-	MoveDir       float64
-	StartTime     int64
-	ControlObject *Object
+	ID              string
+	Mx              float64
+	My              float64
+	Stat            int
+	Stats           [8]int
+	Camera          Camera
+	MoveDir         float64
+	IsCanDir        bool
+	StartTime       int64
+	ControlObjectID int
 }
 
 // NewPlayer is make player
@@ -25,6 +28,8 @@ func NewPlayer(id string) *Player {
 	p.ID = id
 	p.Mx = 0
 	p.My = 0
+	p.Stat = 0
+	p.Stats = [8]int{0, 0, 0, 0, 0, 0, 0, 0}
 	p.Camera = Camera{
 		Pos: Pos{0, 0},
 		Z:   1,
@@ -41,9 +46,9 @@ func (p *Player) SetMousePoint(x float64, y float64) {
 }
 
 func (p *Player) SetCamera() {
-	if p.ControlObject != nil {
+	/*if p.ControlObject != nil {
 		obj := *p.ControlObject
-		p.Camera.Pos = obj.C.Pos
-		p.Camera.Z = 1
-	}
+		p.Camera.Pos = Pos{X: obj.X, Y: obj.Y}
+		p.Camera.Z = 16 / 9 // * math.Pow(0.995, obj.Variable["Level"].(float64)) / obj.Variable["Sight"].(float64)
+	}*/
 }

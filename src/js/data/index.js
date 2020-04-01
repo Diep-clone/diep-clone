@@ -36,8 +36,7 @@ export const colorList = [
 export const backgroundColor = new RGB(205,205,205);
 
 export const gunList = {
-    "Tank": [],
-    "Basic": [],
+    
 }
 
 export const expList = [

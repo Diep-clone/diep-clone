@@ -1,6 +1,9 @@
 package lib
 
-import "time"
+import (
+	"math"
+	"time"
+)
 
 // Pos is
 type Pos struct {
@@ -38,104 +41,118 @@ func (sc *Scoreboard) Push(value Score) {
 
 // Object is
 type Object struct {
-	Controler *Player
-	Owner     *Object
-	ID        int
-	Type      string
-	Color     int
-	Team      string
-	Name      string
-	C         Circle
-	Dx        float64
-	Dy        float64
-	Dir       float64
-	Exp       int
-	H         float64
-	Mh        float64
-	Lh        float64
-	Damage    float64
-	Speed     float64
-	Bound     float64
-	Stance    float64
-	Opacity   float64
-	Guns      []Gun
-	SpawnTime int64
-	HitTime   int64
-	DeadTime  int64
-	HitObject *Object
-	IsBorder  bool
-	IsOwnCol  bool
-	IsCanDir  bool // is Can move Dir
-	IsDead    bool
+	Owner       *Object
+	ID          int
+	Type        string
+	Color       int
+	Team        string
+	Name        string
+	X           float64
+	Y           float64
+	R           float64
+	Dx          float64
+	Dy          float64
+	Dir         float64
+	Level       int
+	Exp         int
+	H           float64
+	Mh          float64
+	Lh          float64
+	Damage      float64
+	Speed       float64
+	Bound       float64
+	Stance      float64
+	Opacity     float64
+	Guns        []Gun
+	SpawnTime   int64
+	HitTime     int64
+	DeadTime    int64
+	IsBorder    bool
+	IsOwnCol    bool
+	IsDead      bool
+	IsCollision bool
+}
+
+//
+func (o *Object) Tick() {
+
+}
+
+//
+func (obj *Object) ObjectTick() {
+	obj.X += obj.Dx
+	obj.Y += obj.Dy
+
+	obj.Dx *= 0.97
+	obj.Dy *= 0.97
+
+	if obj.IsDead {
+		return
+	}
+
+	if obj.H <= 0 {
+		obj.IsDead = true
+		obj.H = 0
+	}
+
+	if time.Now().Unix()-30000 > obj.HitTime {
+		obj.H += obj.Mh / 60 / 10
+	}
+
+	imMh := obj.Mh
+
+	if obj.H > obj.Mh {
+		obj.H = obj.Mh
+	}
+
+	if obj.Mh != imMh {
+		obj.H *= obj.Mh / imMh
+	}
+}
+
+//
+func (o *Object) Collision(dir float64, b float64, team string, d float64, h float64) {
+	o.Dx += math.Cos(dir) * math.Min(b*o.Stance, 6)
+	o.Dy += math.Sin(dir) * math.Min(b*o.Stance, 6)
+
+	if team != "ffa" && o.Team == team {
+		return
+	}
+
+	o.HitTime = time.Now().Unix()
+
+	if h-o.Damage <= 0 {
+		o.H -= d * (h / o.Damage)
+	} else {
+		o.H -= d
+	}
+
+	o.IsCollision = true
 }
 
 var objID int = 0
 
-// NewObject is
-func NewObject(
-	con *Player,
-	own *Object,
-	t string,
-	c int,
-	team string,
-	name string,
-	x float64,
-	y float64,
-	r float64, // radius
-	h float64, // health
-	da float64, // damage
-	sp float64, // speed
-	bo float64, // bound
-	st float64, // stance
-	isBorder bool,
-	isOwnCol bool) *Object {
-	o := Object{}
-	o.Controler = con
-	o.Owner = own
-	o.ID = objID
-	objID++
-	o.Type = t
-	o.Color = c
-	o.Team = team
-	o.Name = name
-	o.C = Circle{Pos{x, y}, r}
-	o.Dx = 0
-	o.Dy = 0
-	o.Mh = h
-	o.H = h
-	o.Lh = h
-	o.Damage = da
-	o.Speed = sp
-	o.Bound = bo
-	o.Stance = st
-	o.Opacity = 1
-	o.Guns = []Gun{}
-	o.SpawnTime = time.Now().Unix()
-	o.HitTime = time.Now().Unix()
-	o.DeadTime = -1
-	o.HitObject = &o
-	o.IsBorder = isBorder
-	o.IsOwnCol = isOwnCol
-	o.IsDead = false
-
-	return &o
-}
-
+//
 func (o Object) SocketObj() map[string]interface{} {
+	var ownerID int = -1
+	if o.Owner != nil {
+		ownerID = o.Owner.ID
+	}
 	return map[string]interface{}{
-		"id":        o.ID,
-		"type":      o.Type,
-		"color":     o.Color,
-		"x":         floor(o.C.Pos.X, 2),
-		"y":         floor(o.C.Pos.Y, 2),
-		"r":         floor(o.C.R, 1),
-		"dir":       floor(o.Dir, 2),
-		"maxhealth": floor(o.Mh, 1),
-		"health":    floor(o.H, 1),
-		"opacity":   floor(o.Opacity, 2),
-		"exp":       o.Exp,
-		"name":      o.Name,
-		"owner":     o.Owner.ID,
-		"isDead":    o.IsDead,
+		"id":          o.ID,
+		"type":        o.Type,
+		"color":       o.Color,
+		"x":           floor(o.X, 2),
+		"y":           floor(o.Y, 2),
+		"r":           floor(o.R, 1),
+		"dir":         floor(o.Dir, 2),
+		"maxhealth":   floor(o.Mh, 1),
+		"health":      floor(o.H, 1),
+		"opacity":     floor(o.Opacity, 2),
+		"exp":         o.Exp,
+		"name":        o.Name,
+		"owner":       ownerID,
+		"isDead":      o.IsDead,
+		"isCollision": o.IsCollision,
 	}
 }

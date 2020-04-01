@@ -37,17 +37,11 @@ export const Obj = function(id) {
                 return;
             }
         }
+
         this.guns.forEach((g) => g.Animate());
 
         this.hitTime = Math.max(this.hitTime - tick,0);
     }
-
-    Socket.on("collision", function (id) {
-        if (this.id === id){
-            this.guns.forEach((g) => g.Hit());
-            this.hitTime = 100;
-        }
-    }.bind(this));
 
     this.ObjSet = function (data) {
         if (data.id === this.id) {
@@ -63,7 +57,8 @@ export const Obj = function(id) {
 
             this.name = data.name;
             if (this.type !== data.type){
-                this.guns = gunList[data.type];
+                if (gunList[data.type] == undefined) this.guns = [];
+                else this.guns = gunList[data.type];
             }
             this.type = data.type;
             this.color = data.color;
@@ -116,7 +111,7 @@ export const Obj = function(id) {
     }
 
     this.Draw = function (ctx,camera) {
-        if (this.guns.length>0){
+        if (this.guns.length > 0 && this.opacity < 1){
             var {ctxx, x, y, z, t, c, r, dir, o} = this.SetCanvasSize(camera);
             ctxx.save();
             this.guns.forEach((g) => {
