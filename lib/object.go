@@ -41,6 +41,7 @@ func (sc *Scoreboard) Push(value Score) {
 
 // Object is
 type Object struct {
+	Controller  *Player
 	Owner       *Object
 	ID          int
 	Type        string
@@ -63,6 +64,8 @@ type Object struct {
 	Bound       float64
 	Stance      float64
 	Opacity     float64
+	Sight       float64
+	MaxStats    [8]int
 	Guns        []Gun
 	SpawnTime   int64
 	HitTime     int64
@@ -71,11 +74,9 @@ type Object struct {
 	IsOwnCol    bool
 	IsDead      bool
 	IsCollision bool
-}
-
-//
-func (o *Object) Tick() {
-
+	Func        interface {
+		Tick()
+	}
 }
 
 //
@@ -155,4 +156,45 @@ func (o Object) SocketObj() map[string]interface{} {
 		"isDead":      o.IsDead,
 		"isCollision": o.IsCollision,
 	}
+}
+
+func NewObject(value map[string]interface{}) *Object {
+	var m interface{} = map[string]interface{}{
+		"ID":          objID,
+		"Type":        "Circle",
+		"Color":       2,
+		"Team":        "FFA",
+		"X":           -999999,
+		"Y":           -999999,
+		"R":           Grid,
+		"Level":       1,
+		"H":           10,
+		"Mh":          10,
+		"Lh":          10,
+		"Damage":      8,
+		"Speed":       0.07,
+		"Bound":       1,
+		"Stance":      1,
+		"Opacity":     1,
+		"Sight":       1,
+		"SpawnTime":   time.Now().Unix(),
+		"HitTime":     time.Now().Unix(),
+		"DeadTime":    -1,
+		"IsBorder":    true,
+		"IsOwnCol":    true,
+		"IsDead":      false,
+		"IsCollision": false,
+	}
+	objID++
+
+	for key, val := range value {
+		m[key] = val
+	}
+
+	if obj, ok := m.(Object); ok {
+		return &obj
+	} else {
+		return nil
+	}
+
 }

@@ -15,8 +15,7 @@ import (
 var setting lib.Setting = lib.ReadSetting()
 
 var sockets = map[string]socketio.Conn{}
-var tanks []lib.Tank
-var bullets []lib.Bullet
+var objects []lib.Object
 var users = make(map[string]*lib.Player)
 
 var server, _ = socketio.NewServer(nil)
@@ -55,7 +54,7 @@ func main() {
 
 		sockets[s.ID()] = s
 		users[s.ID()] = lib.NewPlayer(s.ID())
-		tanks = append(tanks, *lib.NewTank(map[string]interface{}{
+		objects = append(objects, *lib.NewObject(map[string]interface{}{
 			"Controller": users[s.ID()],
 			"Type":       "Circle",
 			"Color":      3,
@@ -181,7 +180,7 @@ func sendUpdates(ticker time.Ticker) {
 			})
 			log.Println(objList)
 			var visibleObject = []map[string]interface{}{}
-			for _, obj := range tanks {
+			for _, obj := range objects {
 				if obj.X < u.Camera.Pos.X+1280/u.Camera.Z+obj.R &&
 					obj.X > u.Camera.Pos.X-1280/u.Camera.Z-obj.R &&
 					obj.Y < u.Camera.Pos.Y+720/u.Camera.Z+obj.R &&
