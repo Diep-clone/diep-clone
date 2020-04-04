@@ -15,7 +15,7 @@ import (
 var setting lib.Setting = lib.ReadSetting()
 
 var sockets = map[string]socketio.Conn{}
-var objects []lib.Object
+var objects []*lib.Object
 var users = make(map[string]*lib.Player)
 
 var server, _ = socketio.NewServer(nil)
@@ -54,8 +54,8 @@ func main() {
 
 		sockets[s.ID()] = s
 		users[s.ID()] = lib.NewPlayer(s.ID())
-		objects = append(objects, *lib.NewObject(map[string]interface{}{
-			"Controller": users[s.ID()],
+		objects = append(objects, lib.NewObject(map[string]interface{}{
+			"Controller": *users[s.ID()],
 			"Type":       "Circle",
 			"Color":      3,
 			"Team":       "ffa",
@@ -178,7 +178,7 @@ func sendUpdates(ticker time.Ticker) {
 				X2: u.Camera.Pos.X - 1280/u.Camera.Z,
 				Y2: u.Camera.Pos.Y - 720/u.Camera.Z,
 			})
-			log.Println(objList)
+			//log.Println(objList)
 			var visibleObject = []map[string]interface{}{}
 			for _, obj := range objects {
 				if obj.X < u.Camera.Pos.X+1280/u.Camera.Z+obj.R &&

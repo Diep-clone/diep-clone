@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"encoding/json"
 	"math"
 	"time"
 )
@@ -41,42 +42,39 @@ func (sc *Scoreboard) Push(value Score) {
 
 // Object is
 type Object struct {
-	Controller  *Player
-	Owner       *Object
-	ID          int
-	Type        string
-	Color       int
-	Team        string
-	Name        string
-	X           float64
-	Y           float64
-	R           float64
-	Dx          float64
-	Dy          float64
-	Dir         float64
-	Level       int
-	Exp         int
-	H           float64
-	Mh          float64
-	Lh          float64
-	Damage      float64
-	Speed       float64
-	Bound       float64
-	Stance      float64
-	Opacity     float64
-	Sight       float64
-	MaxStats    [8]int
-	Guns        []Gun
-	SpawnTime   int64
-	HitTime     int64
-	DeadTime    int64
-	IsBorder    bool
-	IsOwnCol    bool
-	IsDead      bool
-	IsCollision bool
-	Func        interface {
-		Tick()
-	}
+	Controller  *Player `json:"controller"`
+	Owner       *Object `json:"owner"`
+	ID          int     `json:"id"`
+	Type        string  `json:"type"`
+	Color       int     `json:"color"`
+	Team        string  `json:"team"`
+	Name        string  `json:"name"`
+	X           float64 `json:"x"`
+	Y           float64 `json:"y"`
+	R           float64 `json:"r"`
+	Dx          float64 `json:"dx"`
+	Dy          float64 `json:"dy"`
+	Dir         float64 `json:"dir"`
+	Level       int     `json:"level"`
+	Exp         int     `json:"exp"`
+	H           float64 `json:"h"`
+	Mh          float64 `json:"mh"`
+	Lh          float64 `json:"lh"`
+	Damage      float64 `json:"damage"`
+	Speed       float64 `json:"speed"`
+	Bound       float64 `json:"bound"`
+	Stance      float64 `json:"stance"`
+	Opacity     float64 `json:"opacity"`
+	Sight       float64 `json:"sight"`
+	MaxStats    [8]int  `json:"maxStats"`
+	Guns        []Gun   `json:"guns"`
+	SpawnTime   int64   `json:"spawnTime"`
+	HitTime     int64   `json:"hitTime"`
+	DeadTime    int64   `json:"deadTime"`
+	IsBorder    bool    `json:"isBorder"`
+	IsOwnCol    bool    `json:"isOwnCol"`
+	IsDead      bool    `json:"isDead"`
+	IsCollision bool    `json:"isCollision"`
 }
 
 //
@@ -159,7 +157,7 @@ func (o Object) SocketObj() map[string]interface{} {
 }
 
 func NewObject(value map[string]interface{}) *Object {
-	var m interface{} = map[string]interface{}{
+	m := map[string]interface{}{
 		"ID":          objID,
 		"Type":        "Circle",
 		"Color":       2,
@@ -191,10 +189,9 @@ func NewObject(value map[string]interface{}) *Object {
 		m[key] = val
 	}
 
-	if obj, ok := m.(Object); ok {
-		return &obj
-	} else {
-		return nil
-	}
+	jsonString, _ := json.Marshal(m)
 
+	s := Object{}
+	json.Unmarshal(jsonString, &s)
+	return &s
 }
