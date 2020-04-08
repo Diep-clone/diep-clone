@@ -3,6 +3,7 @@ package main
 import (
 	//"database/sql"
 	"log"
+	"math"
 	"net/http"
 	"time"
 
@@ -31,7 +32,7 @@ func main() {
 	statement, _ = database.Prepare("INSERT INTO people (nickname) VALUES (?)")
 	statement.Exec("")
 	*/
-	quadtree = *lib.NewQuadtree(-1000, -1000, 2000, 2000, 1)
+	quadtree = *lib.NewQuadtree(-setting.MapSize.X, -setting.MapSize.Y, setting.MapSize.X*2, setting.MapSize.Y*2, 1)
 
 	server.OnConnect("/", func(s socketio.Conn) error {
 		log.Println("INFO > " + s.ID() + " Connected")
@@ -54,21 +55,41 @@ func main() {
 
 		sockets[s.ID()] = s
 		users[s.ID()] = lib.NewPlayer(s.ID())
-		objects = append(objects, lib.NewObject(map[string]interface{}{
-			"Controller": *users[s.ID()],
-			"Type":       "Circle",
-			"Color":      3,
-			"Team":       "ffa",
-			"Name":       name,
-			"X":          lib.RandomRange(-setting.MapSize.X, setting.MapSize.Y),
-			"Y":          lib.RandomRange(-setting.MapSize.Y, setting.MapSize.X),
-			"R":          lib.Grid,
-		}))
+		users[s.ID()].ControlObject = lib.NewObject(map[string]interface{}{
+			"controller": *users[s.ID()],
+			"type":       "Necromanser",
+			"name":       name,
+			"x":          lib.RandomRange(-setting.MapSize.X, setting.MapSize.X),
+			"y":          lib.RandomRange(-setting.MapSize.Y, setting.MapSize.Y),
+			"h":          50,
+			"mh":         50,
+			"damage":     20,
+			"stats":      [8]int{0, 0, 0, 7, 7, 7, 5, 7},
+			"maxStats":   [8]int{7, 7, 7, 7, 7, 7, 7, 7},
+		}, func(obj *lib.Object) {
+			lib.TankTick(obj)
+		}, lib.DefaultCollision, /*func(a *lib.Object, b *lib.Object) {
+			lib.DefaultCollision(a, b)
+			if b.Type == "Square" && b.H == 0 {
+				b.Type = "NecroSquare"
+				b.Team = a.Team
+				b.Exp = 0
+				b.Owner = a
+				b.Mh = (8 + 6*float64(a.Stats[4])) * 0.5
+				b.H = b.Mh
+				b.Damage = (7 + 3*float64(a.Stats[5])) * 1.68
+				b.Speed = (0.056 + 0.01*float64(a.Stats[3])) * 0.5
+				b.IsDead = false
+
+			}
+		}*/)
+		objects = append(objects, users[s.ID()].ControlObject)
 
 		log.Println("INFO > " + s.ID() + " Login")
 	})
 
-	server.OnEvent("/", "moveVector", func(s socketio.Conn, value float64) {
+	server.OnEvent("/", "moveVector", func(s socketio.Conn, value float64, b bool) {
+		users[s.ID()].IsMove = b
 		users[s.ID()].MoveDir = value
 	})
 
@@ -122,64 +143,80 @@ func main() {
 
 func moveloop(ticker time.Ticker) {
 	for range ticker.C {
-
+		for ; lib.ShapeCount > 0; lib.ShapeCount-- {
+			objects = append(objects, lib.NewObject(map[string]interface{}{
+				"type": "Square",
+				"name": "Square",
+				"x":    lib.RandomRange(-setting.MapSize.X, setting.MapSize.X),
+				"y":    lib.RandomRange(-setting.MapSize.Y, setting.MapSize.Y),
+			}, nil, lib.DefaultCollision))
+		}
 		scoreboard = lib.Scoreboard{}
 
-		/*
-			for _, u := range users {
+		for _, u := range users {
+			u.PlayerSet()
 
+			if u.ControlObject != nil {
 				scoreboard.Push(lib.Score{
 					Name:  u.ControlObject.Name,
 					Type:  u.ControlObject.Type,
-					Color: u.ControlObject.Color,
 					Score: u.ControlObject.Exp,
 				})
 			}
-		*/
+		}
 
 		quadtree.Clear()
-		/*
-			for _, obj := range objects {
-				if obj.IsBorder { // 화면 밖으로 벗어나는가?
-					if obj.X > setting.MapSize.X+lib.Grid*4 {
-						obj.X = setting.MapSize.X + lib.Grid*4
-					}
-					if obj.X < -setting.MapSize.X-lib.Grid*4 {
-						obj.X = -setting.MapSize.X - lib.Grid*4
-					}
-					if obj.Y > setting.MapSize.Y+lib.Grid*4 {
-						obj.Y = setting.MapSize.Y + lib.Grid*4
-					}
-					if obj.Y < -setting.MapSize.Y-lib.Grid*4 {
-						obj.Y = -setting.MapSize.Y - lib.Grid*4
-					}
-				}
 
-				objList := quadtree.Retrieve(obj)
+		for _, obj := range objects {
 
-				for _, obj2 := range objList {
-					if math.Sqrt((obj.X-obj2.X)*(obj.X-obj2.X)+(obj.Y-obj2.Y)*(obj.Y-obj2.Y)) < obj.R+obj2.R {
-						// Collision Event
-					}
-				}
-
-				quadtree.Insert(obj)
+			if obj.Tick != nil {
+				obj.Tick(obj)
 			}
-		*/
+
+			obj.ObjectTick()
+
+			if obj.IsBorder { // 화면 밖으로 벗어나는가?
+				if obj.X > setting.MapSize.X+lib.Grid*4 {
+					obj.X = setting.MapSize.X + lib.Grid*4
+				}
+				if obj.X < -setting.MapSize.X-lib.Grid*4 {
+					obj.X = -setting.MapSize.X - lib.Grid*4
+				}
+				if obj.Y > setting.MapSize.Y+lib.Grid*4 {
+					obj.Y = setting.MapSize.Y + lib.Grid*4
+				}
+				if obj.Y < -setting.MapSize.Y-lib.Grid*4 {
+					obj.Y = -setting.MapSize.Y - lib.Grid*4
+				}
+			}
+
+			objList := quadtree.Retrieve(obj)
+
+			for _, obj2 := range objList {
+				if math.Sqrt((obj.X-obj2.X)*(obj.X-obj2.X)+(obj.Y-obj2.Y)*(obj.Y-obj2.Y)) < obj.R+obj2.R {
+					obj.Collision(obj, obj2)
+					obj2.Collision(obj2, obj)
+				}
+			}
+
+			quadtree.Insert(obj)
+		}
+
 	}
 }
 
 func sendUpdates(ticker time.Ticker) {
 	for range ticker.C {
 		for _, u := range users {
-			objList := quadtree.Retrieve(lib.Area{
+			/*objList := quadtree.Retrieve(lib.Area{
 				X:  u.Camera.Pos.X + 1280/u.Camera.Z,
 				Y:  u.Camera.Pos.Y + 720/u.Camera.Z,
 				X2: u.Camera.Pos.X - 1280/u.Camera.Z,
 				Y2: u.Camera.Pos.Y - 720/u.Camera.Z,
 			})
-			//log.Println(objList)
+			log.Println(objList)*/
 			var visibleObject = []map[string]interface{}{}
+
 			for _, obj := range objects {
 				if obj.X < u.Camera.Pos.X+1280/u.Camera.Z+obj.R &&
 					obj.X > u.Camera.Pos.X-1280/u.Camera.Z-obj.R &&
@@ -189,17 +226,31 @@ func sendUpdates(ticker time.Ticker) {
 				}
 			}
 
+			log.Println(visibleObject)
+
 			if s, ok := sockets[u.ID].(socketio.Conn); ok {
 				s.Emit("objectList", visibleObject)
-				s.Emit("playerSet", map[string]interface{}{
-					"id":          u.ControlObjectID,
-					"level":       1,      // u.ControlObject.Variable["Level"],
-					"sight":       16 / 9, // u.ControlObject.Variable["Sight"],
-					"isCanRotate": u.IsCanDir,
-					"stat":        0,   // u.ControlObject.Variable["Stat"],
-					"stats":       nil, // u.ControlObject.Variable["Stats"],
-					"maxstats":    nil, // u.ControlObject.Variable["MaxStats"],
-				}, u.Camera)
+				if obj := u.ControlObject; obj == nil {
+					s.Emit("playerSet", map[string]interface{}{
+						"id":          -1,
+						"level":       1,
+						"sight":       u.Camera.Z,
+						"isCanRotate": u.IsCanDir,
+						"stat":        0,
+						"stats":       nil,
+						"maxstats":    nil,
+					}, u.Camera)
+				} else {
+					s.Emit("playerSet", map[string]interface{}{
+						"id":          obj.ID,
+						"level":       obj.Level,
+						"sight":       u.Camera.Z,
+						"isCanRotate": u.IsCanDir,
+						"stat":        u.Stat,
+						"stats":       obj.Stats,
+						"maxstats":    obj.MaxStats,
+					}, u.Camera)
+				}
 			}
 		}
 		server.BroadcastToRoom("/", "/", "scoreboard", scoreboard)

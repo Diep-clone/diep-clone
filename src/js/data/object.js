@@ -1,5 +1,5 @@
 import { RGB } from '../lib/util';
-import { colorList, gunList } from '../data/index';
+import { colorList, colorType, gunList } from '../data/index';
 import { drawC, drawObj } from '../lib/draw';
 import System, { Socket } from '../system';
 
@@ -44,25 +44,23 @@ export const Obj = function(id) {
     }
 
     this.ObjSet = function (data) {
-        if (data.id === this.id) {
-            this.x = data.x;
-            this.y = data.y;
-            this.r = data.r;
-            this.dir = data.dir;
-            this.h = data.h;
-            this.mh = data.mh;
-            this.a = data.a;
-            this.score = data.score;
-            this.isDead = data.isDead;
+        this.x = data.x;
+        this.y = data.y;
+        this.r = data.r;
+        this.dir = data.dir;
+        this.h = data.h;
+        this.mh = data.mh;
+        this.a = data.a;
+        this.score = data.score;
+        this.isDead = data.isDead;
 
-            this.name = data.name;
-            if (this.type !== data.type){
-                if (gunList[data.type] == undefined) this.guns = [];
-                else this.guns = gunList[data.type];
-            }
-            this.type = data.type;
-            this.color = data.color;
+        this.name = data.name;
+        if (this.type !== data.type){
+            if (gunList[data.type] == undefined) this.guns = [];
+            else this.guns = gunList[data.type];
         }
+        this.type = data.type;
+        this.color = colorType(data.type,data.team);
     };
 
     this.DrawSet = function (camera) {

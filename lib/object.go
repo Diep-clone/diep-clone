@@ -22,7 +22,6 @@ type Circle struct {
 type Score struct {
 	Name  string
 	Type  string
-	Color int
 	Score int
 }
 
@@ -46,7 +45,6 @@ type Object struct {
 	Owner       *Object `json:"owner"`
 	ID          int     `json:"id"`
 	Type        string  `json:"type"`
-	Color       int     `json:"color"`
 	Team        string  `json:"team"`
 	Name        string  `json:"name"`
 	X           float64 `json:"x"`
@@ -66,6 +64,7 @@ type Object struct {
 	Stance      float64 `json:"stance"`
 	Opacity     float64 `json:"opacity"`
 	Sight       float64 `json:"sight"`
+	Stats       [8]int  `json:"stats"`
 	MaxStats    [8]int  `json:"maxStats"`
 	Guns        []Gun   `json:"guns"`
 	SpawnTime   int64   `json:"spawnTime"`
@@ -75,6 +74,8 @@ type Object struct {
 	IsOwnCol    bool    `json:"isOwnCol"`
 	IsDead      bool    `json:"isDead"`
 	IsCollision bool    `json:"isCollision"`
+	Tick        func(*Object)
+	Collision   func(*Object, *Object)
 }
 
 //
@@ -85,10 +86,6 @@ func (obj *Object) ObjectTick() {
 	obj.Dx *= 0.97
 	obj.Dy *= 0.97
 
-	if obj.IsDead {
-		return
-	}
-
 	if obj.H <= 0 {
 		obj.IsDead = true
 		obj.H = 0
@@ -98,38 +95,34 @@ func (obj *Object) ObjectTick() {
 		obj.H += obj.Mh / 60 / 10
 	}
 
-	imMh := obj.Mh
-
 	if obj.H > obj.Mh {
 		obj.H = obj.Mh
 	}
 
-	if obj.Mh != imMh {
-		obj.H *= obj.Mh / imMh
-	}
+	obj.Lh = obj.H
 }
 
 //
-func (o *Object) Collision(dir float64, b float64, team string, d float64, h float64) {
-	o.Dx += math.Cos(dir) * math.Min(b*o.Stance, 6)
-	o.Dy += math.Sin(dir) * math.Min(b*o.Stance, 6)
+func DefaultCollision(a *Object, b *Object) {
+	a.Dx += math.Cos(b.Dir) * math.Min(b.Bound*a.Stance, 6)
+	a.Dy += math.Sin(b.Dir) * math.Min(b.Bound*a.Stance, 6)
 
-	if team != "ffa" && o.Team == team {
+	if b.Team != "ffa" && a.Team == b.Team {
 		return
 	}
 
-	o.HitTime = time.Now().Unix()
+	a.HitTime = time.Now().Unix()
 
-	if h-o.Damage <= 0 {
-		o.H -= d * (h / o.Damage)
+	if b.Lh-a.Damage <= 0 {
+		a.H -= b.Damage * (b.Lh / a.Damage)
 	} else {
-		o.H -= d
+		a.H -= b.Damage
 	}
 
-	o.IsCollision = true
+	a.IsCollision = true
 }
 
-var objID int = 0
+var objID int = 1
 
 //
 func (o Object) SocketObj() map[string]interface{} {
@@ -139,8 +132,8 @@ func (o Object) SocketObj() map[string]interface{} {
 	}
 	return map[string]interface{}{
 		"id":          o.ID,
+		"team":        o.Team,
 		"type":        o.Type,
-		"color":       o.Color,
 		"x":           floor(o.X, 2),
 		"y":           floor(o.Y, 2),
 		"r":           floor(o.R, 1),
@@ -156,32 +149,31 @@ func (o Object) SocketObj() map[string]interface{} {
 	}
 }
 
-func NewObject(value map[string]interface{}) *Object {
+func NewObject(value map[string]interface{}, t func(*Object), c func(*Object, *Object)) *Object {
 	m := map[string]interface{}{
-		"ID":          objID,
-		"Type":        "Circle",
-		"Color":       2,
-		"Team":        "FFA",
-		"X":           -999999,
-		"Y":           -999999,
-		"R":           Grid,
-		"Level":       1,
-		"H":           10,
-		"Mh":          10,
-		"Lh":          10,
-		"Damage":      8,
-		"Speed":       0.07,
-		"Bound":       1,
-		"Stance":      1,
-		"Opacity":     1,
-		"Sight":       1,
-		"SpawnTime":   time.Now().Unix(),
-		"HitTime":     time.Now().Unix(),
-		"DeadTime":    -1,
-		"IsBorder":    true,
-		"IsOwnCol":    true,
-		"IsDead":      false,
-		"IsCollision": false,
+		"id":          objID,
+		"type":        "Square",
+		"team":        "ffa",
+		"x":           -999999,
+		"y":           -999999,
+		"r":           Grid,
+		"level":       1,
+		"h":           10,
+		"mh":          10,
+		"lh":          10,
+		"damage":      8,
+		"speed":       0.07,
+		"bound":       1,
+		"stance":      1,
+		"opacity":     1,
+		"sight":       1,
+		"spawnTime":   time.Now().Unix(),
+		"hitTime":     time.Now().Unix(),
+		"deadTime":    -1,
+		"isBorder":    true,
+		"isOwnCol":    true,
+		"isDead":      false,
+		"isCollision": false,
 	}
 	objID++
 
@@ -193,5 +185,7 @@ func NewObject(value map[string]interface{}) *Object {
 
 	s := Object{}
 	json.Unmarshal(jsonString, &s)
+	s.Tick = t
+	s.Collision = c
 	return &s
 }

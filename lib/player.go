@@ -1,6 +1,9 @@
 package lib
 
-import "time"
+import (
+	"math"
+	"time"
+)
 
 // Camera is
 type Camera struct {
@@ -10,26 +13,22 @@ type Camera struct {
 
 // Player is
 type Player struct {
-	ID              string
-	Mx              float64
-	My              float64
-	Stat            int
-	Stats           [8]int
-	Camera          Camera
-	MoveDir         float64
-	IsCanDir        bool
-	StartTime       int64
-	ControlObjectID int
+	ID            string
+	Mx            float64
+	My            float64
+	Stat          int
+	Camera        Camera
+	MoveDir       float64
+	IsMove        bool
+	IsCanDir      bool
+	StartTime     int64
+	ControlObject *Object
 }
 
 // NewPlayer is make player
 func NewPlayer(id string) *Player {
 	p := Player{}
 	p.ID = id
-	p.Mx = 0
-	p.My = 0
-	p.Stat = 0
-	p.Stats = [8]int{0, 0, 0, 0, 0, 0, 0, 0}
 	p.Camera = Camera{
 		Pos: Pos{0, 0},
 		Z:   1,
@@ -45,10 +44,21 @@ func (p *Player) SetMousePoint(x float64, y float64) {
 	p.My = y
 }
 
-func (p *Player) SetCamera() {
-	/*if p.ControlObject != nil {
-		obj := *p.ControlObject
+func (p *Player) PlayerSet() {
+	if obj := p.ControlObject; obj != nil {
 		p.Camera.Pos = Pos{X: obj.X, Y: obj.Y}
-		p.Camera.Z = 16 / 9 // * math.Pow(0.995, obj.Variable["Level"].(float64)) / obj.Variable["Sight"].(float64)
-	}*/
+		p.Camera.Z = 16 / 9 * math.Pow(0.995, float64(obj.Level)) / float64(obj.Sight)
+
+		if p.IsMove {
+			obj.Dx += math.Cos(p.MoveDir) * obj.Speed
+			obj.Dy += math.Sin(p.MoveDir) * obj.Speed
+		}
+		if p.IsCanDir {
+			obj.Dir = math.Atan2(p.My, p.Mx)
+		}
+
+	} else {
+		p.Camera.Pos = Pos{X: 0, Y: 0}
+		p.Camera.Z = 1
+	}
 }
