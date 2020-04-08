@@ -100,6 +100,8 @@ func (obj *Object) ObjectTick() {
 	}
 
 	obj.Lh = obj.H
+
+	obj.IsCollision = false
 }
 
 //

@@ -49,6 +49,8 @@ export const colorType = function(type, team){
                     return 5;
                 case "green":
                     return 6;
+                default:
+                    return 16;
             }
     }
 }

@@ -31,9 +31,10 @@ func NewPlayer(id string) *Player {
 	p.ID = id
 	p.Camera = Camera{
 		Pos: Pos{0, 0},
-		Z:   1,
+		Z:   1.,
 	}
 	p.StartTime = time.Now().Unix()
+	p.IsCanDir = true
 
 	return &p
 }
@@ -47,14 +48,14 @@ func (p *Player) SetMousePoint(x float64, y float64) {
 func (p *Player) PlayerSet() {
 	if obj := p.ControlObject; obj != nil {
 		p.Camera.Pos = Pos{X: obj.X, Y: obj.Y}
-		p.Camera.Z = 16 / 9 * math.Pow(0.995, float64(obj.Level)) / float64(obj.Sight)
+		p.Camera.Z = 16. / 9. * math.Pow(0.995, float64(obj.Level)-1) / float64(obj.Sight)
 
 		if p.IsMove {
 			obj.Dx += math.Cos(p.MoveDir) * obj.Speed
 			obj.Dy += math.Sin(p.MoveDir) * obj.Speed
 		}
 		if p.IsCanDir {
-			obj.Dir = math.Atan2(p.My, p.Mx)
+			obj.Dir = math.Atan2(p.My-obj.Y, p.Mx-obj.X)
 		}
 
 	} else {

@@ -29,10 +29,10 @@ export const Obj = function(id) {
     this.hitTime = 0;
 
     this.Animate = function (tick) {
-        if (this.isDead){
+        if (this.isDead) {
             this.opacity = Math.max(this.opacity - 0.13 * tick * 0.05, 0);
             this.radius += 0.4 * tick * 0.05;
-            if (this.opacity == 0){
+            if (this.opacity == 0) {
                 System.RemoveObject(this.id);
                 return;
             }
@@ -56,8 +56,11 @@ export const Obj = function(id) {
 
         this.name = data.name;
         if (this.type !== data.type){
-            if (gunList[data.type] == undefined) this.guns = [];
-            else this.guns = gunList[data.type];
+            if (gunList[data.type] == undefined){
+                this.guns = [];
+            } else {
+                this.guns = gunList[data.type];
+            } 
         }
         this.type = data.type;
         this.color = colorType(data.type,data.team);
@@ -111,13 +114,11 @@ export const Obj = function(id) {
     this.Draw = function (ctx,camera) {
         if (this.guns.length > 0 && this.opacity < 1){
             var {ctxx, x, y, z, t, c, r, dir, o} = this.SetCanvasSize(camera);
-            ctxx.save();
             this.guns.forEach((g) => {
                 if (!g.isFront) {
                     g.Draw(ctxx, camera, x, y, r, dir);
                 }
             });
-            drawC(ctxx,c,c.getDarkRGB());
             drawObj(ctxx,
                 x + s.x * z - x - Math.floor(s.x * z - x),
                 y + s.y * z - y - Math.floor(s.y * z - y),
@@ -127,25 +128,21 @@ export const Obj = function(id) {
                     g.Draw(ctxx, camera, x, y, r, dir);
                 }
             });
-            ctxx.restore();
             var s = this.DrawSet(camera);
             ctx.drawImage(this.cv,Math.floor(s.x * z - x),Math.floor(s.y * z - y));
         } else {
             var {x, y, z, t, c, r, dir, o} = this.DrawSet(camera);
-            ctx.save();
             this.guns.forEach((g) => {
                 if (!g.isFront) {
                     g.Draw(ctx, camera, x, y, r, dir);
                 }
             });
-            drawC(ctx,c,c.getDarkRGB());
             drawObj(ctx, x, y, z, r, dir, t, o, c);
             this.guns.forEach((g) => {
                 if (g.isFront) {
                     g.Draw(ctx, camera, x, y, r, dir);
                 }
             });
-            ctx.restore();
         }
     }
 

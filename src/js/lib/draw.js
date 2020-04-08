@@ -9,10 +9,11 @@ export const drawCircle = function (ctx, x, y, z, r) {
 }
 
 export const drawPolygon = function (ctx, x, y, z, r, dir, p) {
+    ctx.lineWidth = 2 * z;
     ctx.beginPath();
     let t = (dir % 2)? 0: Math.PI/p;
     ctx.moveTo((x + Math.cos(t) * r) * z,(y + Math.sin(t) * r) * z);
-    for (;t >= -Math.PI * 2;t += Math.PI*2 /p){
+    for (;t >= -Math.PI * 2;t -= Math.PI*2/p){
         ctx.lineTo((x + Math.cos(t) * r) * z,(y + Math.sin(t) * r) * z);
     }
     ctx.fill();

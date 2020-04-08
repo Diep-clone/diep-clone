@@ -28,7 +28,6 @@ export default class System {
         this.playerSetting = {
             "id": -1,
             "level": 0,
-            "sight": 1,
             "isCanRotate": false,
             "stat": 0,
             "stats": [],
@@ -83,13 +82,14 @@ export default class System {
                 let value = true;
                 switch (key){
                     case "moveVector":
-                        value = Math.atan2(this.input.moveVector.y,this.input.moveVector.x);
+                        if (this.input.moveVector.x === 0 && this.input.moveVector.y === 0) value = 9;
+                        else value = Math.atan2(this.input.moveVector.y,this.input.moveVector.x);
                         break;
                     default:
                         break;
                 }
                 Socket.emit(key, value);
-            },
+            }.bind(this),
             keyUp:function(){
                 if (!this.keys[arguments[0]]) return;
                 this.keys[arguments[0]] = false;
@@ -117,14 +117,17 @@ export default class System {
                 let value = false;
                 switch (key){
                     case "moveVector":
-                        value = Math.atan2(this.input.moveVector.y,this.input.moveVector.x);
+                        if (this.input.moveVector.x === 0 && this.input.moveVector.y === 0) value = 9;
+                        else value = Math.atan2(this.input.moveVector.y,this.input.moveVector.x);
                         break;
                     default:
                         break;
                 }
                 Socket.emit(key, value);
             }.bind(this),
-            mouse:function(){}.bind(this),
+            mouse:function(){
+                Socket.emit("mousemove",arguments[0],arguments[1]);
+            },
             prevent_right_click: function(){},
             print_convar_help: function(){},
             set_convar: function(key,value){},
@@ -147,13 +150,17 @@ export default class System {
 
             this.camera.z *= camera.Z;
 
+            console.log(camera.Z);
+
             this.camera.x = camera.Pos.X - this.cv.width / 2 / this.camera.uiz / camera.Z;
             this.camera.y = camera.Pos.Y - this.cv.height / 2 / this.camera.uiz / camera.Z;
         }.bind(this));
 
         Socket.on("objectList", function (list) {
             list.forEach((obj) => {
+                
                 let isObjEnable = false;
+                
                 this.objectList.forEach((obi) => {
                     if (obi.id === obj.id){
                         obi.ObjSet(obj);
@@ -185,7 +192,7 @@ export default class System {
             case "Connecting":
                 break;
             case "Gaming":
-                drawBackground(this.ctx, this.camera.x, this.camera.y, this.camera.z, this.cv.width, this.cv.height, [{x:-1000,y:-1000,w:2000,h:2000}]);
+                drawBackground(this.ctx, this.camera.x, this.camera.y, this.camera.z, this.cv.width, this.cv.height, [{x:-100,y:-100,w:200,h:200}]);
 
                 this.objectList.forEach((o) => {
                     o.Animate(tick);

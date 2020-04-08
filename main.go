@@ -64,8 +64,10 @@ func main() {
 			"h":          50,
 			"mh":         50,
 			"damage":     20,
+			"level":      45,
 			"stats":      [8]int{0, 0, 0, 7, 7, 7, 5, 7},
 			"maxStats":   [8]int{7, 7, 7, 7, 7, 7, 7, 7},
+			"sight":      1.11,
 		}, func(obj *lib.Object) {
 			lib.TankTick(obj)
 		}, lib.DefaultCollision, /*func(a *lib.Object, b *lib.Object) {
@@ -88,8 +90,8 @@ func main() {
 		log.Println("INFO > " + s.ID() + " Login")
 	})
 
-	server.OnEvent("/", "moveVector", func(s socketio.Conn, value float64, b bool) {
-		users[s.ID()].IsMove = b
+	server.OnEvent("/", "moveVector", func(s socketio.Conn, value float64) {
+		users[s.ID()].IsMove = value != 9
 		users[s.ID()].MoveDir = value
 	})
 
@@ -97,12 +99,9 @@ func main() {
 
 	})
 
-	server.OnEvent("/", "mousemove", func(s socketio.Conn, mouse struct {
-		x float64
-		y float64
-	}) {
+	server.OnEvent("/", "mousemove", func(s socketio.Conn, x float64, y float64) {
 		if u, ok := users[s.ID()]; ok {
-			u.SetMousePoint(mouse.x, mouse.y)
+			u.SetMousePoint(x, y)
 		}
 	})
 
@@ -226,15 +225,15 @@ func sendUpdates(ticker time.Ticker) {
 				}
 			}
 
-			log.Println(visibleObject)
+			//st := time.Now()
 
 			if s, ok := sockets[u.ID].(socketio.Conn); ok {
 				s.Emit("objectList", visibleObject)
+				//log.Println(time.Since(st))
 				if obj := u.ControlObject; obj == nil {
 					s.Emit("playerSet", map[string]interface{}{
 						"id":          -1,
 						"level":       1,
-						"sight":       u.Camera.Z,
 						"isCanRotate": u.IsCanDir,
 						"stat":        0,
 						"stats":       nil,
@@ -244,7 +243,6 @@ func sendUpdates(ticker time.Ticker) {
 					s.Emit("playerSet", map[string]interface{}{
 						"id":          obj.ID,
 						"level":       obj.Level,
-						"sight":       u.Camera.Z,
 						"isCanRotate": u.IsCanDir,
 						"stat":        u.Stat,
 						"stats":       obj.Stats,
