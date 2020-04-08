@@ -6,9 +6,9 @@ export const RGB = function(r, g, b) {
         this.b = b;
     } else if (r[0] === "#") {
         let f = function (x) {
-            if (x<="9" && x>="0") return x - "0";
-            else if (x<="Z" && x>="A") return x - "A" + 11;
-            else if (x<="z" && x>="a") return x - "a" + 11;
+            if (x<="9" && x>="0") return x.charCodeAt(0) - 48;
+            else if (x<="Z" && x>="A") return x.charCodeAt(0) - 65 + 10;
+            else if (x<="z" && x>="a") return x.charCodeAt(0) - 97 + 10;
             return 0;
         }
         this.b = f(r[6])*16 + f(r[5]);

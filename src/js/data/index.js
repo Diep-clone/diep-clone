@@ -12,31 +12,51 @@ export const statColor = [
 ];
 
 export const colorList = [
-    new RGB("#555555"), // smasher's bases color
-    new RGB("#999999"), // Barrles's color
-    new RGB("#00B1DE"), // FFA your's color
-    new RGB("#00B1DE"), // Blue
-    new RGB("#F14E54"), // Red
-    new RGB("#BE7FF5"), // Purple
-    new RGB("#00F46C"), // Green
-    new RGB("#D68163"), // 
-    new RGB("#89FF69"), // Shiny
-    new RGB("#FFE869"), // Square
-    new RGB("#FC7677"), // Triangle
-    new RGB("#768DFC"), // Pentagon
-    new RGB("#FF77DC"), // Crashers
-    new RGB("#FFE869"), // AC
-    new RGB("#44FFA0"), // Scoreboard
-    new RGB("#BBBBBB"), // Maze Walls
-    new RGB("#FF0000"), // FFA other's color
-    new RGB("#FF0000"), // Necromanser's Drone color
-    new RGB("#C0C0C0"), // Fallen
+    new RGB("#555555"), // smasher's bases color 0
+    new RGB("#999999"), // Barrles's color 1
+    new RGB("#00B1DE"), // FFA your's color 2
+    new RGB("#00B1DE"), // Blue 3
+    new RGB("#F14E54"), // Red 4
+    new RGB("#BE7FF5"), // Purple 5
+    new RGB("#00F46C"), // Green 6
+    new RGB("#D68163"), //  7
+    new RGB("#89FF69"), // Shiny 8
+    new RGB("#FFE869"), // Square 9
+    new RGB("#FC7677"), // Triangle 10
+    new RGB("#768DFC"), // Pentagon 11
+    new RGB("#FF77DC"), // Crashers 12
+    new RGB("#FFE869"), // AC 13
+    new RGB("#44FFA0"), // Scoreboard 14
+    new RGB("#BBBBBB"), // Maze Walls 15
+    new RGB("#FF0000"), // FFA other's color 16
+    new RGB("#FF0000"), // Necromanser's Drone color 17
+    new RGB("#C0C0C0"), // Fallen 18
 ];
+
+export const colorType = function(type, team){
+    switch (type){
+        case "Square":
+            return 9;
+        default:
+            switch (team){
+                case "ffa":
+                    return 2;
+                case "red":
+                    return 4;
+                case "blue":
+                    return 3;
+                case "purple":
+                    return 5;
+                case "green":
+                    return 6;
+            }
+    }
+}
 
 export const backgroundColor = new RGB(205,205,205);
 
 export const gunList = {
-    "Basic": [],
+    
 }
 
 export const expList = [
@@ -86,18 +106,3 @@ export const expList = [
     21849,
     23536
 ];
-
-export const input = {
-    blur:function(){},
-    execute:function(v){},
-    flushInputHooks: function(){},
-    get_convar:function(key){},
-    keyDown: function(){},
-    keyUp:function(){},
-    mouse:function(){},
-    prevent_right_click: function(){},
-    print_convar_help: function(){},
-    set_convar: function(key,value){},
-    should_prevent_unload: function(){},
-    wheel: function(){},
-};

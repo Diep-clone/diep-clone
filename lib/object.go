@@ -1,6 +1,10 @@
 package lib
 
-import "time"
+import (
+	"encoding/json"
+	"math"
+	"time"
+)
 
 // Pos is
 type Pos struct {
@@ -18,7 +22,6 @@ type Circle struct {
 type Score struct {
 	Name  string
 	Type  string
-	Color int
 	Score int
 }
 
@@ -38,112 +41,151 @@ func (sc *Scoreboard) Push(value Score) {
 
 // Object is
 type Object struct {
-	Owner     *interface{}
-	ID        int
-	Type      string
-	Color     int
-	Team      string
-	Name      string
-	C         Circle
-	Dx        float64
-	Dy        float64
-	Dir       float64
-	Exp       int
-	H         float64
-	Mh        float64
-	Lh        float64
-	Damage    float64
-	Speed     float64
-	Bound     float64
-	Stance    float64
-	Opacity   float64
-	Guns      []Gun
-	Event     map[string]interface{}
-	Variable  map[string]interface{}
-	SpawnTime int64
-	HitTime   int64
-	DeadTime  int64
-	HitObject *Object
-	IsBorder  bool
-	IsOwnCol  bool
-	IsCanDir  bool // is Can move Dir
-	IsDead    bool
+	Controller  *Player `json:"controller"`
+	Owner       *Object `json:"owner"`
+	ID          int     `json:"id"`
+	Type        string  `json:"type"`
+	Team        string  `json:"team"`
+	Name        string  `json:"name"`
+	X           float64 `json:"x"`
+	Y           float64 `json:"y"`
+	R           float64 `json:"r"`
+	Dx          float64 `json:"dx"`
+	Dy          float64 `json:"dy"`
+	Dir         float64 `json:"dir"`
+	Level       int     `json:"level"`
+	Exp         int     `json:"exp"`
+	H           float64 `json:"h"`
+	Mh          float64 `json:"mh"`
+	Lh          float64 `json:"lh"`
+	Damage      float64 `json:"damage"`
+	Speed       float64 `json:"speed"`
+	Bound       float64 `json:"bound"`
+	Stance      float64 `json:"stance"`
+	Opacity     float64 `json:"opacity"`
+	Sight       float64 `json:"sight"`
+	Stats       [8]int  `json:"stats"`
+	MaxStats    [8]int  `json:"maxStats"`
+	Guns        []Gun   `json:"guns"`
+	SpawnTime   int64   `json:"spawnTime"`
+	HitTime     int64   `json:"hitTime"`
+	DeadTime    int64   `json:"deadTime"`
+	IsBorder    bool    `json:"isBorder"`
+	IsOwnCol    bool    `json:"isOwnCol"`
+	IsDead      bool    `json:"isDead"`
+	IsCollision bool    `json:"isCollision"`
+	Tick        func(*Object)
+	Collision   func(*Object, *Object)
 }
 
-var objID int = 0
+//
+func (obj *Object) ObjectTick() {
+	obj.X += obj.Dx
+	obj.Y += obj.Dy
 
-// NewObject is
-func NewObject(
-	own interface{},
-	t string,
-	c int,
-	team string,
-	name string,
-	x float64,
-	y float64,
-	r float64, // radius
-	h float64, // health
-	da float64, // damage
-	sp float64, // speed
-	bo float64, // bound
-	st float64, // stance
-	event map[string]interface{},
-	variable map[string]interface{},
-	isBorder bool,
-	isOwnCol bool) *Object {
-	o := Object{}
-	o.Owner = &own
-	o.ID = objID
-	objID++
-	o.Type = t
-	o.Color = c
-	o.Team = team
-	o.Name = name
-	o.C = Circle{Pos{x, y}, r}
-	o.Dx = 0
-	o.Dy = 0
-	o.Mh = h
-	o.H = h
-	o.Lh = h
-	o.Damage = da
-	o.Speed = sp
-	o.Bound = bo
-	o.Stance = st
-	o.Guns = []Gun{}
-	o.Event = event
-	o.Variable = variable
-	o.SpawnTime = time.Now().Unix()
-	o.HitTime = time.Now().Unix()
-	o.DeadTime = -1
-	o.HitObject = &o
-	o.IsBorder = isBorder
-	o.IsOwnCol = isOwnCol
-	o.IsDead = false
+	obj.Dx *= 0.97
+	obj.Dy *= 0.97
 
-	return &o
+	if obj.H <= 0 {
+		obj.IsDead = true
+		obj.H = 0
+	}
+
+	if time.Now().Unix()-30000 > obj.HitTime {
+		obj.H += obj.Mh / 60 / 10
+	}
+
+	if obj.H > obj.Mh {
+		obj.H = obj.Mh
+	}
+
+	obj.Lh = obj.H
 }
 
+//
+func DefaultCollision(a *Object, b *Object) {
+	a.Dx += math.Cos(b.Dir) * math.Min(b.Bound*a.Stance, 6)
+	a.Dy += math.Sin(b.Dir) * math.Min(b.Bound*a.Stance, 6)
+
+	if b.Team != "ffa" && a.Team == b.Team {
+		return
+	}
+
+	a.HitTime = time.Now().Unix()
+
+	if b.Lh-a.Damage <= 0 {
+		a.H -= b.Damage * (b.Lh / a.Damage)
+	} else {
+		a.H -= b.Damage
+	}
+
+	a.IsCollision = true
+}
+
+var objID int = 1
+
+//
 func (o Object) SocketObj() map[string]interface{} {
-	var id interface{}
-	if obj, ok := (*o.Owner).(Player); ok {
-		id = obj.ID
-	} else if obj, ok := (*o.Owner).(Object); ok {
-		id = obj.ID
+	var ownerID int = -1
+	if o.Owner != nil {
+		ownerID = o.Owner.ID
 	}
 	return map[string]interface{}{
-		"id":        o.ID,
-		"type":      o.Type,
-		"color":     o.Color,
-		"x":         floor(o.C.Pos.X, 2),
-		"y":         floor(o.C.Pos.Y, 2),
-		"r":         floor(o.C.R, 1),
-		"dir":       floor(o.Dir, 2),
-		"maxhealth": floor(o.Mh, 1),
-		"health":    floor(o.H, 1),
-		"opacity":   floor(o.Opacity, 2),
-		"exp":       o.Exp,
-		"name":      o.Name,
-		"owner":     id,
-		"isDead":    o.IsDead,
+		"id":          o.ID,
+		"team":        o.Team,
+		"type":        o.Type,
+		"x":           floor(o.X, 2),
+		"y":           floor(o.Y, 2),
+		"r":           floor(o.R, 1),
+		"dir":         floor(o.Dir, 2),
+		"maxhealth":   floor(o.Mh, 1),
+		"health":      floor(o.H, 1),
+		"opacity":     floor(o.Opacity, 2),
+		"exp":         o.Exp,
+		"name":        o.Name,
+		"owner":       ownerID,
+		"isDead":      o.IsDead,
+		"isCollision": o.IsCollision,
 	}
+}
+
+func NewObject(value map[string]interface{}, t func(*Object), c func(*Object, *Object)) *Object {
+	m := map[string]interface{}{
+		"id":          objID,
+		"type":        "Square",
+		"team":        "ffa",
+		"x":           -999999,
+		"y":           -999999,
+		"r":           Grid,
+		"level":       1,
+		"h":           10,
+		"mh":          10,
+		"lh":          10,
+		"damage":      8,
+		"speed":       0.07,
+		"bound":       1,
+		"stance":      1,
+		"opacity":     1,
+		"sight":       1,
+		"spawnTime":   time.Now().Unix(),
+		"hitTime":     time.Now().Unix(),
+		"deadTime":    -1,
+		"isBorder":    true,
+		"isOwnCol":    true,
+		"isDead":      false,
+		"isCollision": false,
+	}
+	objID++
+
+	for key, val := range value {
+		m[key] = val
+	}
+
+	jsonString, _ := json.Marshal(m)
+
+	s := Object{}
+	json.Unmarshal(jsonString, &s)
+	s.Tick = t
+	s.Collision = c
+	return &s
 }

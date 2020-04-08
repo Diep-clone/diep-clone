@@ -1,5 +1,5 @@
 import { RGB } from '../lib/util';
-import { colorList, gunList } from '../data/index';
+import { colorList, colorType, gunList } from '../data/index';
 import { drawC, drawObj } from '../lib/draw';
 import System, { Socket } from '../system';
 
@@ -10,7 +10,7 @@ export const Obj = function(id) {
 
     this.name;
     this.type;
-    this.guns;
+    this.guns = [];
     this.color;
 
     this.x;
@@ -24,7 +24,7 @@ export const Obj = function(id) {
     this.isDead;
 
     this.cv = document.createElement("canvas");
-    this.ctx = cv.getContext("2d");
+    this.ctx = this.cv.getContext("2d");
 
     this.hitTime = 0;
 
@@ -37,45 +37,38 @@ export const Obj = function(id) {
                 return;
             }
         }
+
         this.guns.forEach((g) => g.Animate());
 
         this.hitTime = Math.max(this.hitTime - tick,0);
     }
 
-    Socket.on("collision", function (id) {
-        if (this.id === id){
-            this.guns.forEach((g) => g.Hit());
-            this.hitTime = 100;
-        }
-    }.bind(this));
-
     this.ObjSet = function (data) {
-        if (data.id === this.id) {
-            this.x = data.x;
-            this.y = data.y;
-            this.r = data.r;
-            this.dir = data.dir;
-            this.h = data.h;
-            this.mh = data.mh;
-            this.a = data.a;
-            this.score = data.score;
-            this.isDead = data.isDead;
+        this.x = data.x;
+        this.y = data.y;
+        this.r = data.r;
+        this.dir = data.dir;
+        this.h = data.h;
+        this.mh = data.mh;
+        this.a = data.a;
+        this.score = data.score;
+        this.isDead = data.isDead;
 
-            this.name = data.name;
-            if (this.type !== data.type){
-                this.guns = gunList[data.type];
-            }
-            this.type = data.type;
-            this.color = data.color;
+        this.name = data.name;
+        if (this.type !== data.type){
+            if (gunList[data.type] == undefined) this.guns = [];
+            else this.guns = gunList[data.type];
         }
+        this.type = data.type;
+        this.color = colorType(data.type,data.team);
     };
 
     this.DrawSet = function (camera) {
         let c = colorList[this.color];
         if (this.hitTime > 60) {
-            c.getLightRGB(1 - (this.hitTime - 60) / 40);
+            c = c.getLightRGB(1 - (this.hitTime - 60) / 40);
         } else if (this.hitTime > 0) {
-            c.getRedRGB(1 - this.hitTime / 60);
+            c = c.getRedRGB(1 - this.hitTime / 60);
         }
         return {
             x: this.x - camera.x,
@@ -116,13 +109,15 @@ export const Obj = function(id) {
     }
 
     this.Draw = function (ctx,camera) {
-        if (this.guns.length>0){
+        if (this.guns.length > 0 && this.opacity < 1){
             var {ctxx, x, y, z, t, c, r, dir, o} = this.SetCanvasSize(camera);
+            ctxx.save();
             this.guns.forEach((g) => {
                 if (!g.isFront) {
                     g.Draw(ctxx, camera, x, y, r, dir);
                 }
             });
+            drawC(ctxx,c,c.getDarkRGB());
             drawObj(ctxx,
                 x + s.x * z - x - Math.floor(s.x * z - x),
                 y + s.y * z - y - Math.floor(s.y * z - y),
@@ -132,21 +127,25 @@ export const Obj = function(id) {
                     g.Draw(ctxx, camera, x, y, r, dir);
                 }
             });
+            ctxx.restore();
             var s = this.DrawSet(camera);
             ctx.drawImage(this.cv,Math.floor(s.x * z - x),Math.floor(s.y * z - y));
         } else {
             var {x, y, z, t, c, r, dir, o} = this.DrawSet(camera);
+            ctx.save();
             this.guns.forEach((g) => {
                 if (!g.isFront) {
-                    g.Draw(ctxx, camera, x, y, r, dir);
+                    g.Draw(ctx, camera, x, y, r, dir);
                 }
             });
+            drawC(ctx,c,c.getDarkRGB());
             drawObj(ctx, x, y, z, r, dir, t, o, c);
             this.guns.forEach((g) => {
                 if (g.isFront) {
-                    g.Draw(ctxx, camera, x, y, r, dir);
+                    g.Draw(ctx, camera, x, y, r, dir);
                 }
             });
+            ctx.restore();
         }
     }
 
@@ -200,7 +199,7 @@ export const Obj = function(id) {
             ctx.moveTo((x + r) * z, (y + r * 5 / 3) * z);
             ctx.lineTo((x - r) * z, (y + r * 5 / 3) * z);
             ctx.closePath();
-            drawC(ctx,"#444444");
+            drawC(ctx, new RGB("#444444"));
             ctx.lineWidth = 4.1 * z;
             ctx.stroke();
         
@@ -208,7 +207,7 @@ export const Obj = function(id) {
             ctx.moveTo((x - r) * z, (y + r * 5 / 3) * z);
             ctx.lineTo((x - r + this.hpBarP * r * 2) * z, (y + r * 5 / 3) * z);
             ctx.closePath();
-            drawC(ctx,"#86e27f");
+            drawC(ctx, new RGB("#86e27f"));
             ctx.lineWidth = 2.6 * z;
             ctx.stroke();
 

@@ -1,4 +1,5 @@
 import { backgroundColor } from '../data/index'
+import { RGB } from './util';
 
 export const drawCircle = function (ctx, x, y, z, r) {
     ctx.beginPath();
@@ -32,7 +33,7 @@ export const drawObj = function (ctx, x, y, z, r, dir, t, o, c) {
         case "Triangle":
             drawPolygon(ctx, x, y, z, r, dir, 3);
             break;
-        case "Shape":
+        case "Square":
         case "Necromanser":
         case "Factory":
             drawPolygon(ctx, x, y, z, r, dir, 4);
@@ -54,14 +55,15 @@ export const drawObj = function (ctx, x, y, z, r, dir, t, o, c) {
 }
 
 export const drawBackground = function (ctx, x, y, z, w, h, area) {
+    ctx.save();
     drawC(ctx, backgroundColor.getDarkRGB());
     ctx.fillRect(0,0,w,h);
     drawC(ctx, backgroundColor);
-    ctx.fillRect((-area[0].x - x) * z, (-area[0].y - y) * z, area[0].w * z, area[0].h * z);
+    ctx.fillRect((area[0].x - x) * z, (area[0].y - y) * z, area[0].w * z, area[0].h * z);
 
     for (let i=1;i<area.length;i++){
         drawC(ctx, area[i].c);
-        ctx.fillRect((-area[i].x - x) * z, (-area[i].y - y) * z, area[i].w * z, area[i].h * z);  
+        ctx.fillRect((area[i].x - x) * z, (area[i].y - y) * z, area[i].w * z, area[i].h * z);
     }
 
     ctx.beginPath(); // draw grid
@@ -77,4 +79,5 @@ export const drawBackground = function (ctx, x, y, z, w, h, area) {
     ctx.globalAlpha = 0.1;
     ctx.lineWidth = 0.4;
     ctx.stroke();
+    ctx.restore();
 }
