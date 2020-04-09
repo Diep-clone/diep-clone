@@ -1,3 +1,3 @@
 package lib
 
-var ShapeCount int = 10
+var ShapeCount int = 100

@@ -34,24 +34,27 @@ export const colorList = [
 ];
 
 export const colorType = function(type, team){
-    switch (type){
-        case "Square":
-            return 9;
-        default:
-            switch (team){
-                case "ffa":
-                    return 2;
-                case "red":
-                    return 4;
-                case "blue":
-                    return 3;
-                case "purple":
-                    return 5;
-                case "green":
-                    return 6;
+    switch (team){
+        case "ffa":
+        case "shape":
+            switch (type){
+                case "Square":
+                    return 9;
+                case "NecroSquare":
+                    return 17;
                 default:
-                    return 16;
+                    return 2;
             }
+        case "red":
+            return 4;
+        case "blue":
+            return 3;
+        case "purple":
+            return 5;
+        case "green":
+            return 6;
+        default:
+            return 16;
     }
 }
 

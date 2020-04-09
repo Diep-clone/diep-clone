@@ -3,14 +3,6 @@ package lib
 // MaxObj is Object Max length
 var MaxObj = 5
 
-// Area is
-type Area struct {
-	X  float64
-	Y  float64
-	X2 float64
-	Y2 float64
-}
-
 // Quadtree is
 type Quadtree struct {
 	x       float64
@@ -64,7 +56,7 @@ func (q Quadtree) getIndex(area interface{}) int {
 		}
 	} else {
 		obj, _ := area.(Area)
-		if obj.X >= x && obj.X2 <= x || obj.Y >= y && obj.Y2 <= y {
+		if obj.X <= x && obj.X+obj.W >= x || obj.Y <= y && obj.Y+obj.H >= y {
 			return -1
 		}
 	}
@@ -112,7 +104,8 @@ func (q *Quadtree) Insert(obj *Object) {
 			index = q.getIndex(q.objects[i])
 			if index != -1 {
 				q.nodes[index].Insert(q.objects[i])
-				q.objects = q.objects[i:]
+				q.objects[i] = q.objects[len(q.objects)-1]
+				q.objects = q.objects[:len(q.objects)-1]
 			} else {
 				i++
 			}

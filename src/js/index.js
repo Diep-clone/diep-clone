@@ -2,7 +2,7 @@ import '../styles/index.css';
 
 import System from './system';
 
-const system = new System();
+window.system = new System();
 
 system.loop();
 

@@ -11,9 +11,6 @@ export default class System {
         this.cv = document.getElementById("canvas");
         this.ctx = this.cv.getContext("2d");
 
-        this.hpcv = document.createElement("canvas");
-        this.hpctx = this.hpcv.getContext("2d");
-
         this.uicv = document.createElement("canvas");
         this.uictx = this.uicv.getContext("2d");
 
@@ -47,6 +44,8 @@ export default class System {
             z: 2,
             uiz: 1,
         }
+
+        this.area = [{X:0,Y:0,W:0,H:0}];
 
         this.keys = {};
 
@@ -126,8 +125,10 @@ export default class System {
                 Socket.emit(key, value);
             }.bind(this),
             mouse:function(){
-                Socket.emit("mousemove",arguments[0],arguments[1]);
-            },
+                Socket.emit("mousemove",
+                arguments[0]/this.camera.z+this.camera.x,
+                arguments[1]/this.camera.z+this.camera.y);
+            }.bind(this),
             prevent_right_click: function(){},
             print_convar_help: function(){},
             set_convar: function(key,value){},
@@ -150,8 +151,6 @@ export default class System {
 
             this.camera.z *= camera.Z;
 
-            console.log(camera.Z);
-
             this.camera.x = camera.Pos.X - this.cv.width / 2 / this.camera.uiz / camera.Z;
             this.camera.y = camera.Pos.Y - this.cv.height / 2 / this.camera.uiz / camera.Z;
         }.bind(this));
@@ -167,12 +166,16 @@ export default class System {
                         isObjEnable = true;
                     }
                 });
-                if (!isObjEnable) {
+                if (!isObjEnable && !obj.isDead) {
                     let obi = new Obj(obj.id);
                     obi.ObjSet(obj);
                     this.objectList.push(obi);
                 }
             });
+        }.bind(this));
+
+        Socket.on("area", function (area) {
+            this.area = area;
         }.bind(this));
     }
 
@@ -182,22 +185,22 @@ export default class System {
         const tick = Date.now() - this.lastTime;
         this.lastTime = Date.now();
 
-        this.hpcv.width =
         this.uicv.width = this.cv.width;
-
-        this.hpcv.height =
         this.uicv.height = this.cv.height;
 
         switch (this.gameSetting.gameset){
             case "Connecting":
                 break;
             case "Gaming":
-                drawBackground(this.ctx, this.camera.x, this.camera.y, this.camera.z, this.cv.width, this.cv.height, [{x:-100,y:-100,w:200,h:200}]);
+                drawBackground(this.ctx, this.camera.x, this.camera.y, this.camera.z, this.cv.width, this.cv.height, this.area);
 
                 this.objectList.forEach((o) => {
                     o.Animate(tick);
                     o.Draw(this.ctx, this.camera);
-                    o.DrawHPBar(this.hpctx, this.camera);
+                });
+
+                this.objectList.forEach((o) => {
+                    o.DrawHPBar(this.ctx, this.camera);
                 });
 
                 this.uiList.forEach((ui) => {

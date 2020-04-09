@@ -11,8 +11,8 @@ export const RGB = function(r, g, b) {
             else if (x<="z" && x>="a") return x.charCodeAt(0) - 97 + 10;
             return 0;
         }
-        this.b = f(r[6])*16 + f(r[5]);
-        this.g = f(r[4])*16 + f(r[3]);
+        this.b = f(r[5])*16 + f(r[6]);
+        this.g = f(r[3])*16 + f(r[4]);
         this.r = f(r[1])*16 + f(r[2]);
     }
 

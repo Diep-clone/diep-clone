@@ -32,10 +32,12 @@ func main() {
 	statement, _ = database.Prepare("INSERT INTO people (nickname) VALUES (?)")
 	statement.Exec("")
 	*/
-	quadtree = *lib.NewQuadtree(-setting.MapSize.X, -setting.MapSize.Y, setting.MapSize.X*2, setting.MapSize.Y*2, 1)
+	quadtree = *lib.NewQuadtree(-setting.MapSize.X-lib.Grid*4, -setting.MapSize.Y-lib.Grid*4, setting.MapSize.X*2+lib.Grid*8, setting.MapSize.Y*2+lib.Grid*8, 1)
 
 	server.OnConnect("/", func(s socketio.Conn) error {
+		s.SetContext("")
 		log.Println("INFO > " + s.ID() + " Connected")
+		s.Join("game")
 
 		return nil
 	})
@@ -68,31 +70,59 @@ func main() {
 			"stats":      [8]int{0, 0, 0, 7, 7, 7, 5, 7},
 			"maxStats":   [8]int{7, 7, 7, 7, 7, 7, 7, 7},
 			"sight":      1.11,
+			/*"guns": []lib.Gun{*lib.NewGun(map[string]interface{}{
+				"owner": users[s.ID()].ControlObject,
+				"limit": 0,
+			})},*/
 		}, func(obj *lib.Object) {
 			lib.TankTick(obj)
-		}, lib.DefaultCollision, /*func(a *lib.Object, b *lib.Object) {
-			lib.DefaultCollision(a, b)
-			if b.Type == "Square" && b.H == 0 {
-				b.Type = "NecroSquare"
-				b.Team = a.Team
-				b.Exp = 0
-				b.Owner = a
-				b.Mh = (8 + 6*float64(a.Stats[4])) * 0.5
-				b.H = b.Mh
-				b.Damage = (7 + 3*float64(a.Stats[5])) * 1.68
-				b.Speed = (0.056 + 0.01*float64(a.Stats[3])) * 0.5
-				b.IsDead = false
+		}, lib.DefaultCollision, nil, /*func(a *lib.Object, b *lib.Object) {
+				if b.Type == "Square" && a.Guns[0].Limit < 22+2*a.Stats[6] {
+					b.Type = "NecroSquare"
+					b.Team = a.Team
+					b.Exp = 0
+					b.Owner = a
+					b.Mh = (8 + 6*float64(a.Stats[4])) * 0.5
+					b.H = b.Mh
+					b.Damage = (7 + 3*float64(a.Stats[5])) * 1.68
+					b.Speed = (0.056 + 0.01*float64(a.Stats[3])) * 0.5
+					b.IsDead = false
+					b.KillEvent = a.KillEvent
+					b.DeadEvent = func(obj *lib.Object, killer *lib.Object) {
+						obj.Owner.Guns[0].Limit--
+						lib.ShapeCount++
+					}
+					b.Tick = func(obj *lib.Object) {
+						p := obj.Owner.Controller
+						if p == nil {
+							return
+						}
+						if p.Mr {
+							obj.Dir = math.Atan2(obj.Y-(obj.Owner.Y+p.My), obj.X-(obj.Owner.X+p.Mx))
+							obj.Dx += math.Cos(obj.Dir) * obj.Speed
+							obj.Dy += math.Sin(obj.Dir) * obj.Speed
+						} else if p.Ml {
+							obj.Dir = math.Atan2((obj.Owner.Y+p.My)-obj.Y, (obj.Owner.X+p.Mx)-obj.X)
+							obj.Dx += math.Cos(obj.Dir) * obj.Speed
+							obj.Dy += math.Sin(obj.Dir) * obj.Speed
+						} else if obj.Owner.DeadTime != 0 {
 
-			}
-		}*/)
+						} else {
+							obj.H = 0
+						}
+					}
+				}
+			}*/nil)
 		objects = append(objects, users[s.ID()].ControlObject)
 
 		log.Println("INFO > " + s.ID() + " Login")
 	})
 
 	server.OnEvent("/", "moveVector", func(s socketio.Conn, value float64) {
-		users[s.ID()].IsMove = value != 9
-		users[s.ID()].MoveDir = value
+		if u, ok := users[s.ID()]; ok {
+			u.IsMove = value != 9
+			u.MoveDir = value
+		}
 	})
 
 	server.OnEvent("/", "stat", func(s socketio.Conn, n int) {
@@ -101,7 +131,23 @@ func main() {
 
 	server.OnEvent("/", "mousemove", func(s socketio.Conn, x float64, y float64) {
 		if u, ok := users[s.ID()]; ok {
-			u.SetMousePoint(x, y)
+			if obj := u.ControlObject; obj != nil {
+				u.SetMousePoint(x-obj.X, y-obj.Y)
+			} else {
+				u.SetMousePoint(x, y)
+			}
+		}
+	})
+
+	server.OnEvent("/", "mouseright", func(s socketio.Conn, b bool) {
+		if u, ok := users[s.ID()]; ok {
+			u.Mr = b
+		}
+	})
+
+	server.OnEvent("/", "mouseleft", func(s socketio.Conn, b bool) {
+		if u, ok := users[s.ID()]; ok {
+			u.Ml = b
 		}
 	})
 
@@ -146,9 +192,13 @@ func moveloop(ticker time.Ticker) {
 			objects = append(objects, lib.NewObject(map[string]interface{}{
 				"type": "Square",
 				"name": "Square",
+				"team": "shape",
 				"x":    lib.RandomRange(-setting.MapSize.X, setting.MapSize.X),
 				"y":    lib.RandomRange(-setting.MapSize.Y, setting.MapSize.Y),
-			}, nil, lib.DefaultCollision))
+				"dir":  lib.RandomRange(-math.Pi, math.Pi),
+			}, nil, lib.DefaultCollision, nil, func(obj *lib.Object, killer *lib.Object) {
+				lib.ShapeCount++
+			}))
 		}
 		scoreboard = lib.Scoreboard{}
 
@@ -166,7 +216,8 @@ func moveloop(ticker time.Ticker) {
 
 		quadtree.Clear()
 
-		for _, obj := range objects {
+		for i := 0; i < len(objects); i++ {
+			obj := objects[i]
 
 			if obj.Tick != nil {
 				obj.Tick(obj)
@@ -199,8 +250,22 @@ func moveloop(ticker time.Ticker) {
 			}
 
 			quadtree.Insert(obj)
-		}
 
+			if obj.IsDead {
+				if obj.DeadTime == -1 {
+					obj.DeadTime = 300
+				} else if obj.DeadTime < 0 {
+					if obj.DeadEvent != nil {
+						obj.DeadEvent(obj, obj.HitObject)
+					}
+					objects[i] = objects[len(objects)-1]
+					objects = objects[:len(objects)-1]
+					i--
+				} else {
+					obj.DeadTime = math.Min(obj.DeadTime-1000./60., 0.)
+				}
+			}
+		}
 	}
 }
 
@@ -208,10 +273,10 @@ func sendUpdates(ticker time.Ticker) {
 	for range ticker.C {
 		for _, u := range users {
 			/*objList := quadtree.Retrieve(lib.Area{
-				X:  u.Camera.Pos.X + 1280/u.Camera.Z,
-				Y:  u.Camera.Pos.Y + 720/u.Camera.Z,
-				X2: u.Camera.Pos.X - 1280/u.Camera.Z,
-				Y2: u.Camera.Pos.Y - 720/u.Camera.Z,
+				X:  u.Camera.Pos.X - 1280/u.Camera.Z,
+				Y:  u.Camera.Pos.Y - 720/u.Camera.Z,
+				X2: 1280/u.Camera.Z * 2,
+				Y2: 720/u.Camera.Z * 2,
 			})
 			log.Println(objList)*/
 			var visibleObject = []map[string]interface{}{}
@@ -251,6 +316,14 @@ func sendUpdates(ticker time.Ticker) {
 				}
 			}
 		}
-		server.BroadcastToRoom("/", "/", "scoreboard", scoreboard)
+		server.BroadcastToRoom("", "game", "scoreboard", scoreboard)
+		server.BroadcastToRoom("", "game", "area", []lib.Area{
+			lib.Area{
+				X: -setting.MapSize.X,
+				Y: -setting.MapSize.Y,
+				W: setting.MapSize.X * 2,
+				H: setting.MapSize.Y * 2,
+			},
+		})
 	}
 }

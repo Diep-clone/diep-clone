@@ -69,13 +69,16 @@ type Object struct {
 	Guns        []Gun   `json:"guns"`
 	SpawnTime   int64   `json:"spawnTime"`
 	HitTime     int64   `json:"hitTime"`
-	DeadTime    int64   `json:"deadTime"`
+	DeadTime    float64 `json:"deadTime"`
 	IsBorder    bool    `json:"isBorder"`
 	IsOwnCol    bool    `json:"isOwnCol"`
 	IsDead      bool    `json:"isDead"`
 	IsCollision bool    `json:"isCollision"`
+	HitObject   *Object
 	Tick        func(*Object)
 	Collision   func(*Object, *Object)
+	KillEvent   func(*Object, *Object)
+	DeadEvent   func(*Object, *Object)
 }
 
 //
@@ -89,6 +92,9 @@ func (obj *Object) ObjectTick() {
 	if obj.H <= 0 {
 		obj.IsDead = true
 		obj.H = 0
+		if obj.HitObject.KillEvent != nil {
+			obj.HitObject.KillEvent(obj.HitObject, obj)
+		}
 	}
 
 	if time.Now().Unix()-30000 > obj.HitTime {
@@ -106,8 +112,10 @@ func (obj *Object) ObjectTick() {
 
 //
 func DefaultCollision(a *Object, b *Object) {
-	a.Dx += math.Cos(b.Dir) * math.Min(b.Bound*a.Stance, 6)
-	a.Dy += math.Sin(b.Dir) * math.Min(b.Bound*a.Stance, 6)
+	dir := math.Atan2(a.Y-b.Y, a.X-b.X)
+
+	a.Dx += math.Cos(dir) * math.Min(b.Bound*a.Stance, 6)
+	a.Dy += math.Sin(dir) * math.Min(b.Bound*a.Stance, 6)
 
 	if b.Team != "ffa" && a.Team == b.Team {
 		return
@@ -121,6 +129,7 @@ func DefaultCollision(a *Object, b *Object) {
 		a.H -= b.Damage
 	}
 
+	a.HitObject = b
 	a.IsCollision = true
 }
 
@@ -133,25 +142,24 @@ func (o Object) SocketObj() map[string]interface{} {
 		ownerID = o.Owner.ID
 	}
 	return map[string]interface{}{
-		"id":          o.ID,
-		"team":        o.Team,
-		"type":        o.Type,
-		"x":           floor(o.X, 2),
-		"y":           floor(o.Y, 2),
-		"r":           floor(o.R, 1),
-		"dir":         floor(o.Dir, 2),
-		"maxhealth":   floor(o.Mh, 1),
-		"health":      floor(o.H, 1),
-		"opacity":     floor(o.Opacity, 2),
-		"exp":         o.Exp,
-		"name":        o.Name,
-		"owner":       ownerID,
-		"isDead":      o.IsDead,
-		"isCollision": o.IsCollision,
+		"id":      o.ID,
+		"team":    o.Team,
+		"type":    o.Type,
+		"x":       floor(o.X, 2),
+		"y":       floor(o.Y, 2),
+		"r":       floor(o.R, 1),
+		"dir":     floor(o.Dir, 2),
+		"mh":      floor(o.Mh, 1),
+		"h":       floor(o.H, 1),
+		"opacity": floor(o.Opacity, 2),
+		"exp":     o.Exp,
+		"name":    o.Name,
+		"owner":   ownerID,
+		"isDead":  o.IsDead,
 	}
 }
 
-func NewObject(value map[string]interface{}, t func(*Object), c func(*Object, *Object)) *Object {
+func NewObject(value map[string]interface{}, t func(*Object), c func(*Object, *Object), k func(*Object, *Object), d func(*Object, *Object)) *Object {
 	m := map[string]interface{}{
 		"id":          objID,
 		"type":        "Square",
@@ -169,6 +177,7 @@ func NewObject(value map[string]interface{}, t func(*Object), c func(*Object, *O
 		"stance":      1,
 		"opacity":     1,
 		"sight":       1,
+		"guns":        []Gun{},
 		"spawnTime":   time.Now().Unix(),
 		"hitTime":     time.Now().Unix(),
 		"deadTime":    -1,
@@ -189,5 +198,7 @@ func NewObject(value map[string]interface{}, t func(*Object), c func(*Object, *O
 	json.Unmarshal(jsonString, &s)
 	s.Tick = t
 	s.Collision = c
+	s.KillEvent = k
+	s.DeadEvent = d
 	return &s
 }

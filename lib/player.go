@@ -16,6 +16,8 @@ type Player struct {
 	ID            string
 	Mx            float64
 	My            float64
+	Mr            bool // right Mouse
+	Ml            bool // left Mouse
 	Stat          int
 	Camera        Camera
 	MoveDir       float64
@@ -55,9 +57,8 @@ func (p *Player) PlayerSet() {
 			obj.Dy += math.Sin(p.MoveDir) * obj.Speed
 		}
 		if p.IsCanDir {
-			obj.Dir = math.Atan2(p.My-obj.Y, p.Mx-obj.X)
+			obj.Dir = math.Atan2(p.My, p.Mx)
 		}
-
 	} else {
 		p.Camera.Pos = Pos{X: 0, Y: 0}
 		p.Camera.Z = 1

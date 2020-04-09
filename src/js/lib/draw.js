@@ -10,11 +10,17 @@ export const drawCircle = function (ctx, x, y, z, r) {
 
 export const drawPolygon = function (ctx, x, y, z, r, dir, p) {
     ctx.lineWidth = 2 * z;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    let d = (90 - 180 / p) * (Math.PI * 2) / 360;
+    r *= Math.sqrt(Math.PI / (Math.sin(d) * Math.cos(d) * p));
+
     ctx.beginPath();
-    let t = (dir % 2)? 0: Math.PI/p;
-    ctx.moveTo((x + Math.cos(t) * r) * z,(y + Math.sin(t) * r) * z);
+    let t = (p % 2)? 0: Math.PI/p;
+    ctx.moveTo((x + Math.cos(t+dir) * r) * z,(y + Math.sin(t+dir) * r) * z);
     for (;t >= -Math.PI * 2;t -= Math.PI*2/p){
-        ctx.lineTo((x + Math.cos(t) * r) * z,(y + Math.sin(t) * r) * z);
+        ctx.lineTo((x + Math.cos(t+dir) * r) * z,(y + Math.sin(t+dir) * r) * z);
     }
     ctx.fill();
     ctx.stroke();
@@ -60,11 +66,11 @@ export const drawBackground = function (ctx, x, y, z, w, h, area) {
     drawC(ctx, backgroundColor.getDarkRGB());
     ctx.fillRect(0,0,w,h);
     drawC(ctx, backgroundColor);
-    ctx.fillRect((area[0].x - x) * z, (area[0].y - y) * z, area[0].w * z, area[0].h * z);
+    ctx.fillRect((area[0].X - x) * z, (area[0].Y - y) * z, area[0].W * z, area[0].H * z);
 
     for (let i=1;i<area.length;i++){
         drawC(ctx, area[i].c);
-        ctx.fillRect((area[i].x - x) * z, (area[i].y - y) * z, area[i].w * z, area[i].h * z);
+        ctx.fillRect((area[i].X - x) * z, (area[i].Y - y) * z, area[i].W * z, area[i].H * z);
     }
 
     ctx.beginPath(); // draw grid

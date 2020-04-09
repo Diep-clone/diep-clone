@@ -1,7 +1,7 @@
 import { RGB } from '../lib/util';
 import { colorList, colorType, gunList } from '../data/index';
 import { drawC, drawObj } from '../lib/draw';
-import System, { Socket } from '../system';
+import { Socket } from '../system';
 
 export const Obj = function(id) {
     'use strict';
@@ -19,7 +19,7 @@ export const Obj = function(id) {
     this.dir;
     this.h;
     this.mh;
-    this.a;
+    this.opacity;
     this.score;
     this.isDead;
 
@@ -31,9 +31,10 @@ export const Obj = function(id) {
     this.Animate = function (tick) {
         if (this.isDead) {
             this.opacity = Math.max(this.opacity - 0.13 * tick * 0.05, 0);
-            this.radius += 0.4 * tick * 0.05;
+            this.r += 0.4 * tick * 0.05;
+
             if (this.opacity == 0) {
-                System.RemoveObject(this.id);
+                system.RemoveObject(this.id);
                 return;
             }
         }
@@ -46,12 +47,14 @@ export const Obj = function(id) {
     this.ObjSet = function (data) {
         this.x = data.x;
         this.y = data.y;
-        this.r = data.r;
-        this.dir = data.dir;
-        this.h = data.h;
-        this.mh = data.mh;
-        this.a = data.a;
-        this.score = data.score;
+        if (!this.isDead){
+            this.r = data.r;
+            this.dir = data.dir;
+            this.h = data.h;
+            this.mh = data.mh;
+            this.opacity = data.opacity;
+            this.score = data.score;
+        }
         this.isDead = data.isDead;
 
         this.name = data.name;
@@ -95,8 +98,6 @@ export const Obj = function(id) {
         pos.x += 2 * camera.z;
         pos.y += 2 * camera.z;
         this.ctx.lineWidth = 2 * camera.z;
-        this.ctx.lineCap = "round";
-        this.ctx.lineJoin = "round";
         this.ctx.imageSmoothingEnabled = false;
         return {
             ctx: this.ctx,
@@ -176,37 +177,43 @@ export const Obj = function(id) {
     this.hpBarO = 0; // hp bar Opacity
 
     this.DrawHPBar = function(ctx, camera) {
-        let healthPercent = this.health/this.maxHealth;
+        let healthPercent = this.h/this.mh;
 
-        this.hpBarP -= (this.hpBarP - healthPercent) / 3;
+        this.hpBarP -= (this.hpBarP - healthPercent) / 10;
     
-        if (healthPercent < 1){
-            this.hpBarO = Math.max(this.hpBarO-0.1,0);
-        }else{
+        if (healthPercent < 1) {
             this.hpBarO = Math.min(this.hpBarO+0.1,1);
+        } else {
+            this.hpBarO = Math.max(this.hpBarO-0.1,0);
         }
 
-        if (this.hpBarO > 0){
-            ctx.save();
-            ctx.globalAlpha = this.opacity * this.hpBarO;
+        //console.log(healthPercent,this.hpBarP,this.hpBarO);
 
-            const {x, y, z, r} = this.DrawSet(camera);
+        if (this.hpBarO > 0) {
+            const {x, y, z, r, o} = this.DrawSet(camera);
+
+            ctx.save();
+            ctx.globalAlpha = o * this.hpBarO;
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+            ctx.lineWidth = 4.1 * z;
 
             ctx.beginPath();
             ctx.moveTo((x + r) * z, (y + r * 5 / 3) * z);
             ctx.lineTo((x - r) * z, (y + r * 5 / 3) * z);
             ctx.closePath();
             drawC(ctx, new RGB("#444444"));
-            ctx.lineWidth = 4.1 * z;
             ctx.stroke();
         
-            ctx.beginPath();
-            ctx.moveTo((x - r) * z, (y + r * 5 / 3) * z);
-            ctx.lineTo((x - r + this.hpBarP * r * 2) * z, (y + r * 5 / 3) * z);
-            ctx.closePath();
-            drawC(ctx, new RGB("#86e27f"));
-            ctx.lineWidth = 2.6 * z;
-            ctx.stroke();
+            if (this.hpBarP > 0){
+                ctx.lineWidth = 2.6 * z;
+                ctx.beginPath();
+                ctx.moveTo((x - r) * z, (y + r * 5 / 3) * z);
+                ctx.lineTo((x - r + this.hpBarP * r * 2) * z, (y + r * 5 / 3) * z);
+                ctx.closePath();
+                drawC(ctx, new RGB("#86e27f"));
+                ctx.stroke();
+            }
 
             ctx.restore();
         }

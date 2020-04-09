@@ -2,7 +2,7 @@
   "gameMode": "sandbox",
   "maxPlayer": 50,
   "mapSize": {
-    "x": 100,
-    "y": 100
+    "x": 500,
+    "y": 500
   }
 }
