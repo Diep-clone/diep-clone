@@ -24,6 +24,7 @@ export const Obj = function(id) {
     this.isDead;
 
     this.isEnable = true;
+    this.isDelete = false;
 
     this.cv = document.createElement("canvas");
     this.ctx = this.cv.getContext("2d");
@@ -36,7 +37,7 @@ export const Obj = function(id) {
             this.r += 0.3 * tick * 0.05;
 
             if (this.opacity == 0) {
-                system.RemoveObject(this.id);
+                this.isDelete = true;
                 return;
             }
         }
@@ -104,7 +105,7 @@ export const Obj = function(id) {
         this.ctx.lineWidth = 2 * camera.z;
         this.ctx.imageSmoothingEnabled = false;
         return {
-            ctx: this.ctx,
+            ctxx: this.ctx,
             x: pos.x,
             y: pos.y,
             z: z,
@@ -119,33 +120,36 @@ export const Obj = function(id) {
     this.Draw = function (ctx,camera) {
         if (this.guns.length > 0 && this.opacity < 1){
             var {ctxx, x, y, z, t, c, r, dir, o} = this.SetCanvasSize(camera);
+            var s = this.DrawSet(camera);
             this.guns.forEach((g) => {
                 if (!g.isFront) {
-                    g.Draw(ctxx, camera, x, y, r, dir);
+                    g.Draw(ctxx, camera, x / z, y / z, r, dir, this.hitTime);
                 }
             });
             drawObj(ctxx,
-                x + s.x * z - x - Math.floor(s.x * z - x),
-                y + s.y * z - y - Math.floor(s.y * z - y),
+                x / z + (s.x * z - x) - Math.floor(s.x * z - x),
+                y / z + (s.y * z - y) - Math.floor(s.y * z - y),
             z, r, dir, t, 1, c);
             this.guns.forEach((g) => {
                 if (g.isFront) {
-                    g.Draw(ctxx, camera, x, y, r, dir);
+                    g.Draw(ctxx, camera, x / z, y / z, r, dir, this.hitTime);
                 }
             });
-            var s = this.DrawSet(camera);
+            ctx.save();
+            ctx.globalAlpha = o;
             ctx.drawImage(this.cv,Math.floor(s.x * z - x),Math.floor(s.y * z - y));
+            ctx.restore();
         } else {
             var {x, y, z, t, c, r, dir, o} = this.DrawSet(camera);
             this.guns.forEach((g) => {
                 if (!g.isFront) {
-                    g.Draw(ctx, camera, x, y, r, dir);
+                    g.Draw(ctx, camera, x, y, r, dir, this.hitTime);
                 }
             });
             drawObj(ctx, x, y, z, r, dir, t, o, c);
             this.guns.forEach((g) => {
                 if (g.isFront) {
-                    g.Draw(ctx, camera, x, y, r, dir);
+                    g.Draw(ctx, camera, x, y, r, dir, this.hitTime);
                 }
             });
         }

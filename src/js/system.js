@@ -90,6 +90,9 @@ export default class System {
                         this.input.moveVector.y+=1;
                         key = "moveVector";
                         break;
+                    case 79:
+                        key = "kill";
+                        break;
                     default:
                         break;
                 }
@@ -213,7 +216,7 @@ export default class System {
                 }
             });
             this.objectList.forEach((obj) => {
-                if (!obj.isEnable) this.RemoveObject(obj.id);
+                if (!obj.isEnable) obj.isDelete = true;
                 obj.isEnable = false;
             })
         }.bind(this));
@@ -240,6 +243,14 @@ export default class System {
             case "Gaming":
                 drawBackground(this.ctx, this.camera.x, this.camera.y, this.camera.z, this.cv.width, this.cv.height, this.area);
 
+                for (let i=0;i<this.objectList.length;){
+                    if (this.objectList[i].isDelete){
+                        this.objectList.splice(i,1);
+                    } else {
+                        i++;
+                    }
+                }
+
                 this.objectList.forEach((o) => {
                     o.Animate(tick);
                 });
@@ -261,13 +272,5 @@ export default class System {
         }
 
         requestAnimationFrame(this.loop.bind(this));
-    }
-
-    RemoveObject(id) {
-        for (let i=0;i<this.objectList.length;i++){
-            if (this.objectList[i].id === id){
-                this.objectList.splice(i,1);
-            }
-        }
     }
 }

@@ -74,6 +74,7 @@ type Object struct {
 	IsOwnCol     bool    `json:"isOwnCol"`
 	IsDead       bool    `json:"isDead"`
 	IsCollision  bool    `json:"isCollision"`
+	IsShot       bool    `json:"isShot"`
 	IsShowHealth bool    `json:"isShowHealth"`
 	HitObject    *Object
 	Tick         func(*Object)

@@ -15,15 +15,17 @@ type Gun struct {
 	Rdir      float64 `json:"rdir"`
 	Bound     float64 `json:"bound"`
 	Reload    float64 `json:"reload"`    // default delay
-	WaitTime  float64 `json:"waittime"`  // first wait time
 	DelayTime float64 `json:"delaytime"` // when shot
+	WaitTime  float64 `json:"waittime"`  // first wait time
 	ShotTime  float64 `json:"shottime"`  // click time to delay
 	Limit     int     `json:"limit"`
 	AutoShot  bool    `json:"autoshot"`
 }
 
-func (g Gun) Shot() *Object {
-
+func (g *Gun) Shot() *Object {
+	if g.AutoShot || g.Owner.Controller.Ml {
+		g.ShotTime += 1000 / 60
+	}
 	return nil
 }
 
@@ -36,8 +38,8 @@ func NewGun(value map[string]interface{}) *Gun {
 		"rdir":      math.Pi / 36,
 		"bound":     1,
 		"reload":    1,
-		"waittime":  0,
 		"delaytime": 0,
+		"waittime":  0,
 		"shottime":  0,
 		"limit":     -1,
 		"autoshot":  false,

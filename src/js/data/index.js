@@ -1,4 +1,5 @@
 import { RGB } from '../lib/util';
+import { Gun } from './gun';
 
 export const statColor = [
     new RGB(230,176,138),
@@ -28,7 +29,7 @@ export const colorList = [
     new RGB("#FFE869"), // AC 13
     new RGB("#44FFA0"), // Scoreboard 14
     new RGB("#BBBBBB"), // Maze Walls 15
-    new RGB("#FF0000"), // FFA other's color 16
+    new RGB("#F14E54"), // FFA other's color 16
     new RGB("#fcc276"), // Necromanser's Drone color 17
     new RGB("#C0C0C0"), // Fallen 18
 ];
@@ -70,7 +71,10 @@ export const colorType = function(type, team){
 export const backgroundColor = new RGB(205,205,205);
 
 export const gunList = {
-    
+    "Necromanser":[
+        new Gun([[0.43,0],[0.73,1.4],[-0.73,1.4],[-0.43,0]],Math.PI/2,1),
+        new Gun([[0.43,0],[0.73,1.4],[-0.73,1.4],[-0.43,0]],-Math.PI/2,1),
+    ]
 }
 
 export const expList = [

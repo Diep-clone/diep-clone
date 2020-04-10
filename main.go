@@ -116,6 +116,14 @@ func main() {
 		}
 	})
 
+	server.OnEvent("/", "kill", func(s socketio.Conn, b bool) {
+		if u, ok := users[s.ID()]; ok {
+			if u.ControlObject != nil {
+				u.ControlObject.H = 0
+			}
+		}
+	})
+
 	server.OnError("/", func(s socketio.Conn, err error) {
 		log.Println(err)
 	})
