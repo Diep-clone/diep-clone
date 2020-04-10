@@ -3,7 +3,6 @@ package lib
 import (
 	"encoding/json"
 	"math"
-	"time"
 )
 
 // Pos is
@@ -41,53 +40,55 @@ func (sc *Scoreboard) Push(value Score) {
 
 // Object is
 type Object struct {
-	Controller  *Player `json:"controller"`
-	Owner       *Object `json:"owner"`
-	ID          int     `json:"id"`
-	Type        string  `json:"type"`
-	Team        string  `json:"team"`
-	Name        string  `json:"name"`
-	X           float64 `json:"x"`
-	Y           float64 `json:"y"`
-	R           float64 `json:"r"`
-	Dx          float64 `json:"dx"`
-	Dy          float64 `json:"dy"`
-	Dir         float64 `json:"dir"`
-	Level       int     `json:"level"`
-	Exp         int     `json:"exp"`
-	H           float64 `json:"h"`
-	Mh          float64 `json:"mh"`
-	Lh          float64 `json:"lh"`
-	Damage      float64 `json:"damage"`
-	Speed       float64 `json:"speed"`
-	Bound       float64 `json:"bound"`
-	Stance      float64 `json:"stance"`
-	Opacity     float64 `json:"opacity"`
-	Sight       float64 `json:"sight"`
-	Stats       [8]int  `json:"stats"`
-	MaxStats    [8]int  `json:"maxStats"`
-	Guns        []Gun   `json:"guns"`
-	SpawnTime   int64   `json:"spawnTime"`
-	HitTime     int64   `json:"hitTime"`
-	DeadTime    float64 `json:"deadTime"`
-	IsBorder    bool    `json:"isBorder"`
-	IsOwnCol    bool    `json:"isOwnCol"`
-	IsDead      bool    `json:"isDead"`
-	IsCollision bool    `json:"isCollision"`
-	HitObject   *Object
-	Tick        func(*Object)
-	Collision   func(*Object, *Object)
-	KillEvent   func(*Object, *Object)
-	DeadEvent   func(*Object, *Object)
+	Controller   *Player `json:"controller"`
+	Owner        *Object `json:"owner"`
+	ID           int     `json:"id"`
+	Type         string  `json:"type"`
+	Team         string  `json:"team"`
+	Name         string  `json:"name"`
+	X            float64 `json:"x"`
+	Y            float64 `json:"y"`
+	R            float64 `json:"r"`
+	Dx           float64 `json:"dx"`
+	Dy           float64 `json:"dy"`
+	Dir          float64 `json:"dir"`
+	Level        int     `json:"level"`
+	Exp          int     `json:"exp"`
+	H            float64 `json:"h"`
+	Mh           float64 `json:"mh"`
+	Lh           float64 `json:"lh"`
+	Damage       float64 `json:"damage"`
+	GetDH        float64 `json:"getdh"`
+	Speed        float64 `json:"speed"`
+	Bound        float64 `json:"bound"`
+	Stance       float64 `json:"stance"`
+	Opacity      float64 `json:"opacity"`
+	Sight        float64 `json:"sight"`
+	Stats        [8]int  `json:"stats"`
+	MaxStats     [8]int  `json:"maxStats"`
+	Guns         []Gun   `json:"guns"`
+	SpawnTime    int64   `json:"spawnTime"`
+	HitTime      int64   `json:"hitTime"`
+	DeadTime     float64 `json:"deadTime"`
+	IsBorder     bool    `json:"isBorder"`
+	IsOwnCol     bool    `json:"isOwnCol"`
+	IsDead       bool    `json:"isDead"`
+	IsCollision  bool    `json:"isCollision"`
+	IsShowHealth bool    `json:"isShowHealth"`
+	HitObject    *Object
+	Tick         func(*Object)
+	Collision    func(*Object, *Object)
+	KillEvent    func(*Object, *Object)
+	DeadEvent    func(*Object, *Object)
 }
 
 //
 func (obj *Object) ObjectTick() {
-	obj.X += obj.Dx
-	obj.Y += obj.Dy
+	obj.X += obj.Dx * setting.GameSpeed
+	obj.Y += obj.Dy * setting.GameSpeed
 
-	obj.Dx *= 0.97
-	obj.Dy *= 0.97
+	obj.Dx *= 0.97 //math.Pow(0.97, setting.GameSpeed)
+	obj.Dy *= 0.97 //math.Pow(0.97, setting.GameSpeed)
 
 	if obj.H <= 0 {
 		obj.IsDead = true
@@ -97,9 +98,12 @@ func (obj *Object) ObjectTick() {
 		}
 	}
 
-	if time.Now().Unix()-30000 > obj.HitTime {
-		obj.H += obj.Mh / 60 / 10
+	if now()-int64(30000.*setting.GameSpeed) > obj.HitTime {
+		obj.H += obj.Mh / 60 / 10 * setting.GameSpeed
 	}
+
+	obj.H += obj.GetDH * setting.GameSpeed
+	obj.GetDH = 0
 
 	if obj.H > obj.Mh {
 		obj.H = obj.Mh
@@ -121,12 +125,12 @@ func DefaultCollision(a *Object, b *Object) {
 		return
 	}
 
-	a.HitTime = time.Now().Unix()
+	a.HitTime = now()
 
-	if b.Lh-a.Damage <= 0 {
-		a.H -= b.Damage * (b.Lh / a.Damage)
+	if b.Lh-a.Damage*setting.GameSpeed <= 0 {
+		a.H -= b.Damage * (b.Lh / (a.Damage * setting.GameSpeed)) * setting.GameSpeed
 	} else {
-		a.H -= b.Damage
+		a.H -= b.Damage * setting.GameSpeed
 	}
 
 	a.HitObject = b
@@ -140,6 +144,10 @@ func (o Object) SocketObj() map[string]interface{} {
 	var ownerID int = -1
 	if o.Owner != nil {
 		ownerID = o.Owner.ID
+	}
+	if !o.IsShowHealth {
+		o.Mh = 1
+		o.H = 1
 	}
 	return map[string]interface{}{
 		"id":      o.ID,
@@ -159,32 +167,36 @@ func (o Object) SocketObj() map[string]interface{} {
 	}
 }
 
-func NewObject(value map[string]interface{}, t func(*Object), c func(*Object, *Object), k func(*Object, *Object), d func(*Object, *Object)) *Object {
+func (o *Object) SetController(p *Player) {
+	o.Controller = p
+}
+
+func NewObject(value map[string]interface{}, guns []Gun, t func(*Object), c func(*Object, *Object), k func(*Object, *Object), d func(*Object, *Object)) *Object {
 	m := map[string]interface{}{
-		"id":          objID,
-		"type":        "Square",
-		"team":        "ffa",
-		"x":           -999999,
-		"y":           -999999,
-		"r":           Grid,
-		"level":       1,
-		"h":           10,
-		"mh":          10,
-		"lh":          10,
-		"damage":      8,
-		"speed":       0.07,
-		"bound":       1,
-		"stance":      1,
-		"opacity":     1,
-		"sight":       1,
-		"guns":        []Gun{},
-		"spawnTime":   time.Now().Unix(),
-		"hitTime":     time.Now().Unix(),
-		"deadTime":    -1,
-		"isBorder":    true,
-		"isOwnCol":    true,
-		"isDead":      false,
-		"isCollision": false,
+		"id":           objID,
+		"type":         "Square",
+		"team":         "ffa",
+		"x":            -999999,
+		"y":            -999999,
+		"r":            Grid,
+		"level":        1,
+		"h":            10,
+		"mh":           10,
+		"lh":           10,
+		"damage":       8,
+		"speed":        0.07,
+		"bound":        1,
+		"stance":       1,
+		"opacity":      1,
+		"sight":        1,
+		"spawnTime":    now(),
+		"hitTime":      now(),
+		"deadTime":     -1,
+		"isBorder":     true,
+		"isOwnCol":     true,
+		"isDead":       false,
+		"isCollision":  false,
+		"isShowHealth": true,
 	}
 	objID++
 
@@ -196,6 +208,7 @@ func NewObject(value map[string]interface{}, t func(*Object), c func(*Object, *O
 
 	s := Object{}
 	json.Unmarshal(jsonString, &s)
+	s.Guns = guns
 	s.Tick = t
 	s.Collision = c
 	s.KillEvent = k

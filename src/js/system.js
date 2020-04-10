@@ -48,6 +48,12 @@ export default class System {
         this.area = [{X:0,Y:0,W:0,H:0}];
 
         this.keys = {};
+        this.sameKeys = {
+            65:37,
+            87:38,
+            68:39,
+            83:40,
+        };
 
         window.input = {
             blur:function(){},
@@ -55,10 +61,19 @@ export default class System {
             flushInputHooks: function(){},
             get_convar:function(key){},
             keyDown: function(){
+                if (this.sameKeys[arguments[0]]) arguments[0]=this.sameKeys[arguments[0]];
                 if (this.keys[arguments[0]]) return;
                 this.keys[arguments[0]] = true;
                 let key = "";
                 switch (arguments[0]){
+                    case 1:
+                    case 32:
+                        key = "mouseleft";
+                        break;
+                    case 3:
+                    case 16:
+                        key = "mouseright";
+                        break;
                     case 37:
                         this.input.moveVector.x-=1;
                         key = "moveVector";
@@ -80,6 +95,12 @@ export default class System {
                 }
                 let value = true;
                 switch (key){
+                    case "mouseleft":
+                        value = this.keys[1] || this.keys[32];
+                        break;
+                    case "mouseright":
+                        value = this.keys[3] || this.keys[16];
+                        break;
                     case "moveVector":
                         if (this.input.moveVector.x === 0 && this.input.moveVector.y === 0) value = 9;
                         else value = Math.atan2(this.input.moveVector.y,this.input.moveVector.x);
@@ -90,10 +111,19 @@ export default class System {
                 Socket.emit(key, value);
             }.bind(this),
             keyUp:function(){
+                if (this.sameKeys[arguments[0]]) arguments[0]=this.sameKeys[arguments[0]];
                 if (!this.keys[arguments[0]]) return;
                 this.keys[arguments[0]] = false;
                 let key = "";
                 switch (arguments[0]){
+                    case 1:
+                    case 32:
+                        key = "mouseleft";
+                        break;
+                    case 3:
+                    case 16:
+                        key = "mouseright";
+                        break;
                     case 37:
                         this.input.moveVector.x+=1;
                         key = "moveVector";
@@ -115,6 +145,12 @@ export default class System {
                 }
                 let value = false;
                 switch (key){
+                    case "mouseleft":
+                        value = this.keys[1] || this.keys[32];
+                        break;
+                    case "mouseright":
+                        value = this.keys[3] || this.keys[16];
+                        break;
                     case "moveVector":
                         if (this.input.moveVector.x === 0 && this.input.moveVector.y === 0) value = 9;
                         else value = Math.atan2(this.input.moveVector.y,this.input.moveVector.x);
@@ -129,10 +165,14 @@ export default class System {
                 arguments[0]/this.camera.z+this.camera.x,
                 arguments[1]/this.camera.z+this.camera.y);
             }.bind(this),
-            prevent_right_click: function(){},
+            prevent_right_click: function(){
+                return true;
+            },
             print_convar_help: function(){},
             set_convar: function(key,value){},
-            should_prevent_unload: function(){},
+            should_prevent_unload: function(){
+                return true;
+            },
             wheel: function(){}.bind(this),
         };
 
@@ -172,6 +212,10 @@ export default class System {
                     this.objectList.push(obi);
                 }
             });
+            this.objectList.forEach((obj) => {
+                if (!obj.isEnable) this.RemoveObject(obj.id);
+                obj.isEnable = false;
+            })
         }.bind(this));
 
         Socket.on("area", function (area) {

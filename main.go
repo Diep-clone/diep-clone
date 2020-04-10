@@ -4,6 +4,7 @@ import (
 	//"database/sql"
 	"log"
 	"math"
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -12,8 +13,6 @@ import (
 	socketio "github.com/googollee/go-socket.io"
 	//sq "github.com/mattn/go-sqlite3"
 )
-
-var setting lib.Setting = lib.ReadSetting()
 
 var sockets = map[string]socketio.Conn{}
 var objects []*lib.Object
@@ -24,6 +23,8 @@ var quadtree lib.Quadtree
 
 var scoreboard lib.Scoreboard
 
+var setting lib.Setting = lib.ReadSetting()
+
 func main() {
 	// runtime.GOMAXPROCS(runtime.NumCPU()) 모든 CPU를 사용하게 해주는 코드
 	/*database, _ := sql.Open("sqlite3","./bogo.db")
@@ -32,7 +33,10 @@ func main() {
 	statement, _ = database.Prepare("INSERT INTO people (nickname) VALUES (?)")
 	statement.Exec("")
 	*/
+	rand.Seed(time.Now().UnixNano())
+
 	quadtree = *lib.NewQuadtree(-setting.MapSize.X-lib.Grid*4, -setting.MapSize.Y-lib.Grid*4, setting.MapSize.X*2+lib.Grid*8, setting.MapSize.Y*2+lib.Grid*8, 1)
+	lib.ShapeCount += setting.MaxShape
 
 	server.OnConnect("/", func(s socketio.Conn) error {
 		s.SetContext("")
@@ -58,61 +62,22 @@ func main() {
 		sockets[s.ID()] = s
 		users[s.ID()] = lib.NewPlayer(s.ID())
 		users[s.ID()].ControlObject = lib.NewObject(map[string]interface{}{
-			"controller": *users[s.ID()],
-			"type":       "Necromanser",
-			"name":       name,
-			"x":          lib.RandomRange(-setting.MapSize.X, setting.MapSize.X),
-			"y":          lib.RandomRange(-setting.MapSize.Y, setting.MapSize.Y),
-			"h":          50,
-			"mh":         50,
-			"damage":     20,
-			"level":      45,
-			"stats":      [8]int{0, 0, 0, 7, 7, 7, 5, 7},
-			"maxStats":   [8]int{7, 7, 7, 7, 7, 7, 7, 7},
-			"sight":      1.11,
-			/*"guns": []lib.Gun{*lib.NewGun(map[string]interface{}{
-				"owner": users[s.ID()].ControlObject,
-				"limit": 0,
-			})},*/
-		}, func(obj *lib.Object) {
-			lib.TankTick(obj)
-		}, lib.DefaultCollision, nil, /*func(a *lib.Object, b *lib.Object) {
-				if b.Type == "Square" && a.Guns[0].Limit < 22+2*a.Stats[6] {
-					b.Type = "NecroSquare"
-					b.Team = a.Team
-					b.Exp = 0
-					b.Owner = a
-					b.Mh = (8 + 6*float64(a.Stats[4])) * 0.5
-					b.H = b.Mh
-					b.Damage = (7 + 3*float64(a.Stats[5])) * 1.68
-					b.Speed = (0.056 + 0.01*float64(a.Stats[3])) * 0.5
-					b.IsDead = false
-					b.KillEvent = a.KillEvent
-					b.DeadEvent = func(obj *lib.Object, killer *lib.Object) {
-						obj.Owner.Guns[0].Limit--
-						lib.ShapeCount++
-					}
-					b.Tick = func(obj *lib.Object) {
-						p := obj.Owner.Controller
-						if p == nil {
-							return
-						}
-						if p.Mr {
-							obj.Dir = math.Atan2(obj.Y-(obj.Owner.Y+p.My), obj.X-(obj.Owner.X+p.Mx))
-							obj.Dx += math.Cos(obj.Dir) * obj.Speed
-							obj.Dy += math.Sin(obj.Dir) * obj.Speed
-						} else if p.Ml {
-							obj.Dir = math.Atan2((obj.Owner.Y+p.My)-obj.Y, (obj.Owner.X+p.Mx)-obj.X)
-							obj.Dx += math.Cos(obj.Dir) * obj.Speed
-							obj.Dy += math.Sin(obj.Dir) * obj.Speed
-						} else if obj.Owner.DeadTime != 0 {
-
-						} else {
-							obj.H = 0
-						}
-					}
-				}
-			}*/nil)
+			"type":     "Necromanser",
+			"name":     name,
+			"x":        lib.RandomRange(-setting.MapSize.X, setting.MapSize.X),
+			"y":        lib.RandomRange(-setting.MapSize.Y, setting.MapSize.Y),
+			"h":        50,
+			"mh":       50,
+			"damage":   20,
+			"level":    45,
+			"stats":    [8]int{0, 0, 0, 7, 7, 7, 5, 7},
+			"maxStats": [8]int{7, 7, 7, 7, 7, 7, 7, 7},
+			"sight":    1.11,
+		}, []lib.Gun{*lib.NewGun(map[string]interface{}{
+			"owner": users[s.ID()].ControlObject,
+			"limit": 0,
+		})}, lib.TankTick, lib.DefaultCollision, lib.NecroKillEvent, nil)
+		users[s.ID()].ControlObject.SetController(users[s.ID()])
 		objects = append(objects, users[s.ID()].ControlObject)
 
 		log.Println("INFO > " + s.ID() + " Login")
@@ -139,15 +104,15 @@ func main() {
 		}
 	})
 
-	server.OnEvent("/", "mouseright", func(s socketio.Conn, b bool) {
-		if u, ok := users[s.ID()]; ok {
-			u.Mr = b
-		}
-	})
-
 	server.OnEvent("/", "mouseleft", func(s socketio.Conn, b bool) {
 		if u, ok := users[s.ID()]; ok {
 			u.Ml = b
+		}
+	})
+
+	server.OnEvent("/", "mouseright", func(s socketio.Conn, b bool) {
+		if u, ok := users[s.ID()]; ok {
+			u.Mr = b
 		}
 	})
 
@@ -190,13 +155,15 @@ func moveloop(ticker time.Ticker) {
 	for range ticker.C {
 		for ; lib.ShapeCount > 0; lib.ShapeCount-- {
 			objects = append(objects, lib.NewObject(map[string]interface{}{
-				"type": "Square",
-				"name": "Square",
-				"team": "shape",
-				"x":    lib.RandomRange(-setting.MapSize.X, setting.MapSize.X),
-				"y":    lib.RandomRange(-setting.MapSize.Y, setting.MapSize.Y),
-				"dir":  lib.RandomRange(-math.Pi, math.Pi),
-			}, nil, lib.DefaultCollision, nil, func(obj *lib.Object, killer *lib.Object) {
+				"type":   "Square",
+				"name":   "Square",
+				"team":   "shape",
+				"x":      lib.RandomRange(-setting.MapSize.X, setting.MapSize.X),
+				"y":      lib.RandomRange(-setting.MapSize.Y, setting.MapSize.Y),
+				"dir":    lib.RandomRange(-math.Pi, math.Pi),
+				"stance": 0.2,
+				"exp":    10,
+			}, nil, nil, lib.DefaultCollision, nil, func(obj *lib.Object, killer *lib.Object) {
 				lib.ShapeCount++
 			}))
 		}
@@ -253,7 +220,7 @@ func moveloop(ticker time.Ticker) {
 
 			if obj.IsDead {
 				if obj.DeadTime == -1 {
-					obj.DeadTime = 300
+					obj.DeadTime = 400
 				} else if obj.DeadTime < 0 {
 					if obj.DeadEvent != nil {
 						obj.DeadEvent(obj, obj.HitObject)
@@ -272,16 +239,16 @@ func moveloop(ticker time.Ticker) {
 func sendUpdates(ticker time.Ticker) {
 	for range ticker.C {
 		for _, u := range users {
-			/*objList := quadtree.Retrieve(lib.Area{
-				X:  u.Camera.Pos.X - 1280/u.Camera.Z,
-				Y:  u.Camera.Pos.Y - 720/u.Camera.Z,
-				X2: 1280/u.Camera.Z * 2,
-				Y2: 720/u.Camera.Z * 2,
+			objList := quadtree.Retrieve(lib.Area{
+				X: u.Camera.Pos.X - 1280/u.Camera.Z,
+				Y: u.Camera.Pos.Y - 720/u.Camera.Z,
+				W: 1280 / u.Camera.Z * 2,
+				H: 720 / u.Camera.Z * 2,
 			})
-			log.Println(objList)*/
+			//log.Println(objList)
 			var visibleObject = []map[string]interface{}{}
 
-			for _, obj := range objects {
+			for _, obj := range objList {
 				if obj.X < u.Camera.Pos.X+1280/u.Camera.Z+obj.R &&
 					obj.X > u.Camera.Pos.X-1280/u.Camera.Z-obj.R &&
 					obj.Y < u.Camera.Pos.Y+720/u.Camera.Z+obj.R &&

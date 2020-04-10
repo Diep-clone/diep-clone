@@ -7,10 +7,14 @@ import (
 	"os"
 )
 
+var setting Setting = ReadSetting()
+
 // Setting is
 type Setting struct {
-	GameMode  string `json:"gameMode"`
-	MaxPlayer int    `json:"maxPlayer"`
+	GameMode  string  `json:"gameMode"`
+	GameSpeed float64 `json:"gameSpeed"`
+	MaxPlayer int     `json:"maxPlayer"`
+	MaxShape  int     `json:"maxShape"`
 	MapSize   struct {
 		X float64 `json:"x"`
 		Y float64 `json:"y"`

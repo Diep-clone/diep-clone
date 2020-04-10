@@ -41,6 +41,7 @@ export const drawObj = function (ctx, x, y, z, r, dir, t, o, c) {
             drawPolygon(ctx, x, y, z, r, dir, 3);
             break;
         case "Square":
+        case "NecroSquare":
         case "Necromanser":
         case "Factory":
             drawPolygon(ctx, x, y, z, r, dir, 4);

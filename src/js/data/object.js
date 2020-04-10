@@ -23,6 +23,8 @@ export const Obj = function(id) {
     this.score;
     this.isDead;
 
+    this.isEnable = true;
+
     this.cv = document.createElement("canvas");
     this.ctx = this.cv.getContext("2d");
 
@@ -67,6 +69,8 @@ export const Obj = function(id) {
         }
         this.type = data.type;
         this.color = colorType(data.type,data.team);
+
+        this.isEnable = true;
     };
 
     this.DrawSet = function (camera) {
@@ -179,12 +183,12 @@ export const Obj = function(id) {
     this.DrawHPBar = function(ctx, camera) {
         let healthPercent = this.h/this.mh;
 
-        this.hpBarP -= (this.hpBarP - healthPercent) / 10;
+        this.hpBarP -= (this.hpBarP - healthPercent) / 20;
     
         if (healthPercent < 1) {
-            this.hpBarO = Math.min(this.hpBarO+0.1,1);
+            this.hpBarO = Math.min(this.hpBarO+0.4,1);
         } else {
-            this.hpBarO = Math.max(this.hpBarO-0.1,0);
+            this.hpBarO = Math.max(this.hpBarO-0.2,0);
         }
 
         //console.log(healthPercent,this.hpBarP,this.hpBarO);

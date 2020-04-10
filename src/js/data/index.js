@@ -29,7 +29,7 @@ export const colorList = [
     new RGB("#44FFA0"), // Scoreboard 14
     new RGB("#BBBBBB"), // Maze Walls 15
     new RGB("#FF0000"), // FFA other's color 16
-    new RGB("#FF0000"), // Necromanser's Drone color 17
+    new RGB("#fcc276"), // Necromanser's Drone color 17
     new RGB("#C0C0C0"), // Fallen 18
 ];
 
@@ -40,11 +40,11 @@ export const colorType = function(type, team){
             switch (type){
                 case "Square":
                     return 9;
-                case "NecroSquare":
-                    return 17;
                 default:
                     return 2;
             }
+        case "nec":
+            return 17;
         case "red":
             return 4;
         case "blue":

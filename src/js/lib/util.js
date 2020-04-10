@@ -1,6 +1,9 @@
 export const RGB = function(r, g, b) {
 
-    if (b) {
+    this.r;
+    this.g;
+    this.b;
+    if (b!==undefined) {
         this.r = r;
         this.g = g;
         this.b = b;

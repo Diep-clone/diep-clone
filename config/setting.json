@@ -1,8 +1,10 @@
 {
   "gameMode": "sandbox",
+  "gameSpeed": 1,
   "maxPlayer": 50,
+  "maxShape": 200,
   "mapSize": {
-    "x": 500,
-    "y": 500
+    "x": 1000,
+    "y": 1000
   }
 }
