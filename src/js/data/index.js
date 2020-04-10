@@ -35,7 +35,6 @@ export const colorList = [
 
 export const colorType = function(type, team){
     switch (team){
-        case "ffa":
         case "shape":
             switch (type){
                 case "Square":
@@ -43,8 +42,6 @@ export const colorType = function(type, team){
                 default:
                     return 2;
             }
-        case "nec":
-            return 17;
         case "red":
             return 4;
         case "blue":
@@ -53,8 +50,20 @@ export const colorType = function(type, team){
             return 5;
         case "green":
             return 6;
+        case system.playerSetting.id:
+            switch (type){
+                case "NecroSquare":
+                    return 17;
+                default:
+                    return 2;
+            }
         default:
-            return 16;
+            switch (type){
+                case "NecroSquare":
+                    return 17;
+                default:
+                    return 16;
+            }
     }
 }
 

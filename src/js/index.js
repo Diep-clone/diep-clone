@@ -4,8 +4,6 @@ import System from './system';
 
 window.system = new System();
 
-system.loop();
-
 (function(){
     var scale = window.localStorage['no_retina'] ? 1.0 : window.devicePixelRatio;
     var canvas = document.getElementById('canvas');

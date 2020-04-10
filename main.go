@@ -35,7 +35,6 @@ func main() {
 	*/
 	rand.Seed(time.Now().UnixNano())
 
-	quadtree = *lib.NewQuadtree(-setting.MapSize.X-lib.Grid*4, -setting.MapSize.Y-lib.Grid*4, setting.MapSize.X*2+lib.Grid*8, setting.MapSize.Y*2+lib.Grid*8, 1)
 	lib.ShapeCount += setting.MaxShape
 
 	server.OnConnect("/", func(s socketio.Conn) error {
@@ -63,6 +62,7 @@ func main() {
 		users[s.ID()] = lib.NewPlayer(s.ID())
 		users[s.ID()].ControlObject = lib.NewObject(map[string]interface{}{
 			"type":     "Necromanser",
+			"team":     s.ID(),
 			"name":     name,
 			"x":        lib.RandomRange(-setting.MapSize.X, setting.MapSize.X),
 			"y":        lib.RandomRange(-setting.MapSize.Y, setting.MapSize.Y),
@@ -70,7 +70,7 @@ func main() {
 			"mh":       50,
 			"damage":   20,
 			"level":    45,
-			"stats":    [8]int{0, 0, 0, 7, 7, 7, 5, 7},
+			"stats":    [8]int{0, 0, 0, 7, 7, 7, 7, 5},
 			"maxStats": [8]int{7, 7, 7, 7, 7, 7, 7, 7},
 			"sight":    1.11,
 		}, []lib.Gun{*lib.NewGun(map[string]interface{}{
@@ -126,6 +126,8 @@ func main() {
 			return
 		}
 
+		users[s.ID()].ControlObject.Controller = nil
+
 		delete(sockets, s.ID())
 		delete(users, s.ID())
 
@@ -139,7 +141,7 @@ func main() {
 	http.Handle("/", http.FileServer(http.Dir("./dist")))
 
 	moveLoopTicker := time.NewTicker(time.Second / 60)
-	sendUpdatesTicker := time.NewTicker(time.Second / 40)
+	sendUpdatesTicker := time.NewTicker(time.Second / 30)
 
 	defer moveLoopTicker.Stop()
 	defer sendUpdatesTicker.Stop()
@@ -181,7 +183,7 @@ func moveloop(ticker time.Ticker) {
 			}
 		}
 
-		quadtree.Clear()
+		quadtree = *lib.NewQuadtree(-setting.MapSize.X-lib.Grid*4, -setting.MapSize.Y-lib.Grid*4, setting.MapSize.X*2+lib.Grid*8, setting.MapSize.Y*2+lib.Grid*8, 1)
 
 		for i := 0; i < len(objects); i++ {
 			obj := objects[i]
@@ -220,17 +222,20 @@ func moveloop(ticker time.Ticker) {
 
 			if obj.IsDead {
 				if obj.DeadTime == -1 {
-					obj.DeadTime = 400
-				} else if obj.DeadTime < 0 {
+					obj.DeadTime = 700
+				} else if obj.DeadTime <= 0 {
 					if obj.DeadEvent != nil {
 						obj.DeadEvent(obj, obj.HitObject)
 					}
-					objects[i] = objects[len(objects)-1]
-					objects = objects[:len(objects)-1]
+					objects = append(objects[:i], objects[i+1:]...)
+					/*objects[i] = objects[len(objects)-1]
+					objects = objects[:len(objects)-1]*/
 					i--
 				} else {
-					obj.DeadTime = math.Min(obj.DeadTime-1000./60., 0.)
+					obj.DeadTime = math.Max(obj.DeadTime-1000./60., 0.)
 				}
+			} else {
+				obj.DeadTime = -1
 			}
 		}
 	}
@@ -238,8 +243,12 @@ func moveloop(ticker time.Ticker) {
 
 func sendUpdates(ticker time.Ticker) {
 	for range ticker.C {
+		var test lib.Quadtree = *lib.NewQuadtree(-setting.MapSize.X-lib.Grid*4, -setting.MapSize.Y-lib.Grid*4, setting.MapSize.X*2+lib.Grid*8, setting.MapSize.Y*2+lib.Grid*8, 1)
+		for _, obj := range objects {
+			test.Insert(obj)
+		}
 		for _, u := range users {
-			objList := quadtree.Retrieve(lib.Area{
+			objList := test.Retrieve(lib.Area{
 				X: u.Camera.Pos.X - 1280/u.Camera.Z,
 				Y: u.Camera.Pos.Y - 720/u.Camera.Z,
 				W: 1280 / u.Camera.Z * 2,
@@ -264,7 +273,7 @@ func sendUpdates(ticker time.Ticker) {
 				//log.Println(time.Since(st))
 				if obj := u.ControlObject; obj == nil {
 					s.Emit("playerSet", map[string]interface{}{
-						"id":          -1,
+						"id":          "",
 						"level":       1,
 						"isCanRotate": u.IsCanDir,
 						"stat":        0,
@@ -273,7 +282,7 @@ func sendUpdates(ticker time.Ticker) {
 					}, u.Camera)
 				} else {
 					s.Emit("playerSet", map[string]interface{}{
-						"id":          obj.ID,
+						"id":          s.ID(),
 						"level":       obj.Level,
 						"isCanRotate": u.IsCanDir,
 						"stat":        u.Stat,

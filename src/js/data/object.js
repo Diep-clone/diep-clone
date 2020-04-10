@@ -32,8 +32,8 @@ export const Obj = function(id) {
 
     this.Animate = function (tick) {
         if (this.isDead) {
-            this.opacity = Math.max(this.opacity - 0.13 * tick * 0.05, 0);
-            this.r += 0.4 * tick * 0.05;
+            this.opacity = Math.max(this.opacity - 0.1 * tick * 0.05, 0);
+            this.r += 0.3 * tick * 0.05;
 
             if (this.opacity == 0) {
                 system.RemoveObject(this.id);
@@ -183,7 +183,7 @@ export const Obj = function(id) {
     this.DrawHPBar = function(ctx, camera) {
         let healthPercent = this.h/this.mh;
 
-        this.hpBarP -= (this.hpBarP - healthPercent) / 20;
+        this.hpBarP -= (this.hpBarP - healthPercent) / 4;
     
         if (healthPercent < 1) {
             this.hpBarO = Math.min(this.hpBarO+0.4,1);

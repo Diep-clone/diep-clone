@@ -1,7 +1,7 @@
 package lib
 
 // MaxObj is Object Max length
-var MaxObj = 5
+var MaxObj = 4
 
 // Quadtree is
 type Quadtree struct {
@@ -116,33 +116,33 @@ func (q *Quadtree) Insert(obj *Object) {
 // Retrieve is
 func (q Quadtree) Retrieve(area interface{}) []*Object {
 	index := q.getIndex(area)
-	var returnObject []*Object
+	var returnObjects []*Object
 
 	if o, ok := area.(*Object); ok {
 		for _, obj := range q.objects {
 			if !obj.IsDead && (obj.Owner != o.Owner || obj.IsOwnCol && o.IsOwnCol) && o != obj.Owner && obj != o.Owner {
-				returnObject = append(returnObject, obj)
+				returnObjects = append(returnObjects, obj)
 			}
 		}
 	} else {
-		returnObject = q.objects
+		returnObjects = q.objects
 	}
 
 	if q.nodes != nil {
 		if index != -1 {
 			for _, obj := range q.nodes[index].Retrieve(area) {
-				returnObject = append(returnObject, obj)
+				returnObjects = append(returnObjects, obj)
 			}
 		} else {
 			for i := 0; i < 4; i++ {
 				for _, obj := range q.nodes[i].Retrieve(area) {
-					returnObject = append(returnObject, obj)
+					returnObjects = append(returnObjects, obj)
 				}
 			}
 		}
 	}
 
-	return returnObject
+	return returnObjects
 }
 
 // Clear is

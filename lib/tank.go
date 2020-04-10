@@ -33,7 +33,7 @@ func NecroKillEvent(a *Object, b *Object) {
 	if b.Type == "Square" && a.Guns[0].Limit < 22+2*a.Stats[6] {
 		a.Guns[0].Limit++
 		b.Type = "NecroSquare"
-		b.Team = "nec"
+		b.Team = a.Team
 		b.Exp = 0
 		b.Owner = a
 		b.Controller = a.Controller

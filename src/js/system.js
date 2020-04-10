@@ -23,7 +23,7 @@ export default class System {
         };
 
         this.playerSetting = {
-            "id": -1,
+            "id": "",
             "level": 0,
             "isCanRotate": false,
             "stat": 0,
@@ -221,6 +221,8 @@ export default class System {
         Socket.on("area", function (area) {
             this.area = area;
         }.bind(this));
+
+        this.loop();
     }
 
     insertComma = (number) => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -240,6 +242,9 @@ export default class System {
 
                 this.objectList.forEach((o) => {
                     o.Animate(tick);
+                });
+
+                this.objectList.forEach((o) => {
                     o.Draw(this.ctx, this.camera);
                 });
 
