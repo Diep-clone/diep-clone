@@ -37,7 +37,7 @@ func main() {
 	
 	port := "3000"
 	envPort := os.Getenv("PORT")
-	if envPort !== " {
+	if envPort != nil {
 	    port = envPort
 	}
 
