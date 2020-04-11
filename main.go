@@ -2,6 +2,7 @@ package main
 
 import (
 	//"database/sql"
+	"os"
 	"log"
 	"math"
 	"math/rand"
