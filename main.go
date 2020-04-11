@@ -34,6 +34,12 @@ func main() {
 	statement.Exec("")
 	*/
 	rand.Seed(time.Now().UnixNano())
+	
+	port := "3000"
+	envPort := os.Getenv("PORT")
+	if envPort !== " {
+	    port = envPort
+	}
 
 	lib.ShapeCount += setting.MaxShape
 
@@ -157,8 +163,8 @@ func main() {
 	go moveloop(*moveLoopTicker)
 	go sendUpdates(*sendUpdatesTicker)
 
-	log.Println("INFO > Server is Running Port 3000")
-	log.Fatal(http.ListenAndServe("localhost:3000", nil))
+	log.Println("INFO > Server is Running Port" + port)
+	log.Fatal(http.ListenAndServe("localhost:" + port, nil))
 }
 
 func moveloop(ticker time.Ticker) {
