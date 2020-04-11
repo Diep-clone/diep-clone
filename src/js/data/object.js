@@ -1,7 +1,6 @@
 import { RGB, getPolygonRadius, getObjectPoint } from '../lib/util';
 import { colorList, colorType, gunList } from '../data/index';
 import { drawC, drawObj } from '../lib/draw';
-import { Socket } from '../system';
 
 export const Obj = function(id) {
     'use strict';

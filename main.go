@@ -2,7 +2,11 @@ package main
 
 import (
 	//"database/sql"
+<<<<<<< Updated upstream
 	"os"
+=======
+	"encoding/json"
+>>>>>>> Stashed changes
 	"log"
 	"math"
 	"math/rand"
@@ -11,20 +15,73 @@ import (
 
 	"app/lib"
 
-	socketio "github.com/googollee/go-socket.io"
+	"github.com/gorilla/websocket"
 	//sq "github.com/mattn/go-sqlite3"
 )
 
-var sockets = map[string]socketio.Conn{}
+//var sockets = map[string]socketio.Conn{}
 var objects []*lib.Object
 var users = make(map[string]*lib.Player)
 
-var server, _ = socketio.NewServer(nil)
+//var server, _ = socketio.NewServer(nil)
 var quadtree lib.Quadtree
 
 var scoreboard lib.Scoreboard
 
 var setting lib.Setting = lib.ReadSetting()
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
+
+func homePage(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func wsEndpoint(w http.ResponseWriter, r *http.Request) {
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Println("Client Connected")
+	err = ws.WriteMessage(1, []byte("Hi Client!"))
+	if err != nil {
+		log.Println(err)
+	}
+
+	reader(ws)
+}
+
+func reader(conn *websocket.Conn) {
+	for {
+		messageType, p, err := conn.ReadMessage()
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		log.Println(string(p))
+
+		var objmap map[string]interface{}
+		_ = json.Unmarshal(p, &objmap)
+		event := objmap["event"].(string)
+
+		switch event {
+		case "init":
+		case "input":
+
+		}
+
+		if err := conn.WriteMessage(messageType, p); err != nil {
+			log.Println(err)
+			return
+		}
+	}
+}
 
 func main() {
 	// runtime.GOMAXPROCS(runtime.NumCPU()) 모든 CPU를 사용하게 해주는 코드
@@ -43,117 +100,123 @@ func main() {
 	}
 
 	lib.ShapeCount += setting.MaxShape
+	/*
+		server.OnConnect("/", func(s socketio.Conn) error {
+			s.SetContext("")
+			log.Println("INFO > " + s.ID() + " Connected")
+			s.Join("game")
 
-	server.OnConnect("/", func(s socketio.Conn) error {
-		s.SetContext("")
-		log.Println("INFO > " + s.ID() + " Connected")
-		s.Join("game")
+			return nil
+		})
 
-		return nil
-	})
+		server.OnEvent("/", "ping!", func(s socketio.Conn, data interface{}) {
+			s.Emit("pong!", data)
+		})
 
-	server.OnEvent("/", "ping!", func(s socketio.Conn, data interface{}) {
-		s.Emit("pong!", data)
-	})
-
-	server.OnEvent("/", "login", func(s socketio.Conn, name string) {
-		if _, ok := sockets[s.ID()]; ok {
-			log.Println("INFO > Prevent " + s.ID() + " Login")
-			return
-		}
-		if len(name) > 15 {
-			name = ""
-		}
-
-		sockets[s.ID()] = s
-		users[s.ID()] = lib.NewPlayer(s.ID())
-		users[s.ID()].ControlObject = lib.NewObject(map[string]interface{}{
-			"type":     "Necromanser",
-			"team":     s.ID(),
-			"name":     name,
-			"x":        lib.RandomRange(-setting.MapSize.X, setting.MapSize.X),
-			"y":        lib.RandomRange(-setting.MapSize.Y, setting.MapSize.Y),
-			"h":        50,
-			"mh":       50,
-			"damage":   20,
-			"level":    45,
-			"stats":    [8]int{0, 0, 0, 7, 7, 7, 7, 5},
-			"maxStats": [8]int{7, 7, 7, 7, 7, 7, 7, 7},
-			"sight":    1.11,
-		}, []lib.Gun{*lib.NewGun(map[string]interface{}{
-			"owner": users[s.ID()].ControlObject,
-			"limit": 0,
-		})}, lib.TankTick, lib.DefaultCollision, lib.NecroKillEvent, nil)
-		users[s.ID()].ControlObject.SetController(users[s.ID()])
-		objects = append(objects, users[s.ID()].ControlObject)
-
-		log.Println("INFO > " + s.ID() + " Login")
-	})
-
-	server.OnEvent("/", "moveVector", func(s socketio.Conn, value float64) {
-		if u, ok := users[s.ID()]; ok {
-			u.IsMove = value != 9
-			u.MoveDir = value
-		}
-	})
-
-	server.OnEvent("/", "stat", func(s socketio.Conn, n int) {
-
-	})
-
-	server.OnEvent("/", "mousemove", func(s socketio.Conn, x float64, y float64) {
-		if u, ok := users[s.ID()]; ok {
-			if obj := u.ControlObject; obj != nil {
-				u.SetMousePoint(x-obj.X, y-obj.Y)
-			} else {
-				u.SetMousePoint(x, y)
+		server.OnEvent("/", "login", func(s socketio.Conn, name string) {
+			if _, ok := sockets[s.ID()]; ok {
+				log.Println("INFO > Prevent " + s.ID() + " Login")
+				return
 			}
-		}
-	})
-
-	server.OnEvent("/", "mouseleft", func(s socketio.Conn, b bool) {
-		if u, ok := users[s.ID()]; ok {
-			u.Ml = b
-		}
-	})
-
-	server.OnEvent("/", "mouseright", func(s socketio.Conn, b bool) {
-		if u, ok := users[s.ID()]; ok {
-			u.Mr = b
-		}
-	})
-
-	server.OnEvent("/", "kill", func(s socketio.Conn, b bool) {
-		if u, ok := users[s.ID()]; ok {
-			if u.ControlObject != nil {
-				u.ControlObject.H = 0
+			if len(name) > 15 {
+				name = ""
 			}
-		}
-	})
 
-	server.OnError("/", func(s socketio.Conn, err error) {
-		log.Println(err)
-	})
+			sockets[s.ID()] = s
+			users[s.ID()] = lib.NewPlayer(s.ID())
+			users[s.ID()].ControlObject = lib.NewObject(map[string]interface{}{
+				"type":     "Necromanser",
+				"team":     s.ID(),
+				"name":     name,
+				"x":        lib.RandomRange(-setting.MapSize.X, setting.MapSize.X),
+				"y":        lib.RandomRange(-setting.MapSize.Y, setting.MapSize.Y),
+				"h":        50,
+				"mh":       50,
+				"damage":   20,
+				"level":    45,
+				"stats":    [8]int{0, 0, 0, 7, 7, 7, 7, 5},
+				"maxStats": [8]int{7, 7, 7, 7, 7, 7, 7, 7},
+				"sight":    1.11,
+			}, []lib.Gun{*lib.NewGun(map[string]interface{}{
+				"owner": users[s.ID()].ControlObject,
+				"limit": 0,
+			})}, lib.TankTick, lib.DefaultCollision, lib.NecroKillEvent, nil)
+			users[s.ID()].ControlObject.SetController(users[s.ID()])
+			objects = append(objects, users[s.ID()].ControlObject)
 
-	server.OnDisconnect("/", func(s socketio.Conn, _ string) {
-		if _, ok := sockets[s.ID()]; !ok {
-			log.Println("INFO > Prevent " + s.ID() + " Disconnect")
-			return
-		}
+			log.Println("INFO > " + s.ID() + " Login")
+		})
 
-		users[s.ID()].ControlObject.Controller = nil
+		server.OnEvent("/", "moveVector", func(s socketio.Conn, value float64) {
+			if u, ok := users[s.ID()]; ok {
+				u.IsMove = value != 9
+				u.MoveDir = value
+			}
+		})
 
-		delete(sockets, s.ID())
-		delete(users, s.ID())
+		server.OnEvent("/", "stat", func(s socketio.Conn, n int) {
 
-		log.Println("INFO > " + s.ID() + " disconnected")
-	})
+		})
 
-	go server.Serve()
-	defer server.Close()
+		server.OnEvent("/", "mousemove", func(s socketio.Conn, x float64, y float64) {
+			if u, ok := users[s.ID()]; ok {
+				if obj := u.ControlObject; obj != nil {
+					u.SetMousePoint(x-obj.X, y-obj.Y)
+				} else {
+					u.SetMousePoint(x, y)
+				}
+			}
+		})
 
-	http.Handle("/socket.io/", server)
-	http.Handle("/", http.FileServer(http.Dir("./dist")))
+		server.OnEvent("/", "mouseleft", func(s socketio.Conn, b bool) {
+			if u, ok := users[s.ID()]; ok {
+				u.Ml = b
+			}
+		})
+
+		server.OnEvent("/", "mouseright", func(s socketio.Conn, b bool) {
+			if u, ok := users[s.ID()]; ok {
+				u.Mr = b
+			}
+		})
+
+		server.OnEvent("/", "kill", func(s socketio.Conn, b bool) {
+			if u, ok := users[s.ID()]; ok {
+				if u.ControlObject != nil {
+					u.ControlObject.H = 0
+				}
+			}
+		})
+
+		server.OnError("/", func(s socketio.Conn, err error) {
+			log.Println(err)
+		})
+
+		server.OnDisconnect("/", func(s socketio.Conn, _ string) {
+			if _, ok := sockets[s.ID()]; !ok {
+				log.Println("INFO > Prevent " + s.ID() + " Disconnect")
+				return
+			}
+
+			users[s.ID()].ControlObject.Controller = nil
+
+			delete(sockets, s.ID())
+			delete(users, s.ID())
+
+			log.Println("INFO > " + s.ID() + " disconnected")
+		})
+	*/
+	/*
+		go server.Serve()
+		defer server.Close()
+	*/
+	/*
+		http.Handle("/socket.io/", server)
+		http.Handle("/", http.FileServer(http.Dir("./dist")))
+	*/
+
+	http.HandleFunc("/", homePage)
+	http.HandleFunc("/ws", wsEndpoint)
 
 	moveLoopTicker := time.NewTicker(time.Second / 60)
 	sendUpdatesTicker := time.NewTicker(time.Second / 30)
@@ -283,38 +346,42 @@ func sendUpdates(ticker time.Ticker) {
 
 			//st := time.Now()
 
-			if s, ok := sockets[u.ID].(socketio.Conn); ok {
-				s.Emit("objectList", visibleObject)
-				//log.Println(time.Since(st))
-				if obj := u.ControlObject; obj == nil {
-					s.Emit("playerSet", map[string]interface{}{
-						"id":          "",
-						"level":       1,
-						"isCanRotate": u.IsCanDir,
-						"stat":        0,
-						"stats":       nil,
-						"maxstats":    nil,
-					}, u.Camera)
-				} else {
-					s.Emit("playerSet", map[string]interface{}{
-						"id":          s.ID(),
-						"level":       obj.Level,
-						"isCanRotate": u.IsCanDir,
-						"stat":        u.Stat,
-						"stats":       obj.Stats,
-						"maxstats":    obj.MaxStats,
-					}, u.Camera)
+			/*
+				if s, ok := sockets[u.ID].(socketio.Conn); ok {
+					s.Emit("objectList", visibleObject)
+					//log.Println(time.Since(st))
+					if obj := u.ControlObject; obj == nil {
+						s.Emit("playerSet", map[string]interface{}{
+							"id":          "",
+							"level":       1,
+							"isCanRotate": u.IsCanDir,
+							"stat":        0,
+							"stats":       nil,
+							"maxstats":    nil,
+						}, u.Camera)
+					} else {
+						s.Emit("playerSet", map[string]interface{}{
+							"id":          s.ID(),
+							"level":       obj.Level,
+							"isCanRotate": u.IsCanDir,
+							"stat":        u.Stat,
+							"stats":       obj.Stats,
+							"maxstats":    obj.MaxStats,
+						}, u.Camera)
+					}
 				}
-			}
+			*/
 		}
-		server.BroadcastToRoom("", "game", "scoreboard", scoreboard)
-		server.BroadcastToRoom("", "game", "area", []lib.Area{
-			lib.Area{
-				X: -setting.MapSize.X,
-				Y: -setting.MapSize.Y,
-				W: setting.MapSize.X * 2,
-				H: setting.MapSize.Y * 2,
-			},
-		})
+		/*
+			server.BroadcastToRoom("", "game", "scoreboard", scoreboard)
+			server.BroadcastToRoom("", "game", "area", []lib.Area{
+				lib.Area{
+					X: -setting.MapSize.X,
+					Y: -setting.MapSize.Y,
+					W: setting.MapSize.X * 2,
+					H: setting.MapSize.Y * 2,
+				},
+			})
+		*/
 	}
 }

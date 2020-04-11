@@ -1,10 +1,9 @@
 import * as data from './data';
 
-import io from 'socket.io-client';
 import { Obj } from './data/object';
 import { drawBackground } from './lib/draw';
 
-export var Socket = io();
+const socket = new WebSocket("ws://127.0.0.1:3000/ws");
 
 export default class System {
     constructor() {
@@ -111,7 +110,7 @@ export default class System {
                     default:
                         break;
                 }
-                Socket.emit(key, value);
+                //Socket.emit(key, value);
             }.bind(this),
             keyUp:function(){
                 if (this.sameKeys[arguments[0]]) arguments[0]=this.sameKeys[arguments[0]];
@@ -161,12 +160,14 @@ export default class System {
                     default:
                         break;
                 }
-                Socket.emit(key, value);
+                //Socket.emit(key, value);
             }.bind(this),
             mouse:function(){
+                /*
                 Socket.emit("mousemove",
                 arguments[0]/this.camera.z+this.camera.x,
                 arguments[1]/this.camera.z+this.camera.y);
+                */
             }.bind(this),
             prevent_right_click: function(){
                 return true;
@@ -179,8 +180,28 @@ export default class System {
             wheel: function(){}.bind(this),
         };
 
-        Socket.emit("login");
+        //Socket.emit("login");
 
+        socket.onopen = () => {
+            console.log("Successfully Connected");
+            socket.send("Hi From the Client!");
+        };
+
+        socket.onmessage = msg => {
+
+        }
+        
+        socket.onclose = event => {
+            this.gameSetting.gamemode = "Connecting";
+            console.log("Socket Closed Connection: ", event);
+            socket.send("Client Closed!");
+        };
+
+        socket.onerror = error => {
+            console.log("Socket Error: ", error);
+        };
+
+        /*
         Socket.on("playerSet", function (data, camera) {
             this.playerSetting = data;
 
@@ -197,7 +218,8 @@ export default class System {
             this.camera.x = camera.Pos.X - this.cv.width / 2 / this.camera.uiz / camera.Z;
             this.camera.y = camera.Pos.Y - this.cv.height / 2 / this.camera.uiz / camera.Z;
         }.bind(this));
-
+        */
+        /*
         Socket.on("objectList", function (list) {
             list.forEach((obj) => {
                 
@@ -220,10 +242,12 @@ export default class System {
                 obj.isEnable = false;
             })
         }.bind(this));
-
+        */
+        /*
         Socket.on("area", function (area) {
             this.area = area;
         }.bind(this));
+        */
 
         this.loop();
     }
