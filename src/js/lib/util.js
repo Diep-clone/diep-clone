@@ -64,3 +64,25 @@ export const RGB = function(r, g, b) {
     }
 }
 
+export const getPolygonRadius = function (p) {
+    let d = (90 - 180 / p) * (Math.PI * 2) / 360;
+    return Math.sqrt(Math.PI / (Math.sin(d) * Math.cos(d) * p));
+}
+
+export const getObjectPoint = function (type) {
+    switch (type) {
+        case "Triangle":
+            return 3;
+        case "Square":
+        case "NecroSquare":
+        case "Necromanser":
+        case "Factory":
+            return 4;
+        case "Pentagon":
+            return 5;
+        case "Mothership":
+            return 20;
+        default:
+            return 0;
+    }
+}

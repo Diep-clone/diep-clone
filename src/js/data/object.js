@@ -1,4 +1,4 @@
-import { RGB } from '../lib/util';
+import { RGB, getPolygonRadius, getObjectPoint } from '../lib/util';
 import { colorList, colorType, gunList } from '../data/index';
 import { drawC, drawObj } from '../lib/draw';
 import { Socket } from '../system';
@@ -34,7 +34,7 @@ export const Obj = function(id) {
     this.Animate = function (tick) {
         if (this.isDead) {
             this.opacity = Math.max(this.opacity - 0.1 * tick * 0.05, 0);
-            this.r += 0.3 * tick * 0.05;
+            this.r += this.r * 0.03 * tick * 0.05;
 
             if (this.opacity == 0) {
                 this.isDelete = true;
@@ -95,9 +95,10 @@ export const Obj = function(id) {
 
     this.SetCanvasSize = function (camera) {
         var {z, t, c, r, dir, o} = this.DrawSet(camera);
-        var size = {x: r * z, y: r * z,};
-        var pos = {x: r * z / 2, y: r * z / 2,};
-        this.guns.forEach((g) => g.SetCanvasSize(camera, size, pos, r, dir));
+        let rr = r * getPolygonRadius(getObjectPoint(t));
+        var size = {x: rr * z, y: rr * z,};
+        var pos = {x: rr * z / 2, y: rr * z / 2,};
+        this.guns.forEach((g) => g.SetCanvasSize(camera, size, pos, rr, dir));
         this.cv.width = size.x + 4 * camera.z;
         this.cv.height = size.y + 4 * camera.z;
         pos.x += 2 * camera.z;

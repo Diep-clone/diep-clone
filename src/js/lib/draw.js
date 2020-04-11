@@ -1,5 +1,5 @@
 import { backgroundColor } from '../data/index'
-import { RGB } from './util';
+import { RGB, getPolygonRadius, getObjectPoint } from './util';
 
 export const drawCircle = function (ctx, x, y, z, r) {
     ctx.beginPath();
@@ -13,8 +13,7 @@ export const drawPolygon = function (ctx, x, y, z, r, dir, p) {
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
 
-    let d = (90 - 180 / p) * (Math.PI * 2) / 360;
-    r *= Math.sqrt(Math.PI / (Math.sin(d) * Math.cos(d) * p));
+    r *= getPolygonRadius(p);
 
     ctx.beginPath();
     let t = (p % 2)? 0: Math.PI/p;
@@ -36,28 +35,14 @@ export const drawObj = function (ctx, x, y, z, r, dir, t, o, c) {
     ctx.save();
     ctx.globalAlpha = o;
     drawC(ctx,c,c.getDarkRGB());
-    switch (t) {
-        case "Triangle":
-            drawPolygon(ctx, x, y, z, r, dir, 3);
-            break;
-        case "Square":
-        case "NecroSquare":
-        case "Necromanser":
-        case "Factory":
-            drawPolygon(ctx, x, y, z, r, dir, 4);
-            break;
-        case "Pentagon":
-            drawPolygon(ctx, x, y, z, r, dir, 5);
-            break;
-        case "Mothership":
-            drawPolygon(ctx, x, y, z, r, dir, 20);
-            break;
-        default:
-            drawC(ctx,c.getDarkRGB());
-            drawCircle(ctx, x, y, z, (r + 4));
-            drawC(ctx,c);
-            drawCircle(ctx, x, y, z, r);
-            break;
+    let im = getObjectPoint(t);
+    if (im == 0) {
+        drawC(ctx,c.getDarkRGB());
+        drawCircle(ctx, x, y, z, (r + 4));
+        drawC(ctx,c);
+        drawCircle(ctx, x, y, z, r);
+    } else {
+        drawPolygon(ctx, x, y, z, r, dir, im);
     }
     ctx.restore();
 }
