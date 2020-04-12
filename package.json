@@ -9,7 +9,7 @@
   "scripts": {
     "start:webpack": "webpack -w",
     "start:go": "go run main.go",
-    "build": "go build main.go && webpack"
+    "build": "go build main.go && webpack --mode=production"
   },
   "devDependencies": {
     "@babel/core": "^7.8.7",
