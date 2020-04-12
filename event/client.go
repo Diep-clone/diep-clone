@@ -7,6 +7,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+var sockets = map[int]websocket.Conn{}
+
 // const (
 // 	maxMessageSize = 512
 // 	writeWait      = time.Second
@@ -26,6 +28,21 @@ type Client struct {
 	Conn *websocket.Conn
 
 	Send chan []byte
+
+	ID int
+}
+
+var clientID int = 1
+
+func NewClient(h *Hub, c *websocket.Conn) *Client {
+	client := &Client{
+		Hub:  h,
+		Conn: c,
+		Send: make(chan []byte, 256),
+		ID:   clientID,
+	}
+	clientID++
+	return client
 }
 
 //ReadPump is

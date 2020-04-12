@@ -2,8 +2,9 @@ package main
 
 import (
 	//"database/sql"
-	"encoding/json"
+
 	"log"
+	"math"
 	"math/rand"
 	"net/http"
 	"os"
@@ -16,7 +17,6 @@ import (
 	//sq "github.com/mattn/go-sqlite3"
 )
 
-//var sockets = map[string]socketio.Conn{}
 var objects []*lib.Object
 var users = make(map[string]*lib.Player)
 
@@ -30,57 +30,15 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func wsEndpoint(w http.ResponseWriter, r *http.Request) {
+func serverWs(hub *event.Hub, w http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
-	ws, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println(err)
-	}
-
-	log.Println("Client Connected")
-	err = ws.WriteMessage(1, []byte("Hi Client!"))
-	if err != nil {
-		log.Println(err)
-	}
-
-	reader(ws)
-}
-
-func reader(conn *websocket.Conn) {
-	for {
-		messageType, p, err := conn.ReadMessage()
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		log.Println(string(p))
-
-		var objmap map[string]interface{}
-		_ = json.Unmarshal(p, &objmap)
-		event := objmap["event"].(string)
-
-		switch event {
-		case "init":
-		case "input":
-
-		}
-
-		if err := conn.WriteMessage(messageType, p); err != nil {
-			log.Println(err)
-			return
-		}
-	}
-}
-
-func serverWs(hub *event.Hub, w http.ResponseWriter, r *http.Request) {
 	connection, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 	}
 
-	client := &event.Client{Hub: hub, Conn: connection, Send: make(chan []byte, 256)}
+	client := event.NewClient(hub, connection)
 	client.Hub.Register <- client
 
 	go client.ReadPump()
@@ -103,7 +61,7 @@ func main() {
 		port = envPort
 	}
 
-	lib.ShapeCount += setting.MaxShape
+	lib.ShapeCount = setting.MaxShape
 
 	hub := event.NewHub()
 	go hub.Run()
@@ -126,93 +84,93 @@ func main() {
 	log.Fatal(http.ListenAndServe("localhost:"+port, nil))
 }
 
-// func moveloop(ticker time.Ticker) {
-// 	for range ticker.C {
-// 		for ; lib.ShapeCount > 0; lib.ShapeCount-- {
-// 			objects = append(objects, lib.NewObject(map[string]interface{}{
-// 				"type":   "Square",
-// 				"name":   "Square",
-// 				"team":   "shape",
-// 				"x":      lib.RandomRange(-setting.MapSize.X, setting.MapSize.X),
-// 				"y":      lib.RandomRange(-setting.MapSize.Y, setting.MapSize.Y),
-// 				"dir":    lib.RandomRange(-math.Pi, math.Pi),
-// 				"stance": 0.2,
-// 				"exp":    10,
-// 			}, nil, nil, lib.DefaultCollision, nil, func(obj *lib.Object, killer *lib.Object) {
-// 				lib.ShapeCount++
-// 			}))
-// 		}
-// 		scoreboard = lib.Scoreboard{}
+func moveloop(ticker time.Ticker) {
+	for range ticker.C {
+		for ; lib.ShapeCount > 0; lib.ShapeCount-- {
+			objects = append(objects, lib.NewObject(map[string]interface{}{
+				"type":   "Square",
+				"name":   "Square",
+				"team":   "shape",
+				"x":      lib.RandomRange(-setting.MapSize.X, setting.MapSize.X),
+				"y":      lib.RandomRange(-setting.MapSize.Y, setting.MapSize.Y),
+				"dir":    lib.RandomRange(-math.Pi, math.Pi),
+				"stance": 0.2,
+				"exp":    10,
+			}, nil, nil, lib.DefaultCollision, nil, func(obj *lib.Object, killer *lib.Object) {
+				lib.ShapeCount++
+			}))
+		}
+		scoreboard = lib.Scoreboard{}
 
-// 		for _, u := range users {
-// 			u.PlayerSet()
+		for _, u := range users {
+			u.PlayerSet()
 
-// 			if u.ControlObject != nil {
-// 				scoreboard.Push(lib.Score{
-// 					Name:  u.ControlObject.Name,
-// 					Type:  u.ControlObject.Type,
-// 					Score: u.ControlObject.Exp,
-// 				})
-// 			}
-// 		}
+			if u.ControlObject != nil {
+				scoreboard.Push(lib.Score{
+					Name:  u.ControlObject.Name,
+					Type:  u.ControlObject.Type,
+					Score: u.ControlObject.Exp,
+				})
+			}
+		}
 
-// 		quadtree = *lib.NewQuadtree(-setting.MapSize.X-lib.Grid*4, -setting.MapSize.Y-lib.Grid*4, setting.MapSize.X*2+lib.Grid*8, setting.MapSize.Y*2+lib.Grid*8, 1)
+		quadtree = *lib.NewQuadtree(-setting.MapSize.X-lib.Grid*4, -setting.MapSize.Y-lib.Grid*4, setting.MapSize.X*2+lib.Grid*8, setting.MapSize.Y*2+lib.Grid*8, 1)
 
-// 		for i := 0; i < len(objects); i++ {
-// 			obj := objects[i]
+		for i := 0; i < len(objects); i++ {
+			obj := objects[i]
 
-// 			if obj.Tick != nil {
-// 				obj.Tick(obj)
-// 			}
+			if obj.Tick != nil {
+				obj.Tick(obj)
+			}
 
-// 			obj.ObjectTick()
+			obj.ObjectTick()
 
-// 			if obj.IsBorder { // 화면 밖으로 벗어나는가?
-// 				if obj.X > setting.MapSize.X+lib.Grid*4 {
-// 					obj.X = setting.MapSize.X + lib.Grid*4
-// 				}
-// 				if obj.X < -setting.MapSize.X-lib.Grid*4 {
-// 					obj.X = -setting.MapSize.X - lib.Grid*4
-// 				}
-// 				if obj.Y > setting.MapSize.Y+lib.Grid*4 {
-// 					obj.Y = setting.MapSize.Y + lib.Grid*4
-// 				}
-// 				if obj.Y < -setting.MapSize.Y-lib.Grid*4 {
-// 					obj.Y = -setting.MapSize.Y - lib.Grid*4
-// 				}
-// 			}
+			if obj.IsBorder { // 화면 밖으로 벗어나는가?
+				if obj.X > setting.MapSize.X+lib.Grid*4 {
+					obj.X = setting.MapSize.X + lib.Grid*4
+				}
+				if obj.X < -setting.MapSize.X-lib.Grid*4 {
+					obj.X = -setting.MapSize.X - lib.Grid*4
+				}
+				if obj.Y > setting.MapSize.Y+lib.Grid*4 {
+					obj.Y = setting.MapSize.Y + lib.Grid*4
+				}
+				if obj.Y < -setting.MapSize.Y-lib.Grid*4 {
+					obj.Y = -setting.MapSize.Y - lib.Grid*4
+				}
+			}
 
-// 			objList := quadtree.Retrieve(obj)
+			objList := quadtree.Retrieve(obj)
 
-// 			for _, obj2 := range objList {
-// 				if math.Sqrt((obj.X-obj2.X)*(obj.X-obj2.X)+(obj.Y-obj2.Y)*(obj.Y-obj2.Y)) < obj.R+obj2.R {
-// 					obj.Collision(obj, obj2)
-// 					obj2.Collision(obj2, obj)
-// 				}
-// 			}
+			for _, obj2 := range objList {
+				if math.Sqrt((obj.X-obj2.X)*(obj.X-obj2.X)+(obj.Y-obj2.Y)*(obj.Y-obj2.Y)) < obj.R+obj2.R {
+					obj.Collision(obj, obj2)
+					obj2.Collision(obj2, obj)
+				}
+			}
 
-// 			quadtree.Insert(obj)
+			quadtree.Insert(obj)
 
-// 			if obj.IsDead {
-// 				if obj.DeadTime == -1 {
-// 					obj.DeadTime = 700
-// 				} else if obj.DeadTime <= 0 {
-// 					if obj.DeadEvent != nil {
-// 						obj.DeadEvent(obj, obj.HitObject)
-// 					}
-// 					objects = append(objects[:i], objects[i+1:]...)
-// 					/*objects[i] = objects[len(objects)-1]
-// 					objects = objects[:len(objects)-1]*/
-// 					i--
-// 				} else {
-// 					obj.DeadTime = math.Max(obj.DeadTime-1000./60., 0.)
-// 				}
-// 			} else {
-// 				obj.DeadTime = -1
-// 			}
-// 		}
-// 	}
-// }
+			if obj.IsDead {
+				if obj.DeadTime == -1 {
+					obj.DeadTime = 700
+				} else if obj.DeadTime <= 0 {
+					if obj.DeadEvent != nil {
+						obj.DeadEvent(obj, obj.HitObject)
+					}
+					objects = append(objects[:i], objects[i+1:]...)
+					/*objects[i] = objects[len(objects)-1]
+					objects = objects[:len(objects)-1]*/
+					i--
+				} else {
+					obj.DeadTime = math.Max(obj.DeadTime-1000./60., 0.)
+				}
+			} else {
+				obj.DeadTime = -1
+			}
+		}
+	}
+}
 
 // func sendUpdates(ticker time.Ticker) {
 // 	for range ticker.C {

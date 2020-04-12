@@ -1,3 +1,3 @@
-package lib
+package obj
 
 var ShapeCount int

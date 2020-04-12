@@ -1,4 +1,4 @@
-package lib
+package obj
 
 import (
 	"encoding/json"
