@@ -1,7 +1,5 @@
 package event
 
-import "fmt"
-
 // Hub 가 클라이언트의 집합성 유지 및 관리
 type Hub struct {
 	Clients map[*Client]bool
@@ -31,9 +29,11 @@ func (h *Hub) Run() {
 		select {
 		case client := <-h.Register:
 			h.Clients[client] = true
-			fmt.Println(h.Clients)
+			Register(client)
 		case client := <-h.Unregister:
 			if _, ok := h.Clients[client]; ok {
+				UnRegister(client)
+
 				delete(h.Clients, client)
 				close(client.Send)
 			}

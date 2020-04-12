@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"runtime"
 	"time"
 
 	"app/event"
@@ -46,7 +47,7 @@ func serverWs(hub *event.Hub, w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// runtime.GOMAXPROCS(runtime.NumCPU()) 모든 CPU를 사용하게 해주는 코드
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	/*database, _ := sql.Open("sqlite3","./bogo.db")
 	statement, _ := database.Prepare("CREATE TABLE IF NOT EXISTS people (id TEXT, nickname TEXT, password TEXT")
 	statement.Exec()
