@@ -1,4 +1,4 @@
-package lib
+package obj
 
 // MaxObj is Object Max length
 var MaxObj = 4

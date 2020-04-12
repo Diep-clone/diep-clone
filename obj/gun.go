@@ -1,4 +1,4 @@
-package lib
+package obj
 
 import (
 	"encoding/json"
@@ -44,7 +44,6 @@ func NewGun(value map[string]interface{}) *Gun {
 		"limit":     -1,
 		"autoshot":  false,
 	}
-	objID++
 
 	for key, val := range value {
 		m[key] = val

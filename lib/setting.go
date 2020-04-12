@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-var setting Setting = ReadSetting()
+var GameSetting Setting = ReadSetting()
 
 // Setting is
 type Setting struct {

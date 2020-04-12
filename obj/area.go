@@ -1,4 +1,4 @@
-package lib
+package obj
 
 type Area struct {
 	X float64

@@ -1,9 +1,21 @@
-package lib
+package obj
 
 import (
 	"math"
 	"time"
 )
+
+// Pos is
+type Pos struct {
+	X float64
+	Y float64
+}
+
+// Circle is
+type Circle struct {
+	Pos Pos
+	R   float64
+}
 
 // Camera is
 type Camera struct {
@@ -11,9 +23,11 @@ type Camera struct {
 	Z   float64
 }
 
+var Users map[int]*Player
+
 // Player is
 type Player struct {
-	ID            string
+	ID            int
 	Mx            float64
 	My            float64
 	Mr            bool // right Mouse
@@ -28,7 +42,7 @@ type Player struct {
 }
 
 // NewPlayer is make player
-func NewPlayer(id string) *Player {
+func NewPlayer(id int) *Player {
 	p := Player{}
 	p.ID = id
 	p.Camera = Camera{

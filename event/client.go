@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var sockets = map[int]websocket.Conn{}
+var Sockets = map[int]*Client{}
 
 // const (
 // 	maxMessageSize = 512

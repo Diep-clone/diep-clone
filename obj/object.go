@@ -1,42 +1,12 @@
 package obj
 
 import (
+	"app/lib"
 	"encoding/json"
 	"math"
 )
 
-// Pos is
-type Pos struct {
-	X float64
-	Y float64
-}
-
-// Circle is
-type Circle struct {
-	Pos Pos
-	R   float64
-}
-
-// Score is
-type Score struct {
-	Name  string
-	Type  string
-	Score int
-}
-
-// Scoreboard is
-type Scoreboard [11]Score
-
-// Scoreboard Push
-func (sc *Scoreboard) Push(value Score) {
-	var index = 0
-	for ; value.Score < sc[index+1].Score && index < 10; index++ {
-	}
-	for j := 9; j >= index; j-- {
-		sc[j+1] = sc[j]
-	}
-	sc[index] = value
-}
+var Objects []*Object
 
 // Object is
 type Object struct {
@@ -85,11 +55,26 @@ type Object struct {
 
 //
 func (obj *Object) ObjectTick() {
-	obj.X += obj.Dx * setting.GameSpeed
-	obj.Y += obj.Dy * setting.GameSpeed
+	obj.X += obj.Dx * lib.GameSetting.GameSpeed
+	obj.Y += obj.Dy * lib.GameSetting.GameSpeed
 
 	obj.Dx *= 0.97 //math.Pow(0.97, setting.GameSpeed)
 	obj.Dy *= 0.97 //math.Pow(0.97, setting.GameSpeed)
+
+	if obj.IsBorder { // 화면 밖으로 벗어나는가?
+		if obj.X > lib.GameSetting.MapSize.X+lib.Grid*4 {
+			obj.X = lib.GameSetting.MapSize.X + lib.Grid*4
+		}
+		if obj.X < -lib.GameSetting.MapSize.X-lib.Grid*4 {
+			obj.X = -lib.GameSetting.MapSize.X - lib.Grid*4
+		}
+		if obj.Y > lib.GameSetting.MapSize.Y+lib.Grid*4 {
+			obj.Y = lib.GameSetting.MapSize.Y + lib.Grid*4
+		}
+		if obj.Y < -lib.GameSetting.MapSize.Y-lib.Grid*4 {
+			obj.Y = -lib.GameSetting.MapSize.Y - lib.Grid*4
+		}
+	}
 
 	if obj.H <= 0 {
 		obj.IsDead = true
@@ -99,11 +84,11 @@ func (obj *Object) ObjectTick() {
 		}
 	}
 
-	if obj.Controller != nil && now()-int64(30000.*setting.GameSpeed) > obj.HitTime {
-		obj.H += obj.Mh / 60 / 10 * setting.GameSpeed
+	if obj.Controller != nil && lib.Now()-int64(30000.*lib.GameSetting.GameSpeed) > obj.HitTime {
+		obj.H += obj.Mh / 60 / 10 * lib.GameSetting.GameSpeed
 	}
 
-	obj.H += obj.GetDH * setting.GameSpeed
+	obj.H += obj.GetDH * lib.GameSetting.GameSpeed
 	obj.GetDH = 0
 
 	if obj.H > obj.Mh {
@@ -126,12 +111,12 @@ func DefaultCollision(a *Object, b *Object) {
 		return
 	}
 
-	a.HitTime = now()
+	a.HitTime = lib.Now()
 
-	if b.Lh-a.Damage*setting.GameSpeed <= 0 {
-		a.H -= b.Damage * (b.Lh / (a.Damage * setting.GameSpeed)) * setting.GameSpeed
+	if b.Lh-a.Damage*lib.GameSetting.GameSpeed <= 0 {
+		a.H -= b.Damage * (b.Lh / (a.Damage * lib.GameSetting.GameSpeed)) * lib.GameSetting.GameSpeed
 	} else {
-		a.H -= b.Damage * setting.GameSpeed
+		a.H -= b.Damage * lib.GameSetting.GameSpeed
 	}
 
 	a.HitObject = b
@@ -154,13 +139,13 @@ func (o Object) SocketObj() map[string]interface{} {
 		"id":      o.ID,
 		"team":    o.Team,
 		"type":    o.Type,
-		"x":       floor(o.X, 2),
-		"y":       floor(o.Y, 2),
-		"r":       floor(o.R, 1),
-		"dir":     floor(o.Dir, 2),
-		"mh":      floor(o.Mh, 1),
-		"h":       floor(o.H, 1),
-		"opacity": floor(o.Opacity, 2),
+		"x":       lib.Floor(o.X, 2),
+		"y":       lib.Floor(o.Y, 2),
+		"r":       lib.Floor(o.R, 1),
+		"dir":     lib.Floor(o.Dir, 2),
+		"mh":      lib.Floor(o.Mh, 1),
+		"h":       lib.Floor(o.H, 1),
+		"opacity": lib.Floor(o.Opacity, 2),
 		"exp":     o.Exp,
 		"name":    o.Name,
 		"owner":   ownerID,
@@ -179,7 +164,7 @@ func NewObject(value map[string]interface{}, guns []Gun, t func(*Object), c func
 		"team":         "ffa",
 		"x":            -999999,
 		"y":            -999999,
-		"r":            Grid,
+		"r":            lib.Grid,
 		"level":        1,
 		"h":            10,
 		"mh":           10,
@@ -190,8 +175,8 @@ func NewObject(value map[string]interface{}, guns []Gun, t func(*Object), c func
 		"stance":       1,
 		"opacity":      1,
 		"sight":        1,
-		"spawnTime":    now(),
-		"hitTime":      now(),
+		"spawnTime":    lib.Now(),
+		"hitTime":      lib.Now(),
 		"deadTime":     -1,
 		"isBorder":     true,
 		"isOwnCol":     true,
