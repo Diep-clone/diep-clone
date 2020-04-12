@@ -3,6 +3,7 @@ package lib
 import (
 	"math"
 	"math/rand"
+	"time"
 )
 
 const Grid = 12.9
@@ -29,4 +30,8 @@ func ccw(p1, p2, p3 Pos) int {
 	} else {
 		return 0
 	}
+}
+
+func now() int64 {
+	return time.Now().UnixNano() / 1000000
 }

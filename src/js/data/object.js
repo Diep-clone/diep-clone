@@ -1,7 +1,6 @@
-import { RGB } from '../lib/util';
+import { RGB, getPolygonRadius, getObjectPoint } from '../lib/util';
 import { colorList, colorType, gunList } from '../data/index';
 import { drawC, drawObj } from '../lib/draw';
-import System, { Socket } from '../system';
 
 export const Obj = function(id) {
     'use strict';
@@ -19,9 +18,12 @@ export const Obj = function(id) {
     this.dir;
     this.h;
     this.mh;
-    this.a;
+    this.opacity;
     this.score;
     this.isDead;
+
+    this.isEnable = true;
+    this.isDelete = false;
 
     this.cv = document.createElement("canvas");
     this.ctx = this.cv.getContext("2d");
@@ -29,11 +31,12 @@ export const Obj = function(id) {
     this.hitTime = 0;
 
     this.Animate = function (tick) {
-        if (this.isDead){
-            this.opacity = Math.max(this.opacity - 0.13 * tick * 0.05, 0);
-            this.radius += 0.4 * tick * 0.05;
-            if (this.opacity == 0){
-                System.RemoveObject(this.id);
+        if (this.isDead) {
+            this.opacity = Math.max(this.opacity - 0.1 * tick * 0.05, 0);
+            this.r += this.r * 0.03 * tick * 0.05;
+
+            if (this.opacity == 0) {
+                this.isDelete = true;
                 return;
             }
         }
@@ -46,21 +49,28 @@ export const Obj = function(id) {
     this.ObjSet = function (data) {
         this.x = data.x;
         this.y = data.y;
-        this.r = data.r;
-        this.dir = data.dir;
-        this.h = data.h;
-        this.mh = data.mh;
-        this.a = data.a;
-        this.score = data.score;
+        if (!this.isDead){
+            this.r = data.r;
+            this.dir = data.dir;
+            this.h = data.h;
+            this.mh = data.mh;
+            this.opacity = data.opacity;
+            this.score = data.score;
+        }
         this.isDead = data.isDead;
 
         this.name = data.name;
         if (this.type !== data.type){
-            if (gunList[data.type] == undefined) this.guns = [];
-            else this.guns = gunList[data.type];
+            if (gunList[data.type] == undefined){
+                this.guns = [];
+            } else {
+                this.guns = gunList[data.type];
+            } 
         }
         this.type = data.type;
         this.color = colorType(data.type,data.team);
+
+        this.isEnable = true;
     };
 
     this.DrawSet = function (camera) {
@@ -84,19 +94,18 @@ export const Obj = function(id) {
 
     this.SetCanvasSize = function (camera) {
         var {z, t, c, r, dir, o} = this.DrawSet(camera);
-        var size = {x: r * z, y: r * z,};
-        var pos = {x: r * z / 2, y: r * z / 2,};
-        this.guns.forEach((g) => g.SetCanvasSize(camera, size, pos, r, dir));
+        let rr = r * getPolygonRadius(getObjectPoint(t));
+        var size = {x: rr * z, y: rr * z,};
+        var pos = {x: rr * z / 2, y: rr * z / 2,};
+        this.guns.forEach((g) => g.SetCanvasSize(camera, size, pos, rr, dir));
         this.cv.width = size.x + 4 * camera.z;
         this.cv.height = size.y + 4 * camera.z;
         pos.x += 2 * camera.z;
         pos.y += 2 * camera.z;
         this.ctx.lineWidth = 2 * camera.z;
-        this.ctx.lineCap = "round";
-        this.ctx.lineJoin = "round";
         this.ctx.imageSmoothingEnabled = false;
         return {
-            ctx: this.ctx,
+            ctxx: this.ctx,
             x: pos.x,
             y: pos.y,
             z: z,
@@ -111,41 +120,38 @@ export const Obj = function(id) {
     this.Draw = function (ctx,camera) {
         if (this.guns.length > 0 && this.opacity < 1){
             var {ctxx, x, y, z, t, c, r, dir, o} = this.SetCanvasSize(camera);
-            ctxx.save();
+            var s = this.DrawSet(camera);
             this.guns.forEach((g) => {
                 if (!g.isFront) {
-                    g.Draw(ctxx, camera, x, y, r, dir);
+                    g.Draw(ctxx, camera, x / z, y / z, r, dir, this.hitTime);
                 }
             });
-            drawC(ctxx,c,c.getDarkRGB());
             drawObj(ctxx,
-                x + s.x * z - x - Math.floor(s.x * z - x),
-                y + s.y * z - y - Math.floor(s.y * z - y),
+                x / z + (s.x * z - x) - Math.floor(s.x * z - x),
+                y / z + (s.y * z - y) - Math.floor(s.y * z - y),
             z, r, dir, t, 1, c);
             this.guns.forEach((g) => {
                 if (g.isFront) {
-                    g.Draw(ctxx, camera, x, y, r, dir);
+                    g.Draw(ctxx, camera, x / z, y / z, r, dir, this.hitTime);
                 }
             });
-            ctxx.restore();
-            var s = this.DrawSet(camera);
+            ctx.save();
+            ctx.globalAlpha = o;
             ctx.drawImage(this.cv,Math.floor(s.x * z - x),Math.floor(s.y * z - y));
+            ctx.restore();
         } else {
             var {x, y, z, t, c, r, dir, o} = this.DrawSet(camera);
-            ctx.save();
             this.guns.forEach((g) => {
                 if (!g.isFront) {
-                    g.Draw(ctx, camera, x, y, r, dir);
+                    g.Draw(ctx, camera, x, y, r, dir, this.hitTime);
                 }
             });
-            drawC(ctx,c,c.getDarkRGB());
             drawObj(ctx, x, y, z, r, dir, t, o, c);
             this.guns.forEach((g) => {
                 if (g.isFront) {
-                    g.Draw(ctx, camera, x, y, r, dir);
+                    g.Draw(ctx, camera, x, y, r, dir, this.hitTime);
                 }
             });
-            ctx.restore();
         }
     }
 
@@ -179,37 +185,43 @@ export const Obj = function(id) {
     this.hpBarO = 0; // hp bar Opacity
 
     this.DrawHPBar = function(ctx, camera) {
-        let healthPercent = this.health/this.maxHealth;
+        let healthPercent = this.h/this.mh;
 
-        this.hpBarP -= (this.hpBarP - healthPercent) / 3;
+        this.hpBarP -= (this.hpBarP - healthPercent) / 4;
     
-        if (healthPercent < 1){
-            this.hpBarO = Math.max(this.hpBarO-0.1,0);
-        }else{
-            this.hpBarO = Math.min(this.hpBarO+0.1,1);
+        if (healthPercent < 1) {
+            this.hpBarO = Math.min(this.hpBarO+0.4,1);
+        } else {
+            this.hpBarO = Math.max(this.hpBarO-0.2,0);
         }
 
-        if (this.hpBarO > 0){
-            ctx.save();
-            ctx.globalAlpha = this.opacity * this.hpBarO;
+        //console.log(healthPercent,this.hpBarP,this.hpBarO);
 
-            const {x, y, z, r} = this.DrawSet(camera);
+        if (this.hpBarO > 0) {
+            const {x, y, z, r, o} = this.DrawSet(camera);
+
+            ctx.save();
+            ctx.globalAlpha = o * this.hpBarO;
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+            ctx.lineWidth = 4.1 * z;
 
             ctx.beginPath();
             ctx.moveTo((x + r) * z, (y + r * 5 / 3) * z);
             ctx.lineTo((x - r) * z, (y + r * 5 / 3) * z);
             ctx.closePath();
             drawC(ctx, new RGB("#444444"));
-            ctx.lineWidth = 4.1 * z;
             ctx.stroke();
         
-            ctx.beginPath();
-            ctx.moveTo((x - r) * z, (y + r * 5 / 3) * z);
-            ctx.lineTo((x - r + this.hpBarP * r * 2) * z, (y + r * 5 / 3) * z);
-            ctx.closePath();
-            drawC(ctx, new RGB("#86e27f"));
-            ctx.lineWidth = 2.6 * z;
-            ctx.stroke();
+            if (this.hpBarP > 0){
+                ctx.lineWidth = 2.6 * z;
+                ctx.beginPath();
+                ctx.moveTo((x - r) * z, (y + r * 5 / 3) * z);
+                ctx.lineTo((x - r + this.hpBarP * r * 2) * z, (y + r * 5 / 3) * z);
+                ctx.closePath();
+                drawC(ctx, new RGB("#86e27f"));
+                ctx.stroke();
+            }
 
             ctx.restore();
         }

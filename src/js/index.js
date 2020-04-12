@@ -2,9 +2,7 @@ import '../styles/index.css';
 
 import System from './system';
 
-const system = new System();
-
-system.loop();
+window.system = new System();
 
 (function(){
     var scale = window.localStorage['no_retina'] ? 1.0 : window.devicePixelRatio;
@@ -104,12 +102,12 @@ system.loop();
         if (!window['input'] || !window['input']['prevent_right_click'] || window['input']['prevent_right_click']())
             preventDefault(e);
     }
-    window['setLoadingStatus'] = function(str) {
+    /*window['setLoadingStatus'] = function(str) {
         document.getElementById('loading').innerText = str;
-    }
+    }*//*
     window['setTyping'] = function(v) {
         typing = v;
-    }
+    }*/
     window['unscale'] = function(v) {
         return v / scale;
     }
@@ -117,7 +115,7 @@ system.loop();
         canvas.width = window.innerWidth * scale;
         canvas.height = window.innerHeight * scale;
     }
-    window.onerror = function(message, source, lineno, colno, error) {
+    /*window.onerror = function(message, source, lineno, colno, error) {
         window.onerror = null;
         if (error)
             error = error.toString();
@@ -157,7 +155,7 @@ system.loop();
         var xhr = new XMLHttpRequest();
         xhr.open("POST", "//lb.diep.io/v1/error", true);
         xhr.send(e);
-    }
+    }*/
     window.onbeforeunload = function() {
         if (window["input"] && window["input"]["should_prevent_unload"] && window["input"]["should_prevent_unload"]()) {
             return "Are you sure you wanna quit?";

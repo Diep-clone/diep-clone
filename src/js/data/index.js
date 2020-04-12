@@ -1,4 +1,5 @@
 import { RGB } from '../lib/util';
+import { Gun } from './gun';
 
 export const statColor = [
     new RGB(230,176,138),
@@ -28,27 +29,41 @@ export const colorList = [
     new RGB("#FFE869"), // AC 13
     new RGB("#44FFA0"), // Scoreboard 14
     new RGB("#BBBBBB"), // Maze Walls 15
-    new RGB("#FF0000"), // FFA other's color 16
-    new RGB("#FF0000"), // Necromanser's Drone color 17
+    new RGB("#F14E54"), // FFA other's color 16
+    new RGB("#fcc276"), // Necromanser's Drone color 17
     new RGB("#C0C0C0"), // Fallen 18
 ];
 
 export const colorType = function(type, team){
-    switch (type){
-        case "Square":
-            return 9;
-        default:
-            switch (team){
-                case "ffa":
+    switch (team){
+        case "shape":
+            switch (type){
+                case "Square":
+                    return 9;
+                default:
                     return 2;
-                case "red":
-                    return 4;
-                case "blue":
-                    return 3;
-                case "purple":
-                    return 5;
-                case "green":
-                    return 6;
+            }
+        case "red":
+            return 4;
+        case "blue":
+            return 3;
+        case "purple":
+            return 5;
+        case "green":
+            return 6;
+        case system.playerSetting.id:
+            switch (type){
+                case "NecroSquare":
+                    return 17;
+                default:
+                    return 2;
+            }
+        default:
+            switch (type){
+                case "NecroSquare":
+                    return 17;
+                default:
+                    return 16;
             }
     }
 }
@@ -56,7 +71,10 @@ export const colorType = function(type, team){
 export const backgroundColor = new RGB(205,205,205);
 
 export const gunList = {
-    
+    "Necromanser":[
+        new Gun([[0.43,0],[0.73,1.4],[-0.73,1.4],[-0.43,0]],Math.PI/2,1),
+        new Gun([[0.43,0],[0.73,1.4],[-0.73,1.4],[-0.43,0]],-Math.PI/2,1),
+    ]
 }
 
 export const expList = [

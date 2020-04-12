@@ -10,14 +10,12 @@ export const Gun = function (paths, dir, color, isFront) {
     this.isFront = isFront || false;
     this.back = 0;
 
-    this.hitTime = 0;
-
     this.Animate = function (tick) {
-        this.hitTime = Math.max(this.hitTime - tick,0);
+        
     }
 
     this.SetCanvasSize = function (camera, size, pos, r, dir) {
-        this.point.forEach((p) => {
+        this.paths.forEach((p) => {
             let x = (Math.cos(dir - Math.PI/2 + this.dir) * p[0] * camera.z * r
             + Math.cos(dir + this.dir) * (p[1] * camera.z * r + this.back) + pos.x);
             let y = (Math.sin(dir - Math.PI/2 + this.dir) * p[0] * camera.z * r
@@ -39,20 +37,14 @@ export const Gun = function (paths, dir, color, isFront) {
         });
     }
 
-    this.Hit = function () {
-        this.hitTime = 100;
-    }
-
-    this.DrawSet = function (camera, x, y) { 
+    this.DrawSet = function (camera, hitTime) { 
         let c = colorList[this.color];
         if (this.hitTime > 60) {
-            c.getLightRGB(1 - (this.hitTime - 60) / 40);
+            c.getLightRGB(1 - (hitTime - 60) / 40);
         } else if (this.hitTime > 0) {
-            c.getRedRGB(1 - this.hitTime / 60);
+            c.getRedRGB(1 - hitTime / 60);
         }
         return {
-            x: x - camera.x,
-            y: y - camera.y,
             z: camera.z,
             ddir: this.dir,
             b: this.back,
@@ -60,16 +52,19 @@ export const Gun = function (paths, dir, color, isFront) {
         }
     }
 
-    this.Draw = function (ctx, camera, x, y, r, dir) {
-        const {x, y, z, ddir, b, c} = this.DrawSet(camera, x, y);
+    this.Draw = function (ctx, camera, x, y, r, dir, hitTime) {
+        const {z, ddir, b, c} = this.DrawSet(camera, hitTime);
 
         ctx.save();
         drawC(ctx,c,c.getDarkRGB());
+        ctx.lineWidth = 2 * z;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
         let first = true;
         ctx.beginPath();
-        this.point.forEach((p) => {
-            let xx = Math.cos(dir - Math.PI/2 + ddir) * p[0] * z * r + Math.cos(dir + ddir) * (p[1] * z * r + b) + x;
-            let yy = Math.sin(dir - Math.PI/2 + ddir) * p[0] * z * r + Math.sin(dir + ddir) * (p[1] * z * r + b) + y;
+        this.paths.forEach((p) => {
+            let xx = (x + Math.cos(dir - Math.PI/2 + ddir) * p[0] * r + Math.cos(dir + ddir) * (p[1] * r + b)) * z;
+            let yy = (y + Math.sin(dir - Math.PI/2 + ddir) * p[0] * r + Math.sin(dir + ddir) * (p[1] * r + b)) * z;
             first?ctx.moveTo(xx,yy):ctx.lineTo(xx,yy);
             first = false;
         });

@@ -1,18 +1,14 @@
 import * as data from './data';
 
-import io from 'socket.io-client';
 import { Obj } from './data/object';
 import { drawBackground } from './lib/draw';
 
-export var Socket = io();
+const socket = new WebSocket("ws://127.0.0.1:3000/ws");
 
 export default class System {
     constructor() {
         this.cv = document.getElementById("canvas");
         this.ctx = this.cv.getContext("2d");
-
-        this.hpcv = document.createElement("canvas");
-        this.hpctx = this.hpcv.getContext("2d");
 
         this.uicv = document.createElement("canvas");
         this.uictx = this.uicv.getContext("2d");
@@ -26,9 +22,8 @@ export default class System {
         };
 
         this.playerSetting = {
-            "id": -1,
+            "id": "",
             "level": 0,
-            "sight": 1,
             "isCanRotate": false,
             "stat": 0,
             "stats": [],
@@ -49,7 +44,15 @@ export default class System {
             uiz: 1,
         }
 
+        this.area = [{X:0,Y:0,W:0,H:0}];
+
         this.keys = {};
+        this.sameKeys = {
+            65:37,
+            87:38,
+            68:39,
+            83:40,
+        };
 
         window.input = {
             blur:function(){},
@@ -57,10 +60,19 @@ export default class System {
             flushInputHooks: function(){},
             get_convar:function(key){},
             keyDown: function(){
+                if (this.sameKeys[arguments[0]]) arguments[0]=this.sameKeys[arguments[0]];
                 if (this.keys[arguments[0]]) return;
                 this.keys[arguments[0]] = true;
                 let key = "";
                 switch (arguments[0]){
+                    case 1:
+                    case 32:
+                        key = "mouseleft";
+                        break;
+                    case 3:
+                    case 16:
+                        key = "mouseright";
+                        break;
                     case 37:
                         this.input.moveVector.x-=1;
                         key = "moveVector";
@@ -77,24 +89,43 @@ export default class System {
                         this.input.moveVector.y+=1;
                         key = "moveVector";
                         break;
+                    case 79:
+                        key = "kill";
+                        break;
                     default:
                         break;
                 }
                 let value = true;
                 switch (key){
+                    case "mouseleft":
+                        value = this.keys[1] || this.keys[32];
+                        break;
+                    case "mouseright":
+                        value = this.keys[3] || this.keys[16];
+                        break;
                     case "moveVector":
-                        value = Math.atan2(this.input.moveVector.y,this.input.moveVector.x);
+                        if (this.input.moveVector.x === 0 && this.input.moveVector.y === 0) value = 9;
+                        else value = Math.atan2(this.input.moveVector.y,this.input.moveVector.x);
                         break;
                     default:
                         break;
                 }
-                Socket.emit(key, value);
-            },
+                //Socket.emit(key, value);
+            }.bind(this),
             keyUp:function(){
+                if (this.sameKeys[arguments[0]]) arguments[0]=this.sameKeys[arguments[0]];
                 if (!this.keys[arguments[0]]) return;
                 this.keys[arguments[0]] = false;
                 let key = "";
                 switch (arguments[0]){
+                    case 1:
+                    case 32:
+                        key = "mouseleft";
+                        break;
+                    case 3:
+                    case 16:
+                        key = "mouseright";
+                        break;
                     case 37:
                         this.input.moveVector.x+=1;
                         key = "moveVector";
@@ -116,24 +147,61 @@ export default class System {
                 }
                 let value = false;
                 switch (key){
+                    case "mouseleft":
+                        value = this.keys[1] || this.keys[32];
+                        break;
+                    case "mouseright":
+                        value = this.keys[3] || this.keys[16];
+                        break;
                     case "moveVector":
-                        value = Math.atan2(this.input.moveVector.y,this.input.moveVector.x);
+                        if (this.input.moveVector.x === 0 && this.input.moveVector.y === 0) value = 9;
+                        else value = Math.atan2(this.input.moveVector.y,this.input.moveVector.x);
                         break;
                     default:
                         break;
                 }
-                Socket.emit(key, value);
+                //Socket.emit(key, value);
             }.bind(this),
-            mouse:function(){}.bind(this),
-            prevent_right_click: function(){},
+            mouse:function(){
+                /*
+                Socket.emit("mousemove",
+                arguments[0]/this.camera.z+this.camera.x,
+                arguments[1]/this.camera.z+this.camera.y);
+                */
+            }.bind(this),
+            prevent_right_click: function(){
+                return true;
+            },
             print_convar_help: function(){},
             set_convar: function(key,value){},
-            should_prevent_unload: function(){},
+            should_prevent_unload: function(){
+                return true;
+            },
             wheel: function(){}.bind(this),
         };
 
-        Socket.emit("login");
+        //Socket.emit("login");
 
+        socket.onopen = () => {
+            console.log("Successfully Connected");
+            socket.send("Hi From the Client!");
+        };
+
+        socket.onmessage = msg => {
+
+        }
+        
+        socket.onclose = event => {
+            this.gameSetting.gamemode = "Connecting";
+            console.log("Socket Closed Connection: ", event);
+            socket.send("Client Closed!");
+        };
+
+        socket.onerror = error => {
+            console.log("Socket Error: ", error);
+        };
+
+        /*
         Socket.on("playerSet", function (data, camera) {
             this.playerSetting = data;
 
@@ -150,23 +218,38 @@ export default class System {
             this.camera.x = camera.Pos.X - this.cv.width / 2 / this.camera.uiz / camera.Z;
             this.camera.y = camera.Pos.Y - this.cv.height / 2 / this.camera.uiz / camera.Z;
         }.bind(this));
-
+        */
+        /*
         Socket.on("objectList", function (list) {
             list.forEach((obj) => {
+                
                 let isObjEnable = false;
+                
                 this.objectList.forEach((obi) => {
                     if (obi.id === obj.id){
                         obi.ObjSet(obj);
                         isObjEnable = true;
                     }
                 });
-                if (!isObjEnable) {
+                if (!isObjEnable && !obj.isDead) {
                     let obi = new Obj(obj.id);
                     obi.ObjSet(obj);
                     this.objectList.push(obi);
                 }
             });
+            this.objectList.forEach((obj) => {
+                if (!obj.isEnable) obj.isDelete = true;
+                obj.isEnable = false;
+            })
         }.bind(this));
+        */
+        /*
+        Socket.on("area", function (area) {
+            this.area = area;
+        }.bind(this));
+        */
+
+        this.loop();
     }
 
     insertComma = (number) => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -175,22 +258,33 @@ export default class System {
         const tick = Date.now() - this.lastTime;
         this.lastTime = Date.now();
 
-        this.hpcv.width =
         this.uicv.width = this.cv.width;
-
-        this.hpcv.height =
         this.uicv.height = this.cv.height;
 
         switch (this.gameSetting.gameset){
             case "Connecting":
                 break;
             case "Gaming":
-                drawBackground(this.ctx, this.camera.x, this.camera.y, this.camera.z, this.cv.width, this.cv.height, [{x:-1000,y:-1000,w:2000,h:2000}]);
+                drawBackground(this.ctx, this.camera.x, this.camera.y, this.camera.z, this.cv.width, this.cv.height, this.area);
+
+                for (let i=0;i<this.objectList.length;){
+                    if (this.objectList[i].isDelete){
+                        this.objectList.splice(i,1);
+                    } else {
+                        i++;
+                    }
+                }
 
                 this.objectList.forEach((o) => {
                     o.Animate(tick);
+                });
+
+                this.objectList.forEach((o) => {
                     o.Draw(this.ctx, this.camera);
-                    o.DrawHPBar(this.hpctx, this.camera);
+                });
+
+                this.objectList.forEach((o) => {
+                    o.DrawHPBar(this.ctx, this.camera);
                 });
 
                 this.uiList.forEach((ui) => {
@@ -202,13 +296,5 @@ export default class System {
         }
 
         requestAnimationFrame(this.loop.bind(this));
-    }
-
-    RemoveObject(id) {
-        for (let i=0;i<this.objectList.length;i++){
-            if (this.objectList[i].id === id){
-                this.objectList.splice(i,1);
-            }
-        }
     }
 }

@@ -16,6 +16,8 @@ type Player struct {
 	ID            string
 	Mx            float64
 	My            float64
+	Mr            bool // right Mouse
+	Ml            bool // left Mouse
 	Stat          int
 	Camera        Camera
 	MoveDir       float64
@@ -31,9 +33,10 @@ func NewPlayer(id string) *Player {
 	p.ID = id
 	p.Camera = Camera{
 		Pos: Pos{0, 0},
-		Z:   1,
+		Z:   1.,
 	}
 	p.StartTime = time.Now().Unix()
+	p.IsCanDir = true
 
 	return &p
 }
@@ -47,7 +50,7 @@ func (p *Player) SetMousePoint(x float64, y float64) {
 func (p *Player) PlayerSet() {
 	if obj := p.ControlObject; obj != nil {
 		p.Camera.Pos = Pos{X: obj.X, Y: obj.Y}
-		p.Camera.Z = 16 / 9 * math.Pow(0.995, float64(obj.Level)) / float64(obj.Sight)
+		p.Camera.Z = 16. / 9. * math.Pow(0.995, float64(obj.Level)-1) / float64(obj.Sight)
 
 		if p.IsMove {
 			obj.Dx += math.Cos(p.MoveDir) * obj.Speed
@@ -56,7 +59,6 @@ func (p *Player) PlayerSet() {
 		if p.IsCanDir {
 			obj.Dir = math.Atan2(p.My, p.Mx)
 		}
-
 	} else {
 		p.Camera.Pos = Pos{X: 0, Y: 0}
 		p.Camera.Z = 1
