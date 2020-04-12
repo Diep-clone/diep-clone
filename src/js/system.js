@@ -7,8 +7,6 @@ console.log(socket);
 
 export default class System {
     constructor() {
-
-
         this.cv = document.getElementById("canvas");
         this.ctx = this.cv.getContext("2d");
 
@@ -190,17 +188,26 @@ export default class System {
         };
 
         socket.onmessage = msg => {
+            const data = JSON.parse(msg);
 
+            const event = data.event;
+            const data = data.data;
+
+            switch (event) {
+                case 'init': {
+                    console.log('init you');
+                }
+            }
         }
         
         socket.onclose = event => {
             this.gameSetting.gamemode = "Connecting";
             console.log("Socket Closed Connection: ", event);
-            socket.send("Client Closed!");
+            socket.send("Client Closed!"); // 이거 보내도 의미 없어요.
         };
 
         socket.onerror = error => {
-            console.log("Socket Error: ", error);
+            console.error("Socket Error: ", error);
         };
 
         /*

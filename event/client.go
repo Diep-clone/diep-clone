@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+//Sockets is
 var Sockets = map[int]*Client{}
 
 // const (
@@ -34,6 +35,7 @@ type Client struct {
 
 var clientID int = 1
 
+//NewClient is
 func NewClient(h *Hub, c *websocket.Conn) *Client {
 	client := &Client{
 		Hub:  h,

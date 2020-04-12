@@ -15,6 +15,7 @@ type Hub struct {
 
 // NewHub make new hub
 func NewHub() *Hub {
+
 	return &Hub{
 		Clients:    make(map[*Client]bool),
 		Broadcast:  make(chan []byte),
@@ -25,6 +26,7 @@ func NewHub() *Hub {
 
 //Run is Run
 func (h *Hub) Run() {
+
 	for {
 		select {
 		case client := <-h.Register:
