@@ -2,11 +2,13 @@ import * as data from './data';
 
 import { Obj } from './data/object';
 import { drawBackground } from './lib/draw';
-
-const socket = new WebSocket("ws://127.0.0.1:3000/ws");
+const socket = new WebSocket(`ws://${location.host}/ws`);
+console.log(socket);
 
 export default class System {
     constructor() {
+
+
         this.cv = document.getElementById("canvas");
         this.ctx = this.cv.getContext("2d");
 
