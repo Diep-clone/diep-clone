@@ -18,7 +18,6 @@ func NewHub() *Hub {
 
 	return &Hub{
 		Clients:    make(map[*Client]bool),
-		Broadcast:  make(chan []byte),
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
 	}
@@ -35,9 +34,7 @@ func (h *Hub) Run() {
 		case client := <-h.Unregister:
 			if _, ok := h.Clients[client]; ok {
 				UnRegister(client)
-
 				delete(h.Clients, client)
-				close(client.Send)
 			}
 		}
 	}

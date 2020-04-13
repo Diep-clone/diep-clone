@@ -29,8 +29,6 @@ type Client struct {
 
 	Conn *websocket.Conn
 
-	Send chan []byte
-
 	ID string
 }
 
@@ -41,9 +39,9 @@ func NewClient(h *Hub, c *websocket.Conn) *Client {
 	client := Client{
 		Hub:  h,
 		Conn: c,
-		Send: make(chan []byte, 256),
 		ID:   strconv.Itoa(clientID),
 	}
+
 	clientID++
 	return &client
 }
@@ -55,10 +53,6 @@ func (c *Client) ReadPump() {
 		c.Conn.Close()
 	}()
 
-	// c.Conn.SetReadLimit(maxMessageSize)
-	// c.Conn.SetReadDeadline(time.Now().Add(timeWait))
-	// c.Conn.SetPongHandler(func(string) error { c.Conn.SetReadDeadline(time.Now().Add(timeWait)); return nil })
-
 	for {
 		_, message, err := c.Conn.ReadMessage()
 		if err != nil {
@@ -68,23 +62,9 @@ func (c *Client) ReadPump() {
 			break
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		c.Send <- message
+		Event(c, message)
 	}
 
-}
-
-// CatchMessage catch message
-func (c *Client) CatchMessage() {
-	for {
-		select {
-		case message, ok := <-c.Send:
-			if !ok {
-				return
-			}
-
-			Event(c, message)
-		}
-	}
 }
 
 // WritePump is

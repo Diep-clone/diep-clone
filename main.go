@@ -41,7 +41,6 @@ func serverWs(hub *event.Hub, w http.ResponseWriter, r *http.Request) {
 	client.Hub.Register <- client
 
 	go client.ReadPump()
-	go client.CatchMessage()
 }
 
 func main() {
@@ -82,7 +81,9 @@ func main() {
 	log.Println("INFO > Server is Running Port " + port)
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+port, nil))
 }
-
+func bToMb(b uint64) uint64 {
+	return b / 1024 / 1024
+}
 func moveloop(ticker time.Ticker) {
 	for range ticker.C {
 		for ; obj.ShapeCount > 0; obj.ShapeCount-- {
