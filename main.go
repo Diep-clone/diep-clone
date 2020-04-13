@@ -19,8 +19,6 @@ import (
 	//sq "github.com/mattn/go-sqlite3"
 )
 
-var hub *event.Hub
-
 var quadtree obj.Quadtree
 var scoreboard lib.Scoreboard
 var setting lib.Setting = lib.ReadSetting()
@@ -36,6 +34,7 @@ func serverWs(hub *event.Hub, w http.ResponseWriter, r *http.Request) {
 	connection, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
+		return
 	}
 
 	client := event.NewClient(hub, connection)
@@ -63,7 +62,7 @@ func main() {
 
 	obj.ShapeCount = setting.MaxShape
 
-	hub = event.NewHub()
+	hub := event.NewHub()
 	go hub.Run()
 
 	http.Handle("/", http.FileServer(http.Dir("./dist")))

@@ -38,14 +38,14 @@ var clientID int = 1
 
 //NewClient is
 func NewClient(h *Hub, c *websocket.Conn) *Client {
-	client := &Client{
+	client := Client{
 		Hub:  h,
 		Conn: c,
 		Send: make(chan []byte, 256),
 		ID:   strconv.Itoa(clientID),
 	}
 	clientID++
-	return client
+	return &client
 }
 
 //ReadPump is
@@ -81,6 +81,7 @@ func (c *Client) CatchMessage() {
 			if !ok {
 				return
 			}
+			log.Println(c.ID)
 
 			Event(c, message)
 		}
