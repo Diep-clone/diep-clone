@@ -68,7 +68,7 @@ func (c *Client) ReadPump() {
 			break
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		c.Hub.Broadcast <- message
+		c.Send <- message
 	}
 
 }
@@ -81,7 +81,6 @@ func (c *Client) CatchMessage() {
 			if !ok {
 				return
 			}
-			log.Println(c.ID)
 
 			Event(c, message)
 		}
