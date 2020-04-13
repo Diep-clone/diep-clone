@@ -143,8 +143,6 @@ func moveloop(ticker time.Ticker) {
 						o.DeadEvent(o, o.HitObject)
 					}
 					obj.Objects = append(obj.Objects[:i], obj.Objects[i+1:]...)
-					/*objects[i] = objects[len(objects)-1]
-					objects = objects[:len(objects)-1]*/
 					i--
 				} else {
 					o.DeadTime = math.Max(o.DeadTime-1000./60., 0.)
