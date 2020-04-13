@@ -54,7 +54,7 @@ func main() {
 	*/
 	rand.Seed(time.Now().UnixNano())
 
-	port := "3000"
+	port := "80"
 	envPort := os.Getenv("PORT")
 	if envPort != "" {
 		port = envPort
@@ -79,8 +79,8 @@ func main() {
 	go moveloop(*moveLoopTicker)
 	go sendUpdates(*sendUpdatesTicker)
 
-	log.Println("INFO > Server is Running Port" + port)
-	log.Fatal(http.ListenAndServe("localhost:"+port, nil))
+	log.Println("INFO > Server is Running Port " + port)
+	log.Fatal(http.ListenAndServe("0.0.0.0:"+port, nil))
 }
 
 func moveloop(ticker time.Ticker) {
