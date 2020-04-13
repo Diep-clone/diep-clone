@@ -53,6 +53,10 @@ func NecroKillEvent(a *Object, b *Object) {
 			if p == nil {
 				return
 			}
+			if obj.Owner.DeadTime == 0 {
+				obj.H = 0
+				return
+			}
 			if p.Mr {
 				obj.Dir = math.Atan2(obj.Y-(obj.Owner.Y+p.My), obj.X-(obj.Owner.X+p.Mx))
 				obj.Dx += math.Cos(obj.Dir) * obj.Speed
@@ -61,10 +65,6 @@ func NecroKillEvent(a *Object, b *Object) {
 				obj.Dir = math.Atan2((obj.Owner.Y+p.My)-obj.Y, (obj.Owner.X+p.Mx)-obj.X)
 				obj.Dx += math.Cos(obj.Dir) * obj.Speed
 				obj.Dy += math.Sin(obj.Dir) * obj.Speed
-			} else if obj.Owner.DeadTime != 0 {
-
-			} else {
-				obj.H = 0
 			}
 		}
 	}
