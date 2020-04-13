@@ -159,6 +159,7 @@ func moveloop(ticker time.Ticker) {
 
 func sendUpdates(ticker time.Ticker) {
 	for range ticker.C {
+		st := time.Now()
 		var test obj.Quadtree = *obj.NewQuadtree(-lib.GameSetting.MapSize.X-lib.Grid*4, -lib.GameSetting.MapSize.Y-lib.Grid*4, lib.GameSetting.MapSize.X*2+lib.Grid*8, lib.GameSetting.MapSize.Y*2+lib.Grid*8, 1)
 		for _, o := range obj.Objects {
 			test.Insert(o)
@@ -171,7 +172,7 @@ func sendUpdates(ticker time.Ticker) {
 				H: 720 / u.Camera.Z * 2,
 			})
 			//log.Println(objList)
-			var visibleObject = []map[string]interface{}{}
+			var visibleObject = make([]map[string]interface{}, 0, 50) // 50 개 미리 활당
 
 			for _, o := range objList {
 				if o.X < u.Camera.Pos.X+1280/u.Camera.Z+o.R &&
@@ -182,12 +183,9 @@ func sendUpdates(ticker time.Ticker) {
 				}
 			}
 
-			//st := time.Now()
-
 			s := event.Sockets[u.ID]
 
 			s.Conn.WriteJSON(map[string]interface{}{"event": "objectList", "data": visibleObject})
-			//log.Println(time.Since(st))
 			if o := u.ControlObject; o == nil {
 				s.Conn.WriteJSON(map[string]interface{}{
 					"event":  "playerSet",
@@ -218,6 +216,8 @@ func sendUpdates(ticker time.Ticker) {
 					},
 				},
 			})
+
 		}
+		log.Println(time.Since(st))
 	}
 }
