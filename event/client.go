@@ -8,7 +8,7 @@ import (
 )
 
 //Sockets is
-var Sockets = map[int]*Client{}
+var Sockets map[int]*Client = make(map[int]*Client)
 
 // const (
 // 	maxMessageSize = 512

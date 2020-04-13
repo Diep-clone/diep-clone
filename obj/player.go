@@ -2,7 +2,8 @@ package obj
 
 import (
 	"math"
-	"time"
+
+	"app/lib"
 )
 
 // Pos is
@@ -23,7 +24,7 @@ type Camera struct {
 	Z   float64
 }
 
-var Users map[int]*Player
+var Users map[int]*Player = make(map[int]*Player)
 
 // Player is
 type Player struct {
@@ -49,7 +50,7 @@ func NewPlayer(id int) *Player {
 		Pos: Pos{0, 0},
 		Z:   1.,
 	}
-	p.StartTime = time.Now().Unix()
+	p.StartTime = lib.Now()
 	p.IsCanDir = true
 
 	return &p

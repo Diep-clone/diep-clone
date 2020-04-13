@@ -18,7 +18,7 @@ export default class System {
 
         this.gameSetting = {
             "gamemode": "sandbox",
-            "gameset": "Gaming",
+            "gameset": "Connecting",
         };
 
         this.playerSetting = {
@@ -27,7 +27,7 @@ export default class System {
             "isCanRotate": false,
             "stat": 0,
             "stats": [],
-            "maxStats": [],
+            "maxstats": [],
         };
 
         this.input = {
@@ -67,11 +67,11 @@ export default class System {
                 switch (arguments[0]){
                     case 1:
                     case 32:
-                        key = "mouseleft";
+                        key = "mouseLeft";
                         break;
                     case 3:
                     case 16:
-                        key = "mouseright";
+                        key = "mouseRight";
                         break;
                     case 37:
                         this.input.moveVector.x-=1;
@@ -90,17 +90,17 @@ export default class System {
                         key = "moveVector";
                         break;
                     case 79:
-                        key = "kill";
+                        key = "suicide";
                         break;
                     default:
                         break;
                 }
                 let value = true;
                 switch (key){
-                    case "mouseleft":
+                    case "mouseLeft":
                         value = this.keys[1] || this.keys[32];
                         break;
-                    case "mouseright":
+                    case "mouseRight":
                         value = this.keys[3] || this.keys[16];
                         break;
                     case "moveVector":
@@ -110,7 +110,7 @@ export default class System {
                     default:
                         break;
                 }
-                //Socket.emit(key, value);
+                this.socketSend("input",{"type":key,"value":value})
             }.bind(this),
             keyUp:function(){
                 if (this.sameKeys[arguments[0]]) arguments[0]=this.sameKeys[arguments[0]];
@@ -120,11 +120,11 @@ export default class System {
                 switch (arguments[0]){
                     case 1:
                     case 32:
-                        key = "mouseleft";
+                        key = "mouseLeft";
                         break;
                     case 3:
                     case 16:
-                        key = "mouseright";
+                        key = "mouseRight";
                         break;
                     case 37:
                         this.input.moveVector.x+=1;
@@ -147,10 +147,10 @@ export default class System {
                 }
                 let value = false;
                 switch (key){
-                    case "mouseleft":
+                    case "mouseLeft":
                         value = this.keys[1] || this.keys[32];
                         break;
-                    case "mouseright":
+                    case "mouseRight":
                         value = this.keys[3] || this.keys[16];
                         break;
                     case "moveVector":
@@ -160,14 +160,12 @@ export default class System {
                     default:
                         break;
                 }
-                //Socket.emit(key, value);
+                this.socketSend("input",{"type":key,"value":value})
             }.bind(this),
             mouse:function(){
-                /*
-                Socket.emit("mousemove",
-                arguments[0]/this.camera.z+this.camera.x,
-                arguments[1]/this.camera.z+this.camera.y);
-                */
+                this.socketSend("input",{"type":"mouseMove","value":{
+                    "x":arguments[0]/this.camera.z+this.camera.x,
+                    "y":arguments[1]/this.camera.z+this.camera.y}})
             }.bind(this),
             prevent_right_click: function(){
                 return true;
@@ -180,28 +178,79 @@ export default class System {
             wheel: function(){}.bind(this),
         };
 
-        //Socket.emit("login");
-
         socket.onopen = () => {
             console.log("Successfully Connected");
-            socket.send("Hi From the Client!");
+            this.gameSetting.gameset = "Gaming";
+            this.socketSend("init","name");
         };
 
         socket.onmessage = msg => {
-            const data = JSON.parse(msg);
+            const json = JSON.parse(msg.data);
 
-            const event = data.event;
-            const data = data.data;
+            const event = json.event;
+            const data = json.data;
 
             switch (event) {
                 case 'init': {
                     console.log('init you');
+                    break;
+                }
+                case 'objectList': {
+                    data.forEach((obj) => {
+                
+                        let isObjEnable = false;
+                        
+                        this.objectList.forEach((obi) => {
+                            if (obi.id === obj.id){
+                                obi.ObjSet(obj);
+                                isObjEnable = true;
+                            }
+                        });
+                        if (!isObjEnable && !obj.isDead) {
+                            let obi = new Obj(obj.id);
+                            obi.ObjSet(obj);
+                            this.objectList.push(obi);
+                        }
+                    });
+                    this.objectList.forEach((obj) => {
+                        if (!obj.isEnable) obj.isDelete = true;
+                        obj.isEnable = false;
+                    })
+                    break;
+                }
+                case 'playerSet': {
+                    if (data) {
+                        this.playerSetting.id = json.id;
+                        this.playerSetting.level = json.level;
+                        this.playerSetting.isCanRotate = json.isCanRotate;
+                        this.playerSetting.stat = json.stat;
+                        this.playerSetting.stats = json.stats;
+                        this.playerSetting.maxstats = json.maxstats;
+
+                        if (this.cv.width <= this.cv.height/9*16){
+                            this.camera.z = this.cv.height / 900;
+                        } else {
+                            this.camera.z = this.cv.width / 1600;
+                        } 
+            
+                        this.camera.uiz = this.camera.z;
+            
+                        this.camera.z *= json.camera.Z;
+            
+                        this.camera.x = json.camera.Pos.X - this.cv.width / 2 / this.camera.uiz / json.camera.Z;
+                        this.camera.y = json.camera.Pos.Y - this.cv.height / 2 / this.camera.uiz / json.camera.Z;
+                    }
+                    break;
+                }
+                case 'area': {
+                    this.area = data;
+                    break;
                 }
             }
-        }
+        };
         
         socket.onclose = event => {
-            this.gameSetting.gamemode = "Connecting";
+            this.gameSetting.gameset = "Connecting";
             console.log("Socket Closed Connection: ", event);
             socket.send("Client Closed!"); // 이거 보내도 의미 없어요.
         };
@@ -210,55 +259,14 @@ export default class System {
             console.error("Socket Error: ", error);
         };
 
-        /*
-        Socket.on("playerSet", function (data, camera) {
-            this.playerSetting = data;
-
-            if (this.cv.width <= this.cv.height/9*16){
-                this.camera.z = this.cv.height / 900;
-            } else {
-                this.camera.z = this.cv.width / 1600;
-            } 
-
-            this.camera.uiz = this.camera.z;
-
-            this.camera.z *= camera.Z;
-
-            this.camera.x = camera.Pos.X - this.cv.width / 2 / this.camera.uiz / camera.Z;
-            this.camera.y = camera.Pos.Y - this.cv.height / 2 / this.camera.uiz / camera.Z;
-        }.bind(this));
-        */
-        /*
-        Socket.on("objectList", function (list) {
-            list.forEach((obj) => {
-                
-                let isObjEnable = false;
-                
-                this.objectList.forEach((obi) => {
-                    if (obi.id === obj.id){
-                        obi.ObjSet(obj);
-                        isObjEnable = true;
-                    }
-                });
-                if (!isObjEnable && !obj.isDead) {
-                    let obi = new Obj(obj.id);
-                    obi.ObjSet(obj);
-                    this.objectList.push(obi);
-                }
-            });
-            this.objectList.forEach((obj) => {
-                if (!obj.isEnable) obj.isDelete = true;
-                obj.isEnable = false;
-            })
-        }.bind(this));
-        */
-        /*
-        Socket.on("area", function (area) {
-            this.area = area;
-        }.bind(this));
-        */
-
         this.loop();
+    }
+
+    socketSend(type,data) {
+        if (this.gameSetting.gameset === "Gaming") {
+            const body = JSON.stringify({"event":type,"data":data});
+            socket.send(body);
+        }
     }
 
     insertComma = (number) => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');

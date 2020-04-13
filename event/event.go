@@ -2,7 +2,6 @@ package event
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 
 	"app/lib"
@@ -16,7 +15,7 @@ func Register(c *Client) {
 
 // Event Catch Message
 func Event(c *Client, message []byte) {
-	fmt.Println(string(message))
+	//fmt.Println(string(message))
 
 	var objmap map[string]interface{}
 
@@ -30,13 +29,17 @@ func Event(c *Client, message []byte) {
 		return
 	}
 
+	//fmt.Println(objmap)
+
+	//fmt.Println(event)
+
 	switch event {
 	case "init":
 		if _, ok := Sockets[c.ID]; ok {
 			log.Println("INFO > Prevent " + string(c.ID) + " Login")
 			return
 		}
-		name, ok := objmap["name"].(string)
+		name, ok := objmap["data"].(string)
 		if !ok {
 			return
 		}
@@ -49,7 +52,7 @@ func Event(c *Client, message []byte) {
 		obj.Users[c.ID] = obj.NewPlayer(c.ID)
 		obj.Users[c.ID].ControlObject = obj.NewObject(map[string]interface{}{
 			"type":     "Necromanser",
-			"team":     c.ID,
+			"team":     string(c.ID),
 			"name":     name,
 			"x":        lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
 			"y":        lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
@@ -68,39 +71,41 @@ func Event(c *Client, message []byte) {
 		obj.Objects = append(obj.Objects, obj.Users[c.ID].ControlObject)
 
 	case "input":
-		if t, ok := objmap["type"].(string); ok {
-			if u, ok := obj.Users[c.ID]; ok {
-				switch t {
-				case "moveVector":
-					if value, ok := objmap["value"].(float64); ok {
-						u.IsMove = value != 9
-						u.MoveDir = value
-					}
-				case "mouseMove":
-					x, ok := objmap["x"].(float64)
-					if !ok {
-						return
-					}
-					y, ok := objmap["y"].(float64)
-					if !ok {
-						return
-					}
-					if obj := u.ControlObject; obj != nil {
-						u.SetMousePoint(x-obj.X, y-obj.Y)
-					} else {
-						u.SetMousePoint(x, y)
-					}
-				case "mouseLeft":
-					if value, ok := objmap["value"].(bool); ok {
-						u.Ml = value
-					}
-				case "mouseRight":
-					if value, ok := objmap["value"].(bool); ok {
-						u.Mr = value
-					}
-				case "suicide":
-					if obj := u.ControlObject; obj != nil {
-						obj.H = 0
+		if m, ok := objmap["data"].(map[string]interface{}); ok {
+			if t, ok := m["type"].(string); ok {
+				if u, ok := obj.Users[c.ID]; ok {
+					switch t {
+					case "moveVector":
+						if value, ok := m["value"].(float64); ok {
+							u.IsMove = value != 9
+							u.MoveDir = value
+						}
+					case "mouseMove":
+						pos, ok := m["value"].(map[string]interface{})
+						if !ok {
+							return
+						}
+						if obj := u.ControlObject; obj != nil {
+							u.SetMousePoint(pos["x"].(float64)-obj.X, pos["y"].(float64)-obj.Y)
+						} else {
+							u.SetMousePoint(pos["x"].(float64), pos["y"].(float64))
+						}
+					case "mouseLeft":
+						if value, ok := m["value"].(bool); ok {
+							u.Ml = value
+						} else {
+							u.Ml = false
+						}
+					case "mouseRight":
+						if value, ok := m["value"].(bool); ok {
+							u.Mr = value
+						} else {
+							u.Mr = false
+						}
+					case "suicide":
+						if obj := u.ControlObject; obj != nil {
+							obj.H = 0
+						}
 					}
 				}
 			}

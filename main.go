@@ -94,7 +94,7 @@ func moveloop(ticker time.Ticker) {
 				"x":      lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
 				"y":      lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
 				"dir":    lib.RandomRange(-math.Pi, math.Pi),
-				"stance": 0.2,
+				"stance": 0.1,
 				"exp":    10,
 			}, nil, nil, obj.DefaultCollision, nil, func(o *obj.Object, killer *obj.Object) {
 				obj.ShapeCount++
@@ -138,7 +138,7 @@ func moveloop(ticker time.Ticker) {
 
 			if o.IsDead {
 				if o.DeadTime == -1 {
-					o.DeadTime = 700
+					o.DeadTime = 400
 				} else if o.DeadTime <= 0 {
 					if o.DeadEvent != nil {
 						o.DeadEvent(o, o.HitObject)
@@ -186,18 +186,19 @@ func sendUpdates(ticker time.Ticker) {
 
 			s := event.Sockets[u.ID]
 
-			s.Conn.WriteJSON(map[string]interface{}{"type": "objectList", "data": visibleObject})
+			s.Conn.WriteJSON(map[string]interface{}{"event": "objectList", "data": visibleObject})
 			//log.Println(time.Since(st))
 			if o := u.ControlObject; o == nil {
 				s.Conn.WriteJSON(map[string]interface{}{
-					"type":   "playerSet",
-					"id":     0,
+					"event":  "playerSet",
+					"data":   false,
 					"camera": u.Camera,
 				})
 			} else {
 				s.Conn.WriteJSON(map[string]interface{}{
-					"type":        "playerSet",
-					"id":          s.ID,
+					"event":       "playerSet",
+					"data":        true,
+					"id":          string(u.ID),
 					"level":       o.Level,
 					"isCanRotate": u.IsCanDir,
 					"stat":        u.Stat,
@@ -207,7 +208,7 @@ func sendUpdates(ticker time.Ticker) {
 				})
 			}
 			s.Conn.WriteJSON(map[string]interface{}{
-				"type": "area",
+				"event": "area",
 				"data": []obj.Area{
 					obj.Area{
 						X: -setting.MapSize.X,
