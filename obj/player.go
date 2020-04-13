@@ -24,11 +24,11 @@ type Camera struct {
 	Z   float64
 }
 
-var Users map[int]*Player = make(map[int]*Player)
+var Users map[string]*Player = make(map[string]*Player)
 
 // Player is
 type Player struct {
-	ID            int
+	ID            string
 	Mx            float64
 	My            float64
 	Mr            bool // right Mouse
@@ -43,7 +43,7 @@ type Player struct {
 }
 
 // NewPlayer is make player
-func NewPlayer(id int) *Player {
+func NewPlayer(id string) *Player {
 	p := Player{}
 	p.ID = id
 	p.Camera = Camera{

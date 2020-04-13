@@ -10,7 +10,7 @@ import (
 
 // Register == connect
 func Register(c *Client) {
-	log.Println("INFO > " + string(c.ID) + " Connected")
+	log.Println("INFO > " + c.ID + " Connected")
 }
 
 // Event Catch Message
@@ -36,7 +36,7 @@ func Event(c *Client, message []byte) {
 	switch event {
 	case "init":
 		if _, ok := Sockets[c.ID]; ok {
-			log.Println("INFO > Prevent " + string(c.ID) + " Login")
+			log.Println("INFO > Prevent " + c.ID + " Login")
 			return
 		}
 		name, ok := objmap["data"].(string)
@@ -116,7 +116,7 @@ func Event(c *Client, message []byte) {
 // UnRegister == close
 func UnRegister(c *Client) {
 	if _, ok := Sockets[c.ID]; !ok {
-		log.Println("INFO > Prevent " + string(c.ID) + " Disconnect")
+		log.Println("INFO > Prevent " + c.ID + " Disconnect")
 		return
 	}
 
@@ -125,5 +125,5 @@ func UnRegister(c *Client) {
 	delete(Sockets, c.ID)
 	delete(obj.Users, c.ID)
 
-	log.Println("INFO > " + string(c.ID) + " disconnected")
+	log.Println("INFO > " + c.ID + " disconnected")
 }

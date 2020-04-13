@@ -159,7 +159,7 @@ func moveloop(ticker time.Ticker) {
 
 func sendUpdates(ticker time.Ticker) {
 	for range ticker.C {
-		st := time.Now()
+		//st := time.Now()
 		var test obj.Quadtree = *obj.NewQuadtree(-lib.GameSetting.MapSize.X-lib.Grid*4, -lib.GameSetting.MapSize.Y-lib.Grid*4, lib.GameSetting.MapSize.X*2+lib.Grid*8, lib.GameSetting.MapSize.Y*2+lib.Grid*8, 1)
 		for _, o := range obj.Objects {
 			test.Insert(o)
@@ -218,6 +218,6 @@ func sendUpdates(ticker time.Ticker) {
 			})
 
 		}
-		log.Println(time.Since(st))
+		//log.Println(time.Since(st))
 	}
 }

@@ -3,12 +3,13 @@ package event
 import (
 	"bytes"
 	"log"
+	"strconv"
 
 	"github.com/gorilla/websocket"
 )
 
 //Sockets is
-var Sockets map[int]*Client = make(map[int]*Client)
+var Sockets map[string]*Client = make(map[string]*Client)
 
 // const (
 // 	maxMessageSize = 512
@@ -30,7 +31,7 @@ type Client struct {
 
 	Send chan []byte
 
-	ID int
+	ID string
 }
 
 var clientID int = 1
@@ -41,7 +42,7 @@ func NewClient(h *Hub, c *websocket.Conn) *Client {
 		Hub:  h,
 		Conn: c,
 		Send: make(chan []byte, 256),
-		ID:   clientID,
+		ID:   strconv.Itoa(clientID),
 	}
 	clientID++
 	return client
