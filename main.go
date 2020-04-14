@@ -169,7 +169,7 @@ func sendUpdates(ticker time.Ticker) {
 				H: 720 / u.Camera.Z * 2,
 			})
 			//log.Println(objList)
-			var visibleObject = make([]map[string]interface{}, 0, 50) // 50 개 미리 활당
+			var visibleObject = make([]map[string]interface{}, 0, 30) // 30 개 미리 활당
 
 			for _, o := range objList {
 				if o.X < u.Camera.Pos.X+1280/u.Camera.Z+o.R &&
