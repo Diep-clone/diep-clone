@@ -3,8 +3,9 @@ package lib
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"os"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var GameSetting Setting = ReadSetting()
@@ -25,7 +26,7 @@ type Setting struct {
 func ReadSetting() Setting {
 	settingFile, osErr := os.Open("./config/setting.json")
 	if osErr != nil {
-		log.Fatal(osErr)
+		log.WithError(osErr).Error("Read Setting.json Error")
 	}
 
 	defer settingFile.Close()
@@ -34,7 +35,7 @@ func ReadSetting() Setting {
 
 	var setting Setting
 	if err := json.Unmarshal(byteVal, &setting); err != nil {
-		log.Fatal(err)
+		log.WithError(err).Error("Setting.json Unmarshal Error")
 	}
 
 	return setting

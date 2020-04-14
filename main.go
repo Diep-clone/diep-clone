@@ -3,7 +3,6 @@ package main
 import (
 	//"database/sql"
 
-	"log"
 	"math"
 	"math/rand"
 	"net/http"
@@ -16,6 +15,7 @@ import (
 	"app/obj"
 
 	"github.com/gorilla/websocket"
+	log "github.com/sirupsen/logrus"
 	//sq "github.com/mattn/go-sqlite3"
 )
 
@@ -33,7 +33,7 @@ func serverWs(hub *event.Hub, w http.ResponseWriter, r *http.Request) {
 
 	connection, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println(err)
+		log.WithError(err).Error("WebSocket Connecting Error")
 		return
 	}
 
@@ -54,8 +54,7 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	port := "80"
-	envPort := os.Getenv("PORT")
-	if envPort != "" {
+	if envPort := os.Getenv("PORT"); envPort != "" {
 		port = envPort
 	}
 
@@ -78,7 +77,7 @@ func main() {
 	go moveloop(*moveLoopTicker)
 	go sendUpdates(*sendUpdatesTicker)
 
-	log.Println("INFO > Server is Running Port " + port)
+	log.Info("Server is Running Port ", port)
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+port, nil))
 }
 func bToMb(b uint64) uint64 {

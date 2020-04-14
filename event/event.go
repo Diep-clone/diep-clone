@@ -2,15 +2,16 @@ package event
 
 import (
 	"encoding/json"
-	"log"
 
 	"app/lib"
 	"app/obj"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Register == connect
 func Register(c *Client) {
-	log.Println("INFO > " + c.ID + " Connected")
+	log.WithField("id", c.ID).Info("User Connected")
 }
 
 // Event Catch Message
@@ -19,9 +20,11 @@ func Event(c *Client, message []byte) {
 
 	var objmap map[string]interface{}
 
-	err := json.Unmarshal(message, &objmap)
-	if err != nil {
-		log.Println(err)
+	if err := json.Unmarshal(message, &objmap); err != nil {
+		log.WithFields(log.Fields{
+			"id":    c.ID,
+			"error": err,
+		}).Error("JSON Unmarshal Error")
 	}
 
 	event, ok := objmap["event"].(string)
@@ -36,9 +39,10 @@ func Event(c *Client, message []byte) {
 	switch event {
 	case "init":
 		if _, ok := Sockets[c.ID]; ok {
-			log.Println("INFO > Prevent " + c.ID + " Login")
+			log.WithField("id", c.ID).Warn("Prevent Login")
 			return
 		}
+
 		name, ok := objmap["data"].(string)
 		if !ok {
 			return
@@ -116,7 +120,7 @@ func Event(c *Client, message []byte) {
 // UnRegister == close
 func UnRegister(c *Client) {
 	if _, ok := Sockets[c.ID]; !ok {
-		log.Println("INFO > Prevent " + c.ID + " Disconnect")
+		log.WithField("id", c.ID).Warn("Prevent Disconnect")
 		return
 	}
 
@@ -125,5 +129,5 @@ func UnRegister(c *Client) {
 	delete(Sockets, c.ID)
 	delete(obj.Users, c.ID)
 
-	log.Println("INFO > " + c.ID + " disconnected")
+	log.WithField("id", c.ID).Info("User Disconnect")
 }

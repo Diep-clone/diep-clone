@@ -2,10 +2,10 @@ package event
 
 import (
 	"bytes"
-	"log"
 	"strconv"
 
 	"github.com/gorilla/websocket"
+	log "github.com/sirupsen/logrus"
 )
 
 //Sockets is
@@ -57,7 +57,10 @@ func (c *Client) ReadPump() {
 		_, message, err := c.Conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Println(err)
+				log.WithFields(log.Fields{
+					"message": message,
+					"error":   err,
+				}).Error("WebSocket Close Error")
 			}
 			break
 		}
