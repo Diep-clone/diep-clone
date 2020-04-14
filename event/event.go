@@ -25,6 +25,7 @@ func Event(c *Client, message []byte) {
 			"id":    c.ID,
 			"error": err,
 		}).Error("JSON Unmarshal Error")
+		return
 	}
 
 	event, ok := objmap["event"].(string)
