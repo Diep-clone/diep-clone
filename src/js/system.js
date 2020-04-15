@@ -208,6 +208,7 @@ export default class System {
                         });
                         if (!isObjEnable && !obj.isDead) {
                             let obi = new Obj(obj.id);
+                            console.log("new Object " + obj.id);
                             obi.ObjSet(obj);
                             this.objectList.push(obi);
                         }
@@ -286,6 +287,7 @@ export default class System {
 
                 for (let i=0;i<this.objectList.length;){
                     if (this.objectList[i].isDelete){
+                        console.log("delete Object " + this.objectList[i].id);
                         this.objectList.splice(i,1);
                     } else {
                         i++;
@@ -301,6 +303,7 @@ export default class System {
                 });
 
                 this.objectList.forEach((o) => {
+                    o.DrawName(this.ctx, this.camera);
                     o.DrawHPBar(this.ctx, this.camera);
                 });
 

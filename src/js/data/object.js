@@ -156,7 +156,7 @@ export const Obj = function(id) {
     }
 
     this.DrawName = function (ctx, camera) {
-        /*ctx.save();
+        ctx.save();
 
         const {x,y,z,r,o} = this.DrawSet(camera);
 
@@ -167,18 +167,21 @@ export const Obj = function(id) {
         ctx.globalAlpha = o;
         ctx.strokeStyle = "#000000";
         ctx.fillStyle = "#ffffff";
-        if (this.score <= 0){
-            ctx.strokeText(this.name,x * z,(y - r - 5) * z);
-            ctx.fillText(this.name,x * z,(y - r - 5) * z);
+        ctx.strokeText(this.id, x * z, (y - r - 5) * z);
+        ctx.fillText(this.id, x * z, (y - r - 5) * z);
+        /*
+        if (this.score){
+            ctx.strokeText(this.name, x * z, (y - r - 15) * z);
+            ctx.fillText(this.name, x * z, (y - r - 15) * z);
+            ctx.font = "bold " + 0.4 * r * z + "px Ubuntu";
+            ctx.strokeText(this.score, x * z, (y - r - 5) * z);
+            ctx.fillText(this.score, x * z, (y - r - 5) * z);
         }
         else{
-            ctx.strokeText(this.name,x * z,(y - r - 15) * z);
-            ctx.fillText(this.name,x * z,(y - r - 15) * z);
-            ctx.font = "bold " + 0.4 * r * z + "px Ubuntu";
-            ctx.strokeText(this.score,x * z,(y - r - 5) * z);
-            ctx.fillText(this.score,x * z,(y - r - 5) * z);
-        }
-        ctx.restore();*/
+            ctx.strokeText(this.name, x * z, (y - r - 5) * z);
+            ctx.fillText(this.name, x * z, (y - r - 5) * z);
+        }*/
+        ctx.restore();
     }
 
     this.hpBarP = 1; // hp bar Percent

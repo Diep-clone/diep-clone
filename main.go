@@ -93,7 +93,7 @@ func moveloop(ticker time.Ticker) {
 				"x":      lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
 				"y":      lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
 				"dir":    lib.RandomRange(-math.Pi, math.Pi),
-				"stance": 0.1,
+				"stance": 0.2,
 				"exp":    10,
 			}, nil, nil, obj.DefaultCollision, nil, func(o *obj.Object, killer *obj.Object) {
 				obj.ShapeCount++

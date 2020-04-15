@@ -3,6 +3,8 @@ package obj
 import (
 	"encoding/json"
 	"math"
+
+	"app/lib"
 )
 
 // Gun is
@@ -25,6 +27,27 @@ type Gun struct {
 func (g *Gun) Shot() *Object {
 	if g.AutoShot || g.Owner.Controller.Ml {
 		g.ShotTime += 1000 / 60
+		var GunOwner = g.Owner
+		for GunOwner.Owner != nil {
+			GunOwner = GunOwner.Owner
+		}
+		g.Owner.IsShot = true
+		if g.DelayTime <= 0 && g.WaitTime <= g.ShotTime/((0.6-0.04*float64(GunOwner.Stats[6]))/g.Reload*1000) {
+			dir := g.Owner.Dir + g.Dir + lib.RandomRange(-g.Rdir, g.Rdir)
+			bullet := g.Bullet
+			bullet.ID = objID
+			objID++
+			bullet.Type = "Bullet"
+			bullet.Team = GunOwner.Team
+			bullet.Owner = GunOwner
+			bullet.X = g.Owner.X + math.Cos(g.Owner.Dir+g.Dir-math.Pi/2)*g.Sx*g.Owner.R + math.Cos(g.Owner.Dir+g.Dir)*g.Sy*g.Owner.R
+			bullet.Y = g.Owner.Y + math.Sin(g.Owner.Dir+g.Dir-math.Pi/2)*g.Sx*g.Owner.R + math.Sin(g.Owner.Dir+g.Dir)*g.Sy*g.Owner.R
+			bullet.Dir = dir
+			bullet.Speed = (0.056 + 0.02*float64(GunOwner.Stats[3])) * bullet.Speed
+			bullet.Dx = math.Cos(dir) * bullet.Speed * 20
+			bullet.Dx = math.Sin(dir) * bullet.Speed * 20
+			Objects = append(Objects, &bullet)
+		}
 	}
 	return nil
 }
