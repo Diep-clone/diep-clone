@@ -304,6 +304,9 @@ export default class System {
 
                 this.objectList.forEach((o) => {
                     o.DrawName(this.ctx, this.camera);
+                });
+
+                this.objectList.forEach((o) => {
                     o.DrawHPBar(this.ctx, this.camera);
                 });
 
