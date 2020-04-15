@@ -2,7 +2,7 @@ import * as data from './data';
 
 import { Obj } from './data/object';
 import { drawBackground } from './lib/draw';
-const socket = new WebSocket(`ws://${location.host}/ws`);
+const socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`);
 console.log(socket);
 
 export default class System {
