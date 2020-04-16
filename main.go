@@ -80,9 +80,7 @@ func main() {
 	log.Info("Server is Running Port ", port)
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+port, nil))
 }
-func bToMb(b uint64) uint64 {
-	return b / 1024 / 1024
-}
+
 func moveloop(ticker time.Ticker) {
 	for range ticker.C {
 		for ; obj.ShapeCount > 0; obj.ShapeCount-- {
@@ -169,7 +167,7 @@ func sendUpdates(ticker time.Ticker) {
 				H: 720 / u.Camera.Z * 2,
 			})
 			//log.Println(objList)
-			var visibleObject = make([]map[string]interface{}, 0, 30) // 30 개 미리 활당
+			var visibleObject = make([]map[string]interface{}, 0, len(objList)) // 미리 할당
 
 			for _, o := range objList {
 				if o.X < u.Camera.Pos.X+1280/u.Camera.Z+o.R &&

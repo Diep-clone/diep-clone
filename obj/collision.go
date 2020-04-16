@@ -22,7 +22,7 @@ func NewQuadtree(x float64, y float64, w float64, h float64, level int) *Quadtre
 		w:       w,
 		h:       h,
 		level:   level,
-		objects: []*Object{},
+		objects: make([]*Object, 0, MaxObj),
 		nodes:   nil,
 	}
 	return &q
