@@ -178,39 +178,39 @@ func sendUpdates(ticker time.Ticker) {
 				}
 			}
 
-			s := event.Sockets[u.ID]
-
-			s.Conn.WriteJSON(map[string]interface{}{"event": "objectList", "data": visibleObject})
-			if o := u.ControlObject; o == nil {
+			if s := event.Sockets[u.ID]; s.Conn != nil {
+				s.Conn.WriteJSON(map[string]interface{}{"event": "objectList", "data": visibleObject})
+				if o := u.ControlObject; o == nil {
+					s.Conn.WriteJSON(map[string]interface{}{
+						"event":  "playerSet",
+						"data":   false,
+						"camera": u.Camera,
+					})
+				} else {
+					s.Conn.WriteJSON(map[string]interface{}{
+						"event":       "playerSet",
+						"data":        true,
+						"id":          string(u.ID),
+						"level":       o.Level,
+						"isCanRotate": u.IsCanDir,
+						"stat":        u.Stat,
+						"stats":       o.Stats,
+						"maxstats":    o.MaxStats,
+						"camera":      u.Camera,
+					})
+				}
 				s.Conn.WriteJSON(map[string]interface{}{
-					"event":  "playerSet",
-					"data":   false,
-					"camera": u.Camera,
-				})
-			} else {
-				s.Conn.WriteJSON(map[string]interface{}{
-					"event":       "playerSet",
-					"data":        true,
-					"id":          string(u.ID),
-					"level":       o.Level,
-					"isCanRotate": u.IsCanDir,
-					"stat":        u.Stat,
-					"stats":       o.Stats,
-					"maxstats":    o.MaxStats,
-					"camera":      u.Camera,
+					"event": "area",
+					"data": []obj.Area{
+						obj.Area{
+							X: -setting.MapSize.X,
+							Y: -setting.MapSize.Y,
+							W: setting.MapSize.X * 2,
+							H: setting.MapSize.Y * 2,
+						},
+					},
 				})
 			}
-			s.Conn.WriteJSON(map[string]interface{}{
-				"event": "area",
-				"data": []obj.Area{
-					obj.Area{
-						X: -setting.MapSize.X,
-						Y: -setting.MapSize.Y,
-						W: setting.MapSize.X * 2,
-						H: setting.MapSize.Y * 2,
-					},
-				},
-			})
 
 		}
 		//log.Println(time.Since(st))
