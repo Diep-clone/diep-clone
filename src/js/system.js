@@ -214,7 +214,10 @@ export default class System {
                         }
                     });
                     this.objectList.forEach((obj) => {
-                        if (!obj.isEnable) obj.isDelete = true;
+                        if (!obj.isEnable){
+                            console.log("delete Object " + this.objectList[i].id);
+                            obj.isDelete = true;
+                        }
                         obj.isEnable = false;
                     })
                     break;
@@ -253,7 +256,6 @@ export default class System {
         socket.onclose = event => {
             this.gameSetting.gameset = "Connecting";
             console.log("Socket Closed Connection: ", event);
-            socket.send("Client Closed!"); // 이거 보내도 의미 없어요.
         };
 
         socket.onerror = error => {
@@ -287,7 +289,6 @@ export default class System {
 
                 for (let i=0;i<this.objectList.length;){
                     if (this.objectList[i].isDelete){
-                        console.log("delete Object " + this.objectList[i].id);
                         this.objectList.splice(i,1);
                     } else {
                         i++;

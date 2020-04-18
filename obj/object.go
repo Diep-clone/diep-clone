@@ -82,6 +82,13 @@ func (obj *Object) ObjectTick() {
 		if obj.HitObject != nil && obj.HitObject.KillEvent != nil {
 			obj.HitObject.KillEvent(obj.HitObject, obj)
 		}
+		return
+	}
+
+	if obj.Guns != nil {
+		for i := 0; i < len(obj.Guns); i++ {
+			obj.Guns[i].Shot()
+		}
 	}
 
 	if obj.Controller != nil && lib.Now()-int64(30000.*lib.GameSetting.GameSpeed) > obj.HitTime {

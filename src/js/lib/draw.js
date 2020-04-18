@@ -38,7 +38,7 @@ export const drawObj = function (ctx, x, y, z, r, dir, t, o, c) {
     let im = getObjectPoint(t);
     if (im == 0) {
         drawC(ctx,c.getDarkRGB());
-        drawCircle(ctx, x, y, z, (r + 4));
+        drawCircle(ctx, x, y, z, (r + 2));
         drawC(ctx,c);
         drawCircle(ctx, x, y, z, r);
     } else {
