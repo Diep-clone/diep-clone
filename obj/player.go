@@ -139,66 +139,6 @@ func (p *Player) ReadPump() {
 
 }
 
-var Send = make(chan struct{})
-
-//
-func (u *Player) SendUpdate(q *Quadtree) {
-	for {
-		<-Send
-		u.CameraSet()
-		objList := q.Retrieve(Area{
-			X: u.Camera.Pos.X - 1280/u.Camera.Z,
-			Y: u.Camera.Pos.Y - 720/u.Camera.Z,
-			W: 1280 / u.Camera.Z * 2,
-			H: 720 / u.Camera.Z * 2,
-		})
-
-		var visibleObject = make([]map[string]interface{}, 0, len(objList)) // 미리 할당
-
-		for _, o := range objList {
-			if o.X < u.Camera.Pos.X+1280/u.Camera.Z+o.R &&
-				o.X > u.Camera.Pos.X-1280/u.Camera.Z-o.R &&
-				o.Y < u.Camera.Pos.Y+720/u.Camera.Z+o.R &&
-				o.Y > u.Camera.Pos.Y-720/u.Camera.Z-o.R && o.Opacity > 0 {
-				visibleObject = append(visibleObject, o.SocketObj())
-			}
-		}
-
-		if o := u.ControlObject; o == nil {
-			u.Send(map[string]interface{}{
-				"event":  "playerSet",
-				"data":   false,
-				"camera": u.Camera,
-			})
-		} else {
-			u.Send(map[string]interface{}{
-				"event":       "playerSet",
-				"data":        true,
-				"id":          u.ID,
-				"level":       o.Level,
-				"isCanRotate": u.IsCanDir,
-				"stat":        u.Stat,
-				"stats":       o.Stats,
-				"maxstats":    o.MaxStats,
-				"camera":      u.Camera,
-			})
-		}
-
-		u.Send(map[string]interface{}{"event": "objectList", "data": visibleObject})
-		u.Send(map[string]interface{}{
-			"event": "area",
-			"data": []Area{
-				{
-					X: -lib.GameSetting.MapSize.X,
-					Y: -lib.GameSetting.MapSize.Y,
-					W: lib.GameSetting.MapSize.X * 2,
-					H: lib.GameSetting.MapSize.Y * 2,
-				},
-			},
-		})
-	}
-}
-
 // Event Catch Message
 func Event(p *Player, message []byte) {
 	//fmt.Println(string(message))

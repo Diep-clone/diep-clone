@@ -161,16 +161,27 @@ func sendUpdates() {
 		st := time.Now()
 
 		for _, u := range obj.Users {
-			objList := sendQuadtree.Retrieve(obj.Area{
+			u.CameraSet()
+			var objList []*obj.Object = sendQuadtree.Retrieve(obj.Area{
 				X: u.Camera.Pos.X - 1280/u.Camera.Z,
 				Y: u.Camera.Pos.Y - 720/u.Camera.Z,
 				W: 1280 / u.Camera.Z * 2,
 				H: 720 / u.Camera.Z * 2,
 			})
-			u.CameraSet()
+
+			var visibleObject []map[string]interface{} = make([]map[string]interface{}, 0, len(objList)) // 미리 할당
+
+			for _, o := range objList {
+				if o.X < u.Camera.Pos.X+1280/u.Camera.Z+o.R &&
+					o.X > u.Camera.Pos.X-1280/u.Camera.Z-o.R &&
+					o.Y < u.Camera.Pos.Y+720/u.Camera.Z+o.R &&
+					o.Y > u.Camera.Pos.Y-720/u.Camera.Z-o.R && o.Opacity > 0 {
+					visibleObject = append(visibleObject, o.SocketObj())
+				}
+			}
 
 			if u.Conn != nil {
-				go SendUpdate(u, objList)
+				go SendUpdate(u, visibleObject)
 			}
 		}
 
@@ -182,18 +193,7 @@ func sendUpdates() {
 	}
 }
 
-func SendUpdate(u *obj.Player, objList []*obj.Object) {
-	var visibleObject = make([]map[string]interface{}, 0, len(objList)) // 미리 할당
-
-	for _, o := range objList {
-		if o.X < u.Camera.Pos.X+1280/u.Camera.Z+o.R &&
-			o.X > u.Camera.Pos.X-1280/u.Camera.Z-o.R &&
-			o.Y < u.Camera.Pos.Y+720/u.Camera.Z+o.R &&
-			o.Y > u.Camera.Pos.Y-720/u.Camera.Z-o.R && o.Opacity > 0 {
-			visibleObject = append(visibleObject, o.SocketObj())
-		}
-	}
-
+func SendUpdate(u *obj.Player, visibleObject []map[string]interface{}) {
 	if o := u.ControlObject; o == nil {
 		u.Send(map[string]interface{}{
 			"event":  "playerSet",
