@@ -215,7 +215,7 @@ export default class System {
                     });
                     this.objectList.forEach((obj) => {
                         if (!obj.isEnable){
-                            console.log("delete Object " + this.objectList[i].id);
+                            console.log("delete Object " + obj.id);
                             obj.isDelete = true;
                         }
                         obj.isEnable = false;
