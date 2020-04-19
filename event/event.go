@@ -2,7 +2,6 @@ package event
 
 import (
 	"encoding/json"
-	"math"
 
 	"app/lib"
 	"app/obj"
@@ -56,48 +55,50 @@ func Event(c *Client, message []byte) {
 
 		Sockets[c.ID] = c
 		obj.Users[c.ID] = obj.NewPlayer(c.ID)
-		var gunList []obj.Gun
-		for i := -math.Pi / 2; i <= math.Pi; i += math.Pi / 2 {
-			gunList = append(gunList, *obj.NewGun(map[string]interface{}{
-				"dir": i,
-			}, obj.Users[c.ID].ControlObject, *obj.NewObject(map[string]interface{}{
-				"speed":  1,
-				"h":      1,
-				"damage": 0.65,
-				"r":      1,
-				"stance": 0.1,
-			}, []obj.Gun{*obj.NewGun(map[string]interface{}{
-				"delaytime": 3.,
-			}, nil, obj.Object{})}, obj.DefaultBulletTick, obj.DefaultCollision, nil, nil)))
-		}
-		for i := -math.Pi / 4 * 3; i <= math.Pi; i += math.Pi / 2 {
-			gunList = append(gunList, *obj.NewGun(map[string]interface{}{
-				"dir":      i,
-				"waittime": 0.5,
-			}, obj.Users[c.ID].ControlObject, *obj.NewObject(map[string]interface{}{
-				"speed":  1,
-				"h":      1,
-				"damage": 0.65,
-				"r":      1,
-				"stance": 0.1,
-			}, []obj.Gun{*obj.NewGun(map[string]interface{}{
-				"delaytime": 3.,
-			}, nil, obj.Object{})}, obj.DefaultBulletTick, obj.DefaultCollision, nil, nil)))
-		}
+		/*
+			var gunList []obj.Gun
+			for i := -math.Pi / 2; i <= math.Pi; i += math.Pi / 2 {
+				gunList = append(gunList, *obj.NewGun(map[string]interface{}{
+					"dir": i,
+				}, obj.Users[c.ID].ControlObject, *obj.NewObject(map[string]interface{}{
+					"speed":  1,
+					"h":      1,
+					"damage": 0.65,
+					"r":      1,
+					"stance": 0.1,
+				}, []obj.Gun{*obj.NewGun(map[string]interface{}{
+					"delaytime": 3.,
+				}, nil, obj.Object{})}, obj.DefaultBulletTick, obj.DefaultCollision, nil, nil)))
+			}
+			for i := -math.Pi / 4 * 3; i <= math.Pi; i += math.Pi / 2 {
+				gunList = append(gunList, *obj.NewGun(map[string]interface{}{
+					"dir":      i,
+					"waittime": 0.5,
+				}, obj.Users[c.ID].ControlObject, *obj.NewObject(map[string]interface{}{
+					"speed":  1,
+					"h":      1,
+					"damage": 0.65,
+					"r":      1,
+					"stance": 0.1,
+				}, []obj.Gun{*obj.NewGun(map[string]interface{}{
+					"delaytime": 3.,
+				}, nil, obj.Object{})}, obj.DefaultBulletTick, obj.DefaultCollision, nil, nil)))
+			}
+			obj.Users[c.ID].ControlObject = obj.NewObject(map[string]interface{}{
+				"type":     "OctoTank",
+				"team":     string(c.ID),
+				"name":     name,
+				"x":        lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
+				"y":        lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
+				"h":        50,
+				"mh":       50,
+				"damage":   20,
+				"level":    45,
+				"stats":    [8]int{0, 0, 0, 7, 7, 7, 7, 5},
+				"maxStats": [8]int{7, 7, 7, 7, 7, 7, 7, 7},
+			}, gunList, obj.TankTick, obj.DefaultCollision, nil, nil)
+		*/
 		obj.Users[c.ID].ControlObject = obj.NewObject(map[string]interface{}{
-			"type":     "OctoTank",
-			"team":     string(c.ID),
-			"name":     name,
-			"x":        lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
-			"y":        lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
-			"h":        50,
-			"mh":       50,
-			"damage":   20,
-			"level":    45,
-			"stats":    [8]int{0, 0, 0, 7, 7, 7, 7, 5},
-			"maxStats": [8]int{7, 7, 7, 7, 7, 7, 7, 7},
-		}, gunList, obj.TankTick, obj.DefaultCollision, nil, nil)
-		/*obj.Users[c.ID].ControlObject = obj.NewObject(map[string]interface{}{
 			"type":     "Necromanser",
 			"team":     string(c.ID),
 			"name":     name,
@@ -113,7 +114,7 @@ func Event(c *Client, message []byte) {
 		}, []obj.Gun{*obj.NewGun(map[string]interface{}{
 			"owner": nil,
 			"limit": 0,
-		}, nil, obj.Object{})}, obj.TankTick, obj.DefaultCollision, obj.NecroKillEvent, nil)*/
+		}, nil, obj.Object{})}, obj.TankTick, obj.DefaultCollision, obj.NecroKillEvent, nil)
 		obj.Users[c.ID].ControlObject.SetController(obj.Users[c.ID])
 		obj.Objects = append(obj.Objects, obj.Users[c.ID].ControlObject)
 

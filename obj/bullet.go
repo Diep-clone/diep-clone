@@ -11,3 +11,7 @@ func DefaultBulletTick(obj *Object) {
 		obj.H = 0
 	}
 }
+
+func NewBullet() Object {
+	return Object{}
+}
