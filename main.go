@@ -154,7 +154,6 @@ func moveloop(ticker time.Ticker) {
 
 func sendUpdates(ticker time.Ticker) {
 	for range ticker.C {
-		//st := time.Now()
 		var test obj.Quadtree = *obj.NewQuadtree(-lib.GameSetting.MapSize.X-lib.Grid*4, -lib.GameSetting.MapSize.Y-lib.Grid*4, lib.GameSetting.MapSize.X*2+lib.Grid*8, lib.GameSetting.MapSize.Y*2+lib.Grid*8, 1)
 		for _, o := range obj.Objects {
 			test.Insert(o)
@@ -199,20 +198,23 @@ func sendUpdates(ticker time.Ticker) {
 						"camera":      u.Camera,
 					})
 				}
-				s.Conn.WriteJSON(map[string]interface{}{
-					"event": "area",
-					"data": []obj.Area{
-						obj.Area{
-							X: -setting.MapSize.X,
-							Y: -setting.MapSize.Y,
-							W: setting.MapSize.X * 2,
-							H: setting.MapSize.Y * 2,
+				go func() {
+					s.Conn.WriteJSON(map[string]interface{}{
+						"event": "area",
+						"data": []obj.Area{
+							obj.Area{
+								X: -setting.MapSize.X,
+								Y: -setting.MapSize.Y,
+								W: setting.MapSize.X * 2,
+								H: setting.MapSize.Y * 2,
+							},
 						},
-					},
-				})
+					})
+				}()
 			}
-
 		}
+		//st := time.Now()
+
 		//log.Println(time.Since(st))
 	}
 }
