@@ -63,17 +63,18 @@ func main() {
 	})
 
 	moveLoopTicker := time.NewTicker(time.Second / 60)
-	sendUpdatesTicker := time.NewTicker(time.Second / 30)
 
 	defer moveLoopTicker.Stop()
-	defer sendUpdatesTicker.Stop()
 
 	go moveloop(*moveLoopTicker)
-	go sendUpdates(*sendUpdatesTicker)
+	go sendUpdates()
 
 	log.Info("Server is Running Port ", port)
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+port, nil))
 }
+
+var su = make(chan struct{})
+var isSend = false
 
 func moveloop(ticker time.Ticker) {
 	for range ticker.C {
@@ -143,13 +144,18 @@ func moveloop(ticker time.Ticker) {
 				o.DeadTime = -1
 			}
 		}
+		if isSend {
+			su <- struct{}{}
+		}
+		isSend = !isSend
 	}
 }
 
 var im = 50
 
-func sendUpdates(ticker time.Ticker) {
-	for range ticker.C {
+func sendUpdates() {
+	for {
+		<-su
 		st := time.Now()
 
 		var test obj.Quadtree = *obj.NewQuadtree(-lib.GameSetting.MapSize.X-lib.Grid*4, -lib.GameSetting.MapSize.Y-lib.Grid*4, lib.GameSetting.MapSize.X*2+lib.Grid*8, lib.GameSetting.MapSize.Y*2+lib.Grid*8, 1)
@@ -157,7 +163,6 @@ func sendUpdates(ticker time.Ticker) {
 			test.Insert(o)
 		}
 		for _, u := range obj.Users {
-			u.PlayerSet()
 			objList := test.Retrieve(obj.Area{
 				X: u.Camera.Pos.X - 1280/u.Camera.Z,
 				Y: u.Camera.Pos.Y - 720/u.Camera.Z,
@@ -177,41 +182,7 @@ func sendUpdates(ticker time.Ticker) {
 			}
 
 			if u.Conn != nil {
-
-				go func(u *obj.Player) {
-					if o := u.ControlObject; o == nil {
-						u.Send(map[string]interface{}{
-							"event":  "playerSet",
-							"data":   false,
-							"camera": u.Camera,
-						})
-					} else {
-						u.Send(map[string]interface{}{
-							"event":       "playerSet",
-							"data":        true,
-							"id":          u.ID,
-							"level":       o.Level,
-							"isCanRotate": u.IsCanDir,
-							"stat":        u.Stat,
-							"stats":       o.Stats,
-							"maxstats":    o.MaxStats,
-							"camera":      u.Camera,
-						})
-					}
-
-					u.Send(map[string]interface{}{"event": "objectList", "data": visibleObject})
-					u.Send(map[string]interface{}{
-						"event": "area",
-						"data": []obj.Area{
-							obj.Area{
-								X: -setting.MapSize.X,
-								Y: -setting.MapSize.Y,
-								W: setting.MapSize.X * 2,
-								H: setting.MapSize.Y * 2,
-							},
-						},
-					})
-				}(u)
+				go SendUpdate(u, visibleObject)
 			}
 		}
 
@@ -221,4 +192,39 @@ func sendUpdates(ticker time.Ticker) {
 		}
 		im--
 	}
+}
+
+func SendUpdate(u *obj.Player, visibleObject []map[string]interface{}) {
+	if o := u.ControlObject; o == nil {
+		u.Send(map[string]interface{}{
+			"event":  "playerSet",
+			"data":   false,
+			"camera": u.Camera,
+		})
+	} else {
+		u.Send(map[string]interface{}{
+			"event":       "playerSet",
+			"data":        true,
+			"id":          u.ID,
+			"level":       o.Level,
+			"isCanRotate": u.IsCanDir,
+			"stat":        u.Stat,
+			"stats":       o.Stats,
+			"maxstats":    o.MaxStats,
+			"camera":      u.Camera,
+		})
+	}
+
+	u.Send(map[string]interface{}{"event": "objectList", "data": visibleObject})
+	u.Send(map[string]interface{}{
+		"event": "area",
+		"data": []obj.Area{
+			obj.Area{
+				X: -setting.MapSize.X,
+				Y: -setting.MapSize.Y,
+				W: setting.MapSize.X * 2,
+				H: setting.MapSize.Y * 2,
+			},
+		},
+	})
 }
