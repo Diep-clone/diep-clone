@@ -19,8 +19,6 @@ import (
 	//sq "github.com/mattn/go-sqlite3"
 )
 
-var quadtree obj.Quadtree
-var scoreboard lib.Scoreboard
 var setting lib.Setting = lib.ReadSetting()
 
 var upgrader = websocket.Upgrader{
@@ -97,7 +95,7 @@ func moveloop(ticker time.Ticker) {
 				obj.ShapeCount++
 			}))
 		}
-		scoreboard = lib.Scoreboard{}
+		scoreboard := lib.Scoreboard{}
 
 		for _, u := range obj.Users {
 			u.PlayerSet()
@@ -111,7 +109,7 @@ func moveloop(ticker time.Ticker) {
 			}
 		}
 
-		quadtree = *obj.NewQuadtree(-lib.GameSetting.MapSize.X-lib.Grid*4, -lib.GameSetting.MapSize.Y-lib.Grid*4, lib.GameSetting.MapSize.X*2+lib.Grid*8, lib.GameSetting.MapSize.Y*2+lib.Grid*8, 1)
+		quadtree := *obj.NewQuadtree(-lib.GameSetting.MapSize.X-lib.Grid*4, -lib.GameSetting.MapSize.Y-lib.Grid*4, lib.GameSetting.MapSize.X*2+lib.Grid*8, lib.GameSetting.MapSize.Y*2+lib.Grid*8, 1)
 
 		for i := 0; i < len(obj.Objects); i++ {
 			o := obj.Objects[i]
