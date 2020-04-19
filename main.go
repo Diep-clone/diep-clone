@@ -10,7 +10,6 @@ import (
 	"runtime"
 	"time"
 
-	"app/event"
 	"app/lib"
 	"app/obj"
 
@@ -26,7 +25,7 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func serverWs(hub *event.Hub, w http.ResponseWriter, r *http.Request) {
+func serverWs(w http.ResponseWriter, r *http.Request) {
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
 	connection, err := upgrader.Upgrade(w, r, nil)
@@ -35,8 +34,8 @@ func serverWs(hub *event.Hub, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := event.NewClient(hub, connection)
-	client.Hub.Register <- client
+	client := obj.NewPlayer(connection)
+	client.Register()
 
 	go client.ReadPump()
 }
@@ -58,12 +57,9 @@ func main() {
 
 	obj.ShapeCount = setting.MaxShape
 
-	hub := event.NewHub()
-	go hub.Run()
-
 	http.Handle("/", http.FileServer(http.Dir("./dist")))
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		serverWs(hub, w, r)
+		serverWs(w, r)
 	})
 
 	moveLoopTicker := time.NewTicker(time.Second / 60)
@@ -179,30 +175,30 @@ func sendUpdates(ticker time.Ticker) {
 				}
 			}
 
-			if s := event.Sockets[u.ID]; s.Conn != nil {
-				go func() {
-					s.Conn.WriteJSON(map[string]interface{}{"event": "objectList", "data": visibleObject})
-					if o := u.ControlObject; o == nil {
-						s.Conn.WriteJSON(map[string]interface{}{
-							"event":  "playerSet",
-							"data":   false,
-							"camera": u.Camera,
-						})
-					} else {
-						s.Conn.WriteJSON(map[string]interface{}{
-							"event":       "playerSet",
-							"data":        true,
-							"id":          string(u.ID),
-							"level":       o.Level,
-							"isCanRotate": u.IsCanDir,
-							"stat":        u.Stat,
-							"stats":       o.Stats,
-							"maxstats":    o.MaxStats,
-							"camera":      u.Camera,
-						})
-					}
+			if u.Conn != nil {
+				if o := u.ControlObject; o == nil {
+					u.Send(map[string]interface{}{
+						"event":  "playerSet",
+						"data":   false,
+						"camera": u.Camera,
+					})
+				} else {
+					u.Send(map[string]interface{}{
+						"event":       "playerSet",
+						"data":        true,
+						"id":          u.ID,
+						"level":       o.Level,
+						"isCanRotate": u.IsCanDir,
+						"stat":        u.Stat,
+						"stats":       o.Stats,
+						"maxstats":    o.MaxStats,
+						"camera":      u.Camera,
+					})
+				}
 
-					s.Conn.WriteJSON(map[string]interface{}{
+				go func() {
+					u.Send(map[string]interface{}{"event": "objectList", "data": visibleObject})
+					u.Send(map[string]interface{}{
 						"event": "area",
 						"data": []obj.Area{
 							obj.Area{
