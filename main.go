@@ -18,6 +18,7 @@ import (
 	//sq "github.com/mattn/go-sqlite3"
 )
 
+var sendQuadtree obj.Quadtree
 var setting lib.Setting = lib.ReadSetting()
 
 var upgrader = websocket.Upgrader{
@@ -145,6 +146,7 @@ func moveloop(ticker time.Ticker) {
 			}
 		}
 		if isSend {
+			sendQuadtree = quadtree
 			su <- struct{}{}
 		}
 		isSend = !isSend
@@ -158,31 +160,17 @@ func sendUpdates() {
 		<-su
 		st := time.Now()
 
-		var test obj.Quadtree = *obj.NewQuadtree(-lib.GameSetting.MapSize.X-lib.Grid*4, -lib.GameSetting.MapSize.Y-lib.Grid*4, lib.GameSetting.MapSize.X*2+lib.Grid*8, lib.GameSetting.MapSize.Y*2+lib.Grid*8, 1)
-		for _, o := range obj.Objects {
-			test.Insert(o)
-		}
 		for _, u := range obj.Users {
-			objList := test.Retrieve(obj.Area{
+			objList := sendQuadtree.Retrieve(obj.Area{
 				X: u.Camera.Pos.X - 1280/u.Camera.Z,
 				Y: u.Camera.Pos.Y - 720/u.Camera.Z,
 				W: 1280 / u.Camera.Z * 2,
 				H: 720 / u.Camera.Z * 2,
 			})
-			//log.Println(objList)
-			var visibleObject = make([]map[string]interface{}, 0, len(objList)) // 미리 할당
-
-			for _, o := range objList {
-				if o.X < u.Camera.Pos.X+1280/u.Camera.Z+o.R &&
-					o.X > u.Camera.Pos.X-1280/u.Camera.Z-o.R &&
-					o.Y < u.Camera.Pos.Y+720/u.Camera.Z+o.R &&
-					o.Y > u.Camera.Pos.Y-720/u.Camera.Z-o.R && o.Opacity > 0 {
-					visibleObject = append(visibleObject, o.SocketObj())
-				}
-			}
+			u.CameraSet()
 
 			if u.Conn != nil {
-				go SendUpdate(u, visibleObject)
+				go SendUpdate(u, objList)
 			}
 		}
 
@@ -194,7 +182,18 @@ func sendUpdates() {
 	}
 }
 
-func SendUpdate(u *obj.Player, visibleObject []map[string]interface{}) {
+func SendUpdate(u *obj.Player, objList []*obj.Object) {
+	var visibleObject = make([]map[string]interface{}, 0, len(objList)) // 미리 할당
+
+	for _, o := range objList {
+		if o.X < u.Camera.Pos.X+1280/u.Camera.Z+o.R &&
+			o.X > u.Camera.Pos.X-1280/u.Camera.Z-o.R &&
+			o.Y < u.Camera.Pos.Y+720/u.Camera.Z+o.R &&
+			o.Y > u.Camera.Pos.Y-720/u.Camera.Z-o.R && o.Opacity > 0 {
+			visibleObject = append(visibleObject, o.SocketObj())
+		}
+	}
+
 	if o := u.ControlObject; o == nil {
 		u.Send(map[string]interface{}{
 			"event":  "playerSet",
@@ -219,7 +218,7 @@ func SendUpdate(u *obj.Player, visibleObject []map[string]interface{}) {
 	u.Send(map[string]interface{}{
 		"event": "area",
 		"data": []obj.Area{
-			obj.Area{
+			{
 				X: -setting.MapSize.X,
 				Y: -setting.MapSize.Y,
 				W: setting.MapSize.X * 2,

@@ -75,12 +75,19 @@ func (p *Player) SetMousePoint(x float64, y float64) {
 	p.My = y
 }
 
-//
-func (p *Player) PlayerSet() {
+func (p *Player) CameraSet() {
 	if obj := p.ControlObject; obj != nil {
 		p.Camera.Pos = Pos{X: obj.X, Y: obj.Y}
 		p.Camera.Z = 16. / 9. * math.Pow(0.995, float64(obj.Level)-1) / float64(obj.Sight)
+	} else {
+		p.Camera.Pos = Pos{X: 0, Y: 0}
+		p.Camera.Z = 1
+	}
+}
 
+//
+func (p *Player) PlayerSet() {
+	if obj := p.ControlObject; obj != nil {
 		if p.IsMove {
 			obj.Dx += math.Cos(p.MoveDir) * obj.Speed
 			obj.Dy += math.Sin(p.MoveDir) * obj.Speed
@@ -88,9 +95,6 @@ func (p *Player) PlayerSet() {
 		if p.IsCanDir {
 			obj.Dir = math.Atan2(p.My, p.Mx)
 		}
-	} else {
-		p.Camera.Pos = Pos{X: 0, Y: 0}
-		p.Camera.Z = 1
 	}
 }
 
@@ -133,6 +137,66 @@ func (p *Player) ReadPump() {
 		Event(p, message)
 	}
 
+}
+
+var Send = make(chan struct{})
+
+//
+func (u *Player) SendUpdate(q *Quadtree) {
+	for {
+		<-Send
+		u.CameraSet()
+		objList := q.Retrieve(Area{
+			X: u.Camera.Pos.X - 1280/u.Camera.Z,
+			Y: u.Camera.Pos.Y - 720/u.Camera.Z,
+			W: 1280 / u.Camera.Z * 2,
+			H: 720 / u.Camera.Z * 2,
+		})
+
+		var visibleObject = make([]map[string]interface{}, 0, len(objList)) // 미리 할당
+
+		for _, o := range objList {
+			if o.X < u.Camera.Pos.X+1280/u.Camera.Z+o.R &&
+				o.X > u.Camera.Pos.X-1280/u.Camera.Z-o.R &&
+				o.Y < u.Camera.Pos.Y+720/u.Camera.Z+o.R &&
+				o.Y > u.Camera.Pos.Y-720/u.Camera.Z-o.R && o.Opacity > 0 {
+				visibleObject = append(visibleObject, o.SocketObj())
+			}
+		}
+
+		if o := u.ControlObject; o == nil {
+			u.Send(map[string]interface{}{
+				"event":  "playerSet",
+				"data":   false,
+				"camera": u.Camera,
+			})
+		} else {
+			u.Send(map[string]interface{}{
+				"event":       "playerSet",
+				"data":        true,
+				"id":          u.ID,
+				"level":       o.Level,
+				"isCanRotate": u.IsCanDir,
+				"stat":        u.Stat,
+				"stats":       o.Stats,
+				"maxstats":    o.MaxStats,
+				"camera":      u.Camera,
+			})
+		}
+
+		u.Send(map[string]interface{}{"event": "objectList", "data": visibleObject})
+		u.Send(map[string]interface{}{
+			"event": "area",
+			"data": []Area{
+				{
+					X: -lib.GameSetting.MapSize.X,
+					Y: -lib.GameSetting.MapSize.Y,
+					W: lib.GameSetting.MapSize.X * 2,
+					H: lib.GameSetting.MapSize.Y * 2,
+				},
+			},
+		})
+	}
 }
 
 // Event Catch Message
