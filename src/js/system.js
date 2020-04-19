@@ -197,7 +197,7 @@ export default class System {
                 }
                 case 'objectList': {
                     data.forEach((obj) => {
-                
+                        
                         let isObjEnable = false;
                         
                         this.objectList.forEach((obi) => {
@@ -283,6 +283,7 @@ export default class System {
 
         switch (this.gameSetting.gameset){
             case "Connecting":
+                this.ctx.clearRect(0,0,this.cv.width,this.cv.height);
                 break;
             case "Gaming":
                 drawBackground(this.ctx, this.camera.x, this.camera.y, this.camera.z, this.cv.width, this.cv.height, this.area);

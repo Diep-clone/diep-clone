@@ -116,7 +116,7 @@ func (q *Quadtree) Insert(obj *Object) {
 // Retrieve is
 func (q Quadtree) Retrieve(area interface{}) []*Object {
 	index := q.getIndex(area)
-	var returnObjects []*Object = make([]*Object, 0, 10)
+	var returnObjects []*Object = make([]*Object, 0, 20)
 
 	if o, ok := area.(*Object); ok {
 		for _, obj := range q.objects {

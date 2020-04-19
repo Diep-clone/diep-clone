@@ -76,7 +76,7 @@ func (obj *Object) ObjectTick() {
 		}
 	}
 
-	if obj.H <= 0 {
+	if obj.H <= 0 && !obj.IsDead {
 		obj.IsDead = true
 		obj.H = 0
 		if obj.HitObject != nil && obj.HitObject.KillEvent != nil {

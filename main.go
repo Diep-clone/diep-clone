@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"sync"
 	"time"
 
 	"app/lib"
@@ -18,7 +19,7 @@ import (
 	//sq "github.com/mattn/go-sqlite3"
 )
 
-var sendQuadtree obj.Quadtree
+var quadtree obj.Quadtree
 var setting lib.Setting = lib.ReadSetting()
 
 var upgrader = websocket.Upgrader{
@@ -64,21 +65,24 @@ func main() {
 	})
 
 	moveLoopTicker := time.NewTicker(time.Second / 60)
+	sendUpdatesTicker := time.NewTicker(time.Second / 30)
 
 	defer moveLoopTicker.Stop()
+	defer sendUpdatesTicker.Stop()
 
 	go moveloop(*moveLoopTicker)
-	go sendUpdates()
+	go sendUpdates(*sendUpdatesTicker)
 
 	log.Info("Server is Running Port ", port)
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+port, nil))
 }
 
-var su = make(chan struct{})
+var su = new(sync.Mutex)
 var isSend = false
 
 func moveloop(ticker time.Ticker) {
 	for range ticker.C {
+		su.Lock()
 		for ; obj.ShapeCount > 0; obj.ShapeCount-- {
 			obj.Objects = append(obj.Objects, obj.NewObject(map[string]interface{}{
 				"type":   "Square",
@@ -107,7 +111,7 @@ func moveloop(ticker time.Ticker) {
 			}
 		}
 
-		quadtree := *obj.NewQuadtree(-lib.GameSetting.MapSize.X-lib.Grid*4, -lib.GameSetting.MapSize.Y-lib.Grid*4, lib.GameSetting.MapSize.X*2+lib.Grid*8, lib.GameSetting.MapSize.Y*2+lib.Grid*8, 1)
+		quadtree = *obj.NewQuadtree(-lib.GameSetting.MapSize.X-lib.Grid*4, -lib.GameSetting.MapSize.Y-lib.Grid*4, lib.GameSetting.MapSize.X*2+lib.Grid*8, lib.GameSetting.MapSize.Y*2+lib.Grid*8, 1)
 
 		for i := 0; i < len(obj.Objects); i++ {
 			o := obj.Objects[i]
@@ -145,24 +149,22 @@ func moveloop(ticker time.Ticker) {
 				o.DeadTime = -1
 			}
 		}
-		if isSend {
-			sendQuadtree = quadtree
-			su <- struct{}{}
-		}
-		isSend = !isSend
+
+		su.Unlock()
+		runtime.Gosched()
 	}
 }
 
 var im = 50
 
-func sendUpdates() {
-	for {
-		<-su
+func sendUpdates(ticker time.Ticker) {
+	for range ticker.C {
+		su.Lock()
 		st := time.Now()
 
 		for _, u := range obj.Users {
 			u.CameraSet()
-			var objList []*obj.Object = sendQuadtree.Retrieve(obj.Area{
+			var objList []*obj.Object = quadtree.Retrieve(obj.Area{
 				X: u.Camera.Pos.X - 1280/u.Camera.Z,
 				Y: u.Camera.Pos.Y - 720/u.Camera.Z,
 				W: 1280 / u.Camera.Z * 2,
@@ -190,6 +192,7 @@ func sendUpdates() {
 			im = 50
 		}
 		im--
+		su.Unlock()
 	}
 }
 
