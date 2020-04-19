@@ -157,6 +157,7 @@ func sendUpdates(ticker time.Ticker) {
 			test.Insert(o)
 		}
 		for _, u := range obj.Users {
+			u.PlayerSet()
 			objList := test.Retrieve(obj.Area{
 				X: u.Camera.Pos.X - 1280/u.Camera.Z,
 				Y: u.Camera.Pos.Y - 720/u.Camera.Z,
@@ -176,27 +177,28 @@ func sendUpdates(ticker time.Ticker) {
 			}
 
 			if u.Conn != nil {
-				if o := u.ControlObject; o == nil {
-					u.Send(map[string]interface{}{
-						"event":  "playerSet",
-						"data":   false,
-						"camera": u.Camera,
-					})
-				} else {
-					u.Send(map[string]interface{}{
-						"event":       "playerSet",
-						"data":        true,
-						"id":          u.ID,
-						"level":       o.Level,
-						"isCanRotate": u.IsCanDir,
-						"stat":        u.Stat,
-						"stats":       o.Stats,
-						"maxstats":    o.MaxStats,
-						"camera":      u.Camera,
-					})
-				}
 
-				go func() {
+				go func(u *obj.Player) {
+					if o := u.ControlObject; o == nil {
+						u.Send(map[string]interface{}{
+							"event":  "playerSet",
+							"data":   false,
+							"camera": u.Camera,
+						})
+					} else {
+						u.Send(map[string]interface{}{
+							"event":       "playerSet",
+							"data":        true,
+							"id":          u.ID,
+							"level":       o.Level,
+							"isCanRotate": u.IsCanDir,
+							"stat":        u.Stat,
+							"stats":       o.Stats,
+							"maxstats":    o.MaxStats,
+							"camera":      u.Camera,
+						})
+					}
+
 					u.Send(map[string]interface{}{"event": "objectList", "data": visibleObject})
 					u.Send(map[string]interface{}{
 						"event": "area",
@@ -209,7 +211,7 @@ func sendUpdates(ticker time.Ticker) {
 							},
 						},
 					})
-				}()
+				}(u)
 			}
 		}
 
