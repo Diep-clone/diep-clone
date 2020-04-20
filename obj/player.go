@@ -75,6 +75,7 @@ func (p *Player) SetMousePoint(x float64, y float64) {
 	p.My = y
 }
 
+//
 func (p *Player) CameraSet() {
 	if obj := p.ControlObject; obj != nil {
 		p.Camera.Pos = Pos{X: obj.X, Y: obj.Y}

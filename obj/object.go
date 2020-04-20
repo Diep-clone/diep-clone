@@ -55,8 +55,8 @@ type Object struct {
 
 //
 func (obj *Object) ObjectTick() {
-	obj.X += obj.Dx * lib.GameSetting.GameSpeed
-	obj.Y += obj.Dy * lib.GameSetting.GameSpeed
+	obj.X += obj.Dx // * lib.GameSetting.GameSpeed
+	obj.Y += obj.Dy // * lib.GameSetting.GameSpeed
 
 	obj.Dx *= 0.97 //math.Pow(0.97, setting.GameSpeed)
 	obj.Dy *= 0.97 //math.Pow(0.97, setting.GameSpeed)

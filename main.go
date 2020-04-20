@@ -97,6 +97,7 @@ func moveloop(ticker time.Ticker) {
 				obj.ShapeCount++
 			}))
 		}
+
 		scoreboard := lib.Scoreboard{}
 
 		for _, u := range obj.Users {
@@ -122,12 +123,14 @@ func moveloop(ticker time.Ticker) {
 
 			o.ObjectTick()
 
-			objList := quadtree.Retrieve(o)
+			if !o.IsDead {
+				objList := quadtree.Retrieve(o)
 
-			for _, obj2 := range objList {
-				if math.Sqrt((o.X-obj2.X)*(o.X-obj2.X)+(o.Y-obj2.Y)*(o.Y-obj2.Y)) < o.R+obj2.R {
-					o.Collision(o, obj2)
-					obj2.Collision(obj2, o)
+				for _, obj2 := range objList {
+					if math.Sqrt((o.X-obj2.X)*(o.X-obj2.X)+(o.Y-obj2.Y)*(o.Y-obj2.Y)) < o.R+obj2.R {
+						o.Collision(o, obj2)
+						obj2.Collision(obj2, o)
+					}
 				}
 			}
 
@@ -163,7 +166,6 @@ func sendUpdates(ticker time.Ticker) {
 		st := time.Now()
 
 		for _, u := range obj.Users {
-			u.CameraSet()
 			var objList []*obj.Object = quadtree.Retrieve(obj.Area{
 				X: u.Camera.Pos.X - 1280/u.Camera.Z,
 				Y: u.Camera.Pos.Y - 720/u.Camera.Z,
@@ -173,6 +175,7 @@ func sendUpdates(ticker time.Ticker) {
 
 			var visibleObject []map[string]interface{} = make([]map[string]interface{}, 0, len(objList)) // 미리 할당
 
+			u.CameraSet()
 			for _, o := range objList {
 				if o.X < u.Camera.Pos.X+1280/u.Camera.Z+o.R &&
 					o.X > u.Camera.Pos.X-1280/u.Camera.Z-o.R &&

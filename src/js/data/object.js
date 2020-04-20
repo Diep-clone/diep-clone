@@ -41,6 +41,10 @@ export const Obj = function(id) {
             }
         }
 
+        if ("201" === this.id) {
+            console.log(this.x,this.y);
+        }
+
         this.guns.forEach((g) => g.Animate());
 
         this.hitTime = Math.max(this.hitTime - tick,0);
@@ -61,11 +65,7 @@ export const Obj = function(id) {
 
         this.name = data.name;
         if (this.type !== data.type){
-            if (gunList[data.type] == undefined){
-                this.guns = [];
-            } else {
-                this.guns = gunList[data.type];
-            } 
+            this.guns = (gunList[data.type] == undefined)?[]:gunList[data.type];
         }
         this.type = data.type;
         this.color = colorType(data.type,data.team);
