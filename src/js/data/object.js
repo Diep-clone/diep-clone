@@ -1,6 +1,6 @@
 import { RGB, getPolygonRadius, getObjectPoint } from '../lib/util';
 import { colorList, colorType, gunList } from '../data/index';
-import { drawC, drawObj } from '../lib/draw';
+import { drawC, drawObj, drawText } from '../lib/draw';
 
 export const Obj = function(id) {
     'use strict';
@@ -39,10 +39,6 @@ export const Obj = function(id) {
                 this.isDelete = true;
                 return;
             }
-        }
-
-        if (201 === this.id) {
-            console.log(this.x,this.y);
         }
 
         this.guns.forEach((g) => g.Animate());
@@ -158,29 +154,14 @@ export const Obj = function(id) {
     this.DrawName = function (ctx, camera) {
         ctx.save();
 
-        const {x,y,z,r,o} = this.DrawSet(camera);
+        const {x, y, z, r, o} = this.DrawSet(camera);
 
-        ctx.font = "bold " + 0.8 * r * z + "px Ubuntu";
-        ctx.lineWidth = 2.5 * z;
-        ctx.textAlign = "center";
-        ctx.textBaseLine = "bottom";
-        ctx.globalAlpha = o;
-        ctx.strokeStyle = "#000000";
-        ctx.fillStyle = "#ffffff";
-        ctx.strokeText(this.id, x * z, (y - r - 5) * z);
-        ctx.fillText(this.id, x * z, (y - r - 5) * z);
-        /*
         if (this.score){
-            ctx.strokeText(this.name, x * z, (y - r - 15) * z);
-            ctx.fillText(this.name, x * z, (y - r - 15) * z);
-            ctx.font = "bold " + 0.4 * r * z + "px Ubuntu";
-            ctx.strokeText(this.score, x * z, (y - r - 5) * z);
-            ctx.fillText(this.score, x * z, (y - r - 5) * z);
+            drawText(ctx, x, y - r - 15, z, o, new RGB("#FFFFFF"), this.name, 0.8 * r);
+            drawText(ctx, x, y - r - 5, z, o, new RGB("#FFFFFF"), this.score, 0.4 * r);
+        } else {
+            drawText(ctx, x, y - r - 5, z, o, new RGB("#FFFFFF"), this.name, 0.8 * r);
         }
-        else{
-            ctx.strokeText(this.name, x * z, (y - r - 5) * z);
-            ctx.fillText(this.name, x * z, (y - r - 5) * z);
-        }*/
         ctx.restore();
     }
 

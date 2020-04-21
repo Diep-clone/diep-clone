@@ -67,6 +67,7 @@ export const RGB = function(r, g, b) {
 export const getPolygonRadius = function (p) {
     let d = (90 - 180 / p) * (Math.PI * 2) / 360;
     return Math.sqrt(Math.PI / (Math.sin(d) * Math.cos(d) * p));
+    //return 2 / (1+Math.cos(Math.PI/p));
 }
 
 export const getObjectPoint = function (type) {
@@ -85,4 +86,12 @@ export const getObjectPoint = function (type) {
         default:
             return 0;
     }
+}
+
+export const getTextWidth = function(text, font) {
+    var canvas = getTextWidth.canvas || (getTextWidth.canvas = document.createElement("canvas"));
+    var context = canvas.getContext("2d");
+    context.font = font;
+    var metrics = context.measureText(text);
+    return metrics.width;
 }

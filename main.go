@@ -154,7 +154,6 @@ func moveloop(ticker time.Ticker) {
 		}
 
 		su.Unlock()
-		runtime.Gosched()
 	}
 }
 

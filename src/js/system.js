@@ -205,9 +205,7 @@ export default class System {
                     this.camera.uiz = this.camera.z;
         
                     this.camera.z *= json.camera.Z;
-        
-                    console.log(json.camera.Pos.X,json.camera.Pos.Y);
-
+    
                     this.camera.x = json.camera.Pos.X - this.cv.width / 2 / this.camera.uiz / json.camera.Z;
                     this.camera.y = json.camera.Pos.Y - this.cv.height / 2 / this.camera.uiz / json.camera.Z;
 
