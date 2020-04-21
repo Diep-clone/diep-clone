@@ -37,18 +37,19 @@ var Users map[string]*Player = make(map[string]*Player)
 type Player struct {
 	ID            string
 	Conn          *websocket.Conn
-	mu            sync.Mutex
+	Mu            sync.Mutex
+	Camera        Camera
 	Mx            float64
 	My            float64
 	Mr            bool // right Mouse
 	Ml            bool // left Mouse
 	Stat          int
-	Camera        Camera
 	MoveDir       float64
 	IsMove        bool
 	IsCanDir      bool
 	StartTime     int64
 	ControlObject *Object
+	KillObject    *Object
 }
 
 var playerID int = 1
@@ -59,10 +60,6 @@ func NewPlayer(c *websocket.Conn) *Player {
 	p.ID = strconv.Itoa(playerID)
 	playerID++
 	p.Conn = c
-	p.Camera = Camera{
-		Pos: Pos{0, 0},
-		Z:   1.,
-	}
 	p.StartTime = lib.Now()
 	p.IsCanDir = true
 
@@ -78,11 +75,15 @@ func (p *Player) SetMousePoint(x float64, y float64) {
 //
 func (p *Player) CameraSet() {
 	if obj := p.ControlObject; obj != nil {
-		p.Camera.Pos = Pos{X: obj.X, Y: obj.Y}
-		p.Camera.Z = 16. / 9. * math.Pow(0.995, float64(obj.Level)-1) / float64(obj.Sight)
+		p.Camera = Camera{
+			Pos: Pos{X: lib.Floor(obj.X, 2), Y: lib.Floor(obj.Y, 2)},
+			Z:   16. / 9. * math.Pow(0.995, float64(obj.Level)-1) / float64(obj.Sight),
+		}
 	} else {
-		p.Camera.Pos = Pos{X: 0, Y: 0}
-		p.Camera.Z = 1
+		p.Camera = Camera{
+			Pos: Pos{X: 0, Y: 0},
+			Z:   1,
+		}
 	}
 }
 
@@ -106,8 +107,8 @@ var (
 
 //
 func (p *Player) Send(v interface{}) error {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	p.Mu.Lock()
+	defer p.Mu.Unlock()
 	return p.Conn.WriteJSON(v)
 }
 
@@ -142,6 +143,8 @@ func (p *Player) ReadPump() {
 
 // Event Catch Message
 func Event(p *Player, message []byte) {
+	p.Mu.Lock()
+	defer p.Mu.Unlock()
 	//fmt.Println(string(message))
 
 	var objmap map[string]interface{}

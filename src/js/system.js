@@ -196,6 +196,21 @@ export default class System {
                     break;
                 }
                 case 'objectList': {
+                    if (this.cv.width <= this.cv.height/9*16){
+                        this.camera.z = this.cv.height / 900;
+                    } else {
+                        this.camera.z = this.cv.width / 1600;
+                    } 
+        
+                    this.camera.uiz = this.camera.z;
+        
+                    this.camera.z *= json.camera.Z;
+        
+                    console.log(json.camera.Pos.X,json.camera.Pos.Y);
+
+                    this.camera.x = json.camera.Pos.X - this.cv.width / 2 / this.camera.uiz / json.camera.Z;
+                    this.camera.y = json.camera.Pos.Y - this.cv.height / 2 / this.camera.uiz / json.camera.Z;
+
                     data.forEach((obj) => {
                         
                         let isObjEnable = false;
@@ -223,29 +238,12 @@ export default class System {
                     break;
                 }
                 case 'playerSet': {
-                    if (data) {
-                        this.playerSetting.id = json.id;
-                        this.playerSetting.level = json.level;
-                        this.playerSetting.isCanRotate = json.isCanRotate;
-                        this.playerSetting.stat = json.stat;
-                        this.playerSetting.stats = json.stats;
-                        this.playerSetting.maxstats = json.maxstats;
-
-                        if (this.cv.width <= this.cv.height/9*16){
-                            this.camera.z = this.cv.height / 900;
-                        } else {
-                            this.camera.z = this.cv.width / 1600;
-                        } 
-            
-                        this.camera.uiz = this.camera.z;
-            
-                        this.camera.z *= json.camera.Z;
-            
-                        console.log(json.camera.Pos.X,json.camera.Pos.Y);
-
-                        this.camera.x = json.camera.Pos.X - this.cv.width / 2 / this.camera.uiz / json.camera.Z;
-                        this.camera.y = json.camera.Pos.Y - this.cv.height / 2 / this.camera.uiz / json.camera.Z;
-                    }
+                    this.playerSetting.id = json.id;
+                    this.playerSetting.level = json.level;
+                    this.playerSetting.isCanRotate = json.isCanRotate;
+                    this.playerSetting.stat = json.stat;
+                    this.playerSetting.stats = json.stats;
+                    this.playerSetting.maxstats = json.maxstats;
                     break;
                 }
                 case 'area': {

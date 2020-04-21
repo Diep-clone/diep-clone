@@ -41,7 +41,7 @@ export const Obj = function(id) {
             }
         }
 
-        if ("201" === this.id) {
+        if (201 === this.id) {
             console.log(this.x,this.y);
         }
 

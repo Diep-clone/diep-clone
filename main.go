@@ -166,6 +166,8 @@ func sendUpdates(ticker time.Ticker) {
 		st := time.Now()
 
 		for _, u := range obj.Users {
+			u.CameraSet()
+
 			var objList []*obj.Object = quadtree.Retrieve(obj.Area{
 				X: u.Camera.Pos.X - 1280/u.Camera.Z,
 				Y: u.Camera.Pos.Y - 720/u.Camera.Z,
@@ -175,7 +177,6 @@ func sendUpdates(ticker time.Ticker) {
 
 			var visibleObject []map[string]interface{} = make([]map[string]interface{}, 0, len(objList)) // 미리 할당
 
-			u.CameraSet()
 			for _, o := range objList {
 				if o.X < u.Camera.Pos.X+1280/u.Camera.Z+o.R &&
 					o.X > u.Camera.Pos.X-1280/u.Camera.Z-o.R &&
@@ -200,27 +201,19 @@ func sendUpdates(ticker time.Ticker) {
 }
 
 func SendUpdate(u *obj.Player, visibleObject []map[string]interface{}) {
-	if o := u.ControlObject; o == nil {
-		u.Send(map[string]interface{}{
-			"event":  "playerSet",
-			"data":   false,
-			"camera": u.Camera,
-		})
-	} else {
+	if o := u.ControlObject; o != nil {
 		u.Send(map[string]interface{}{
 			"event":       "playerSet",
-			"data":        true,
 			"id":          u.ID,
 			"level":       o.Level,
 			"isCanRotate": u.IsCanDir,
 			"stat":        u.Stat,
 			"stats":       o.Stats,
 			"maxstats":    o.MaxStats,
-			"camera":      u.Camera,
 		})
 	}
 
-	u.Send(map[string]interface{}{"event": "objectList", "data": visibleObject})
+	u.Send(map[string]interface{}{"event": "objectList", "data": visibleObject, "camera": u.Camera})
 	u.Send(map[string]interface{}{
 		"event": "area",
 		"data": []obj.Area{
