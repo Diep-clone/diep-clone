@@ -49,45 +49,21 @@ export const drawObj = function (ctx, x, y, z, r, dir, t, o, c) {
 
 export const drawText = function (ctx, x, y, z, o, c, text, size, dir) {
     ctx.save();
-    let ctxSet = function (ctx) {
-        ctx.font = "bold " + size * z + "px Ubuntu";
-        ctx.lineWidth = 2.5 * z;
-        ctx.textAlign = "center";
-        ctx.textBaseLine = "bottom";
-        ctx.globalAlpha = o;
-        drawC(ctx, c, new RGB("#000000"));
+    ctx.font = "bold " + size * z + "px Ubuntu";
+    ctx.lineWidth = 2.5 * z;
+    ctx.textAlign = "center";
+    ctx.textBaseLine = "bottom";
+    ctx.globalAlpha = o;
+    drawC(ctx, c, new RGB("#000000"));
+
+    ctx.translate(x * z, y * z);
+
+    if (dir) {
+        ctx.rotate(dir);
     }
-    
-    if (o < 1) {
-        let cv = document.createElement("canvas");
-        let cctx = cv.getContext("2d");
 
-        cv.width = getTextWidth(text, "bold " + size * z + "px Ubuntu");
-        cv.height = 10 * z * size;
-
-        ctxSet(cctx);
-        cctx.globalAlpha = 1;
-
-        cctx.translate(cv.width / 2, cv.height / 2);
-
-        cctx.strokeText(text, x * z - cv.width / 2 - Math.floor(x * z - cv.width / 2), y * z - cv.height / 2 - Math.floor(y * z - cv.height / 2));
-        cctx.fillText(text, x * z - cv.width / 2 - Math.floor(x * z - cv.width / 2), y * z - cv.height / 2 - Math.floor(y * z - cv.height / 2));
-
-        if (dir) {
-            ctx.rotate(dir);
-        }
-        ctx.globalAlpha = o;
-        ctx.drawImage(cv, Math.floor(x * z - cv.width / 2), Math.floor(y * z - cv.height / 2));
-    } else {
-        ctxSet(ctx);
-        ctx.translate(Math.floor(x * z), Math.floor(y * z))
-
-        if (dir) {
-            ctx.rotate(dir);
-        }
-        ctx.strokeText(text, x * z - Math.floor(x * z), y * z - Math.floor(y * z));
-        ctx.fillText(text, x * z - Math.floor(x * z), y * z - Math.floor(y * z));
-    }
+    ctx.strokeText(text, 0, 0);
+    ctx.fillText(text, 0, 0);
 
     ctx.restore();
 }

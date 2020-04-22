@@ -181,7 +181,7 @@ export default class System {
         socket.onopen = () => {
             console.log("Successfully Connected");
             this.gameSetting.gameset = "Gaming";
-            this.socketSend("init","name");
+            this.socketSend("init","T̸̛̕");
         };
 
         socket.onmessage = msg => {

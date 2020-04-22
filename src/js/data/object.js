@@ -1,4 +1,4 @@
-import { RGB, getPolygonRadius, getObjectPoint } from '../lib/util';
+import { RGB, getPolygonRadius, getObjectPoint, getTextWidth } from '../lib/util';
 import { colorList, colorType, gunList } from '../data/index';
 import { drawC, drawObj, drawText } from '../lib/draw';
 
@@ -155,12 +155,34 @@ export const Obj = function(id) {
         ctx.save();
 
         const {x, y, z, r, o} = this.DrawSet(camera);
+        
+        if (o < 1){
+            if (this.score){
+                this.cv.width = getTextWidth(this.name, "bold " + 0.8 * r * z + "px Ubuntu") + 5 * z;
+                this.cv.height = 5 * 0.8 * r * z
+                drawText(this.ctx, this.cv.width / 2 / z, this.cv.height / 2 / z, z, 1, new RGB("#FFFFFF"), this.name, 0.8 * r);
+                ctx.globalAlpha = o
+                ctx.drawImage(this.cv, x * z - this.cv.width / 2, (y - r - 15) * z - this.cv.height / 2);
 
-        if (this.score){
-            drawText(ctx, x, y - r - 15, z, o, new RGB("#FFFFFF"), this.name, 0.8 * r);
-            drawText(ctx, x, y - r - 5, z, o, new RGB("#FFFFFF"), this.score, 0.4 * r);
+                this.cv.width = getTextWidth(this.score, "bold " + 0.4 * r * z + "px Ubuntu") + 5 * z;
+                this.cv.height = 5 * 0.4 * r * z
+                drawText(this.ctx, this.cv.width / 2 / z, this.cv.height / 2 / z, z, 1, new RGB("#FFFFFF"), this.score, 0.4 * r);
+                ctx.globalAlpha = o
+                ctx.drawImage(this.cv, x * z - this.cv.width / 2, (y - r - 5) * z - this.cv.height / 2);
+            } else {
+                this.cv.width = getTextWidth(this.name, "bold " + 0.8 * r * z + "px Ubuntu") + 5 * z;
+                this.cv.height = 5 * 0.8 * r * z
+                drawText(this.ctx, this.cv.width / 2 / z, this.cv.height / 2 / z, z, 1, new RGB("#FFFFFF"), this.name, 0.8 * r);
+                ctx.globalAlpha = o
+                ctx.drawImage(this.cv, x * z - this.cv.width / 2, (y - r - 5) * z - this.cv.height / 2);
+            }
         } else {
-            drawText(ctx, x, y - r - 5, z, o, new RGB("#FFFFFF"), this.name, 0.8 * r);
+            if (this.score) {
+                drawText(ctx, x, y - r - 15, z, 1, new RGB("#FFFFFF"), this.name, 0.8 * r);
+                drawText(ctx, x, y - r - 5, z, 1, new RGB("#FFFFFF"), this.score, 0.4 * r);
+            } else {
+                drawText(ctx, x, y, z, 1, new RGB("#FFFFFF"), this.name, 0.8 * r);
+            }
         }
         ctx.restore();
     }
