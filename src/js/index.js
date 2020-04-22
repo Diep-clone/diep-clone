@@ -104,10 +104,10 @@ window.system = new System();
     }
     /*window['setLoadingStatus'] = function(str) {
         document.getElementById('loading').innerText = str;
-    }*//*
+    }*/
     window['setTyping'] = function(v) {
         typing = v;
-    }*/
+    }
     window['unscale'] = function(v) {
         return v / scale;
     }

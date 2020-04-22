@@ -181,7 +181,7 @@ export const Obj = function(id) {
                 drawText(ctx, x, y - r - 15, z, 1, new RGB("#FFFFFF"), this.name, 0.8 * r);
                 drawText(ctx, x, y - r - 5, z, 1, new RGB("#FFFFFF"), this.score, 0.4 * r);
             } else {
-                drawText(ctx, x, y, z, 1, new RGB("#FFFFFF"), this.name, 0.8 * r);
+                drawText(ctx, x, y - r - 5, z, 1, new RGB("#FFFFFF"), this.name, 0.8 * r);
             }
         }
         ctx.restore();

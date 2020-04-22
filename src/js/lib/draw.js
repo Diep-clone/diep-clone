@@ -1,5 +1,5 @@
 import { backgroundColor } from '../data/index'
-import { RGB, getPolygonRadius, getObjectPoint, getTextWidth } from './util';
+import { RGB, getPolygonRadius, getObjectPoint } from './util';
 
 export const drawCircle = function (ctx, x, y, z, r) {
     ctx.beginPath();
@@ -91,7 +91,7 @@ export const drawBackground = function (ctx, x, y, z, w, h, area) {
     }
     ctx.strokeStyle = "black";
     ctx.globalAlpha = 0.1;
-    ctx.lineWidth = 0.4;
+    ctx.lineWidth = 0.2;
     ctx.stroke();
     ctx.restore();
 }

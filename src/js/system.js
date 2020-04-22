@@ -1,7 +1,8 @@
 import * as data from './data';
 
 import { Obj } from './data/object';
-import { drawBackground } from './lib/draw';
+import { drawBackground, drawText } from './lib/draw';
+import { RGB } from './lib/util';
 const socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`);
 console.log(socket);
 
@@ -12,6 +13,9 @@ export default class System {
 
         this.uicv = document.createElement("canvas");
         this.uictx = this.uicv.getContext("2d");
+
+        this.textinputcontainer = document.getElementById("textInputContainer");
+        this.textinput = document.getElementById("textInput");
 
         this.objectList = [];
         this.uiList = [];
@@ -60,6 +64,18 @@ export default class System {
             flushInputHooks: function(){},
             get_convar:function(key){},
             keyDown: function(){
+                if (this.gameSetting.gameset === "SetName") {
+                    if (arguments[0] === 13) {
+                        this.gameSetting.gameset = "Gaming";
+                        this.textinputcontainer.style.top = "-100px";
+                        this.socketSend("init",this.textinput.value || "");
+                        window['setTyping'](false);
+                        return;
+                    } else {
+                        return;
+                    }
+                } else if (this.gameSetting.gameset === "Connecting") return;
+
                 if (this.sameKeys[arguments[0]]) arguments[0]=this.sameKeys[arguments[0]];
                 if (this.keys[arguments[0]]) return;
                 this.keys[arguments[0]] = true;
@@ -113,6 +129,10 @@ export default class System {
                 this.socketSend("input",{"type":key,"value":value})
             }.bind(this),
             keyUp:function(){
+                if (this.gameSetting.gameset === "SetName") {
+                    return;
+                } else if (this.gameSetting.gameset === "Connecting") return;
+
                 if (this.sameKeys[arguments[0]]) arguments[0]=this.sameKeys[arguments[0]];
                 if (!this.keys[arguments[0]]) return;
                 this.keys[arguments[0]] = false;
@@ -180,8 +200,8 @@ export default class System {
 
         socket.onopen = () => {
             console.log("Successfully Connected");
-            this.gameSetting.gameset = "Gaming";
-            this.socketSend("init","T̸̛̕");
+            this.gameSetting.gameset = "SetName";
+            window['setTyping'](true);
         };
 
         socket.onmessage = msg => {
@@ -196,15 +216,11 @@ export default class System {
                     break;
                 }
                 case 'objectList': {
-                    if (this.cv.width <= this.cv.height/9*16){
-                        this.camera.z = this.cv.height / 900;
-                    } else {
-                        this.camera.z = this.cv.width / 1600;
-                    } 
-        
-                    this.camera.uiz = this.camera.z;
-        
-                    this.camera.z *= json.camera.Z;
+                    if (this.gameSetting.gameset === "SetName") {
+                        return;
+                    }
+
+                    this.camera.z = this.camera.uiz * json.camera.Z;
     
                     this.camera.x = json.camera.Pos.X - this.cv.width / 2 / this.camera.uiz / json.camera.Z;
                     this.camera.y = json.camera.Pos.Y - this.cv.height / 2 / this.camera.uiz / json.camera.Z;
@@ -253,6 +269,7 @@ export default class System {
         
         socket.onclose = event => {
             this.gameSetting.gameset = "Connecting";
+            this.textinputcontainer.style.top = "-100px";
             console.log("Socket Closed Connection: ", event);
         };
 
@@ -276,12 +293,55 @@ export default class System {
         const tick = Date.now() - this.lastTime;
         this.lastTime = Date.now();
 
+        if (this.cv.width <= this.cv.height/9*16){
+            this.camera.uiz = this.cv.height / 900;
+        } else {
+            this.camera.uiz = this.cv.width / 1600;
+        }
+
         this.uicv.width = this.cv.width;
         this.uicv.height = this.cv.height;
 
+        this.ctx.clearRect(0,0,this.cv.width,this.cv.height);
+
         switch (this.gameSetting.gameset){
             case "Connecting":
-                this.ctx.clearRect(0,0,this.cv.width,this.cv.height);
+                drawText(this.ctx,this.cv.width / 2 / this.camera.uiz, this.cv.height / 2 / this.camera.uiz, this.camera.uiz, 1, new RGB("#FFFFFF"), "Connecting...", 40 * this.camera.uiz);
+                break;
+            case "SetName":
+                let x = this.cv.width / 2 - 160 * this.camera.uiz,
+                y = this.cv.height / 2 - 20 * this.camera.uiz,
+                w = 320 * this.camera.uiz,
+                h = 40 * this.camera.uiz;
+
+                this.textinputcontainer.style.left = x + "px";
+                this.textinputcontainer.style.top = y + "px";
+
+                this.textinput.style.width = w + "px";
+                this.textinput.style.height = h + "px";
+                this.textinput.style.fontSize = this.textinput.style.lineHeight = h - 0.4 + "px";
+
+                this.ctx.save();
+
+                this.ctx.beginPath();
+
+                this.ctx.lineWidth = 5 * this.camera.uiz;
+                this.ctx.fillStyle = "#FFFFFF";
+                this.ctx.strokeStyle = "#000000";
+
+                this.ctx.moveTo(x, y);
+                this.ctx.lineTo(x + w, y);
+                this.ctx.lineTo(x + w, y + h);
+                this.ctx.lineTo(x, y + h);
+                this.ctx.lineTo(x, y);
+
+                this.ctx.fill();
+                this.ctx.stroke();
+
+                this.ctx.closePath();
+
+                this.ctx.restore();
+
                 break;
             case "Gaming":
                 drawBackground(this.ctx, this.camera.x, this.camera.y, this.camera.z, this.cv.width, this.cv.height, this.area);

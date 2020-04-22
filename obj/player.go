@@ -246,6 +246,10 @@ func Event(p *Player, message []byte) {
 		Users[p.ID].ControlObject.SetController(Users[p.ID])
 		Objects = append(Objects, Users[p.ID].ControlObject)
 
+		/*Users[p.ID].Send(map[string]interface{}{
+			"event": "init",
+			"data":  "",
+		})*/
 	case "input":
 		if m, ok := objmap["data"].(map[string]interface{}); ok {
 			if t, ok := m["type"].(string); ok {
