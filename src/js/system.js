@@ -17,6 +17,8 @@ export default class System {
         this.textinputcontainer = document.getElementById("textInputContainer");
         this.textinput = document.getElementById("textInput");
 
+        this.textinputanime = 1;
+
         this.textinput.style.paddingLeft = "5px";
         this.textinput.style.paddingRight = "5px";
 
@@ -70,7 +72,8 @@ export default class System {
                 if (this.gameSetting.gameset === "SetName") {
                     if (arguments[0] === 13) {
                         this.gameSetting.gameset = "Gaming";
-                        this.textinputcontainer.style.top = "-100px";
+                        this.textinputcontainer.style.display = "none";
+                        this.textinputcontainer.style.top = "-" + this.textinputcontainer.style.top;
                         this.socketSend("init",this.textinput.value || "");
                         window['setTyping'](false);
                         return;
@@ -314,13 +317,16 @@ export default class System {
 
         switch (this.gameSetting.gameset){
             case "Connecting":
-                drawText(this.ctx,this.cv.width / 2 / this.camera.uiz, this.cv.height / 2 / this.camera.uiz, this.camera.uiz, 1, new RGB("#FFFFFF"), "Connecting...", 40 * this.camera.uiz);
+                drawText(this.ctx,this.cv.width / 2 / this.camera.uiz, this.cv.height / 2 / this.camera.uiz, this.camera.uiz, 1, new RGB("#FFFFFF"), "Connecting...", 60 * this.camera.uiz);
+                this.textinputanime = 1;
                 break;
             case "SetName":
-                let x = this.cv.width / 2 - 160 * this.camera.uiz,
-                y = this.cv.height / 2 - 25 * this.camera.uiz,
-                w = 320 * this.camera.uiz,
-                h = 50 * this.camera.uiz;
+                let x = this.cv.width / 2 - 165 * this.camera.uiz,
+                y = (this.cv.height / 2 - 22 * this.camera.uiz) * (1-this.textinputanime),
+                w = 330 * this.camera.uiz,
+                h = 44 * this.camera.uiz;
+
+                this.textinputanime *= 0.97;
 
                 this.textinputcontainer.style.left = x + "px";
                 this.textinputcontainer.style.top = y + "px";
@@ -335,15 +341,15 @@ export default class System {
 
                 this.ctx.lineCap = "round";
                 this.ctx.lineJoin = "round";
-                this.ctx.lineWidth = 5 * this.camera.uiz;
+                this.ctx.lineWidth = 4 * this.camera.uiz;
                 this.ctx.fillStyle = "#FFFFFF";
                 this.ctx.strokeStyle = "#000000";
 
-                this.ctx.moveTo(x - 5, y);
-                this.ctx.lineTo(x + w + 5, y);
-                this.ctx.lineTo(x + w + 5, y + h);
-                this.ctx.lineTo(x - 5, y + h);
-                this.ctx.lineTo(x - 5, y);
+                this.ctx.moveTo(x - 1, y);
+                this.ctx.lineTo(x + w + 3, y);
+                this.ctx.lineTo(x + w + 3, y + h);
+                this.ctx.lineTo(x - 1, y + h);
+                this.ctx.lineTo(x - 1, y);
 
                 this.ctx.fill();
                 this.ctx.stroke();
