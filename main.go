@@ -138,7 +138,7 @@ func moveloop(ticker time.Ticker) {
 
 			if o.IsDead {
 				if o.DeadTime == -1 {
-					o.DeadTime = 400
+					o.DeadTime = 300
 				} else if o.DeadTime <= 0 {
 					if o.DeadEvent != nil {
 						o.DeadEvent(o, o.HitObject)

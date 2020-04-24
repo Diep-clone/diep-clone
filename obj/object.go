@@ -79,9 +79,6 @@ func (obj *Object) ObjectTick() {
 	if obj.H <= 0 && !obj.IsDead {
 		obj.IsDead = true
 		obj.H = 0
-		if obj.HitObject != nil && obj.HitObject.KillEvent != nil {
-			obj.HitObject.KillEvent(obj.HitObject, obj)
-		}
 		return
 	}
 
@@ -124,6 +121,12 @@ func DefaultCollision(a *Object, b *Object) {
 		a.H -= b.Damage * (b.Lh / (a.Damage * lib.GameSetting.GameSpeed)) * lib.GameSetting.GameSpeed
 	} else {
 		a.H -= b.Damage * lib.GameSetting.GameSpeed
+	}
+
+	if a.H <= 0 {
+		if b.KillEvent != nil {
+			b.KillEvent(b, a)
+		}
 	}
 
 	a.HitObject = b
