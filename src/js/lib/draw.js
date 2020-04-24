@@ -50,7 +50,7 @@ export const drawObj = function (ctx, x, y, z, r, dir, t, o, c) {
 export const drawText = function (ctx, x, y, z, o, c, text, size, dir) {
     ctx.save();
     ctx.font = "bold " + size * z + "px Ubuntu";
-    ctx.lineWidth = 2.5 * z;
+    ctx.lineWidth = 0.18 * z * size;
     ctx.textAlign = "center";
     ctx.textBaseLine = "bottom";
     ctx.globalAlpha = o;

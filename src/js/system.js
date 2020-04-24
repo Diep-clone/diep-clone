@@ -18,6 +18,7 @@ export default class System {
         this.textinput = document.getElementById("textInput");
 
         this.textinputanime = 1;
+        this.connectinga = 1;
 
         this.textinput.style.paddingLeft = "5px";
         this.textinput.style.paddingRight = "5px";
@@ -282,10 +283,8 @@ export default class System {
         };
 
         socket.onerror = error => {
-            this.gameSetting.gameset = "Connecting";
-            this.textinputcontainer.style.display = "none";
-            this.textinputcontainer.style.top = "-" + this.textinputcontainer.style.top;
             console.error("Socket Error: ", error);
+            socket.close();
         };
 
         this.loop();
@@ -315,25 +314,31 @@ export default class System {
 
         this.ctx.clearRect(0,0,this.cv.width,this.cv.height);
 
+        drawText(this.ctx,this.cv.width / 2 / this.camera.uiz, this.cv.height / 2 / this.camera.uiz, this.camera.uiz, this.connectinga, new RGB("#FFFFFF"), "Connecting...", 60);
+
         switch (this.gameSetting.gameset){
             case "Connecting":
-                drawText(this.ctx,this.cv.width / 2 / this.camera.uiz, this.cv.height / 2 / this.camera.uiz, this.camera.uiz, 1, new RGB("#FFFFFF"), "Connecting...", 60 * this.camera.uiz);
                 this.textinputanime = 1;
+                this.connectinga = Math.min(this.connectinga + 0.2,1);
                 break;
             case "SetName":
-                let x = this.cv.width / 2 - 165 * this.camera.uiz,
-                y = (this.cv.height / 2 - 22 * this.camera.uiz) * (1-this.textinputanime),
-                w = 330 * this.camera.uiz,
-                h = 44 * this.camera.uiz;
+                let x = this.cv.width / 2 - 166 * this.camera.uiz,
+                y = (this.cv.height / 2 - 21 * this.camera.uiz) * (1-this.textinputanime),
+                w = 332 * this.camera.uiz,
+                h = 42 * this.camera.uiz;
 
                 this.textinputanime *= 0.97;
+                this.connectinga = Math.max(this.connectinga - 0.2,0);
 
-                this.textinputcontainer.style.left = x + "px";
-                this.textinputcontainer.style.top = y + "px";
+                this.textinputcontainer.style.left = window['unscale'](x) + "px";
+                this.textinputcontainer.style.top = window['unscale'](y) + "px";
 
-                this.textinput.style.width = w + "px";
-                this.textinput.style.height = h + "px";
-                this.textinput.style.fontSize = this.textinput.style.lineHeight = h - 0.4 + "px";
+                this.textinput.style.width = window['unscale'](w) + "px";
+                this.textinput.style.height = window['unscale'](h) + "px";
+                this.textinput.style.fontSize = this.textinput.style.lineHeight = window['unscale'](h - 0.4) + "px";
+
+                drawText(this.ctx, (x + w / 2) / this.camera.uiz, y / this.camera.uiz - 11, this.camera.uiz, 1, new RGB("#FFFFFF"), "This is the tale of...", 20.2);
+                drawText(this.ctx, (x + w / 2) / this.camera.uiz, y / this.camera.uiz + 57, this.camera.uiz, 1, new RGB("#FFFFFF"), "(press enter to spawn)", 11.8);
 
                 this.ctx.save();
 
@@ -341,15 +346,15 @@ export default class System {
 
                 this.ctx.lineCap = "round";
                 this.ctx.lineJoin = "round";
-                this.ctx.lineWidth = 4 * this.camera.uiz;
+                this.ctx.lineWidth = 4.5 * this.camera.uiz;
                 this.ctx.fillStyle = "#FFFFFF";
                 this.ctx.strokeStyle = "#000000";
 
-                this.ctx.moveTo(x - 1, y);
-                this.ctx.lineTo(x + w + 3, y);
-                this.ctx.lineTo(x + w + 3, y + h);
-                this.ctx.lineTo(x - 1, y + h);
-                this.ctx.lineTo(x - 1, y);
+                this.ctx.moveTo(x, y);
+                this.ctx.lineTo(x + w, y);
+                this.ctx.lineTo(x + w, y + h);
+                this.ctx.lineTo(x, y + h);
+                this.ctx.lineTo(x, y);
 
                 this.ctx.fill();
                 this.ctx.stroke();
