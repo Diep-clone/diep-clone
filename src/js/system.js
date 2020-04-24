@@ -3,11 +3,12 @@ import * as data from './data';
 import { Obj } from './data/object';
 import { drawBackground, drawText } from './lib/draw';
 import { RGB } from './lib/util';
-const socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`);
-console.log(socket);
+let socket;
 
 export default class System {
     constructor() {
+        this.connect();
+
         this.cv = document.getElementById("canvas");
         this.ctx = this.cv.getContext("2d");
 
@@ -205,6 +206,12 @@ export default class System {
             wheel: function(){}.bind(this),
         };
 
+        this.loop();
+    }
+
+    connect() {
+        socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`);
+
         socket.onopen = () => {
             console.log("Successfully Connected");
             this.gameSetting.gameset = "SetName";
@@ -280,14 +287,13 @@ export default class System {
             this.textinputcontainer.style.display = "none";
             this.textinputcontainer.style.top = "-" + this.textinputcontainer.style.top;
             console.log("Socket Closed Connection: ", event);
+            this.connect();
         };
 
         socket.onerror = error => {
             console.error("Socket Error: ", error);
             socket.close();
         };
-
-        this.loop();
     }
 
     socketSend(type,data) {
@@ -327,7 +333,7 @@ export default class System {
                 w = 332 * this.camera.uiz,
                 h = 42 * this.camera.uiz;
 
-                this.textinputanime *= 0.97;
+                this.textinputanime *= 0.95;
                 this.connectinga = Math.max(this.connectinga - 0.2,0);
 
                 this.textinputcontainer.style.left = window['unscale'](x) + "px";
