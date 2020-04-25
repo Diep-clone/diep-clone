@@ -2,7 +2,7 @@ import * as data from './data';
 
 import { Obj } from './data/object';
 import { drawBackground, drawText } from './lib/draw';
-import { RGB } from './lib/util';
+import { RGB, calByte } from './lib/util';
 let socket;
 
 export default class System {
@@ -72,12 +72,14 @@ export default class System {
             get_convar:function(key){},
             keyDown: function(){
                 if (this.gameSetting.gameset === "SetName") {
+                    if (this.textinput.value) this.textinput.value = calByte.cutByteLength(this.textinput.value,15);
                     if (arguments[0] === 13) {
                         this.gameSetting.gameset = "Gaming";
                         this.textinputcontainer.style.display = "none";
                         this.textinputcontainer.style.top = "-" + this.textinputcontainer.style.top;
                         this.socketSend("init",this.textinput.value || "");
                         window['setTyping'](false);
+                        localStorage['name'] = this.textinput.value;
                         return;
                     } else {
                         return;
@@ -138,6 +140,7 @@ export default class System {
             }.bind(this),
             keyUp:function(){
                 if (this.gameSetting.gameset === "SetName") {
+                    if (this.textinput.value) this.textinput.value = calByte.cutByteLength(this.textinput.value,15);
                     return;
                 } else if (this.gameSetting.gameset === "Connecting") return;
 
@@ -203,7 +206,9 @@ export default class System {
             should_prevent_unload: function(){
                 return true;
             },
-            wheel: function(){}.bind(this),
+            wheel: function(){
+                return true;
+            },
         };
 
         this.loop();
@@ -212,14 +217,17 @@ export default class System {
     connect() {
         socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`);
 
+        socket.binaryType = 'arraybuffer';
+
         socket.onopen = () => {
             console.log("Successfully Connected");
             this.gameSetting.gameset = "SetName";
             window['setTyping'](true);
+            this.textinput.value = localStorage['name'] || '';
             this.textinputcontainer.style.display = "block";
         };
 
-        socket.onmessage = msg => {
+        socket.onmessage = msg => {  
             const json = JSON.parse(msg.data);
 
             const event = json.event;

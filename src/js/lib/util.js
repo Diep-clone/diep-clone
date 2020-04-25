@@ -64,9 +64,60 @@ export const RGB = function(r, g, b) {
     }
 }
 
+export const calByte = {
+    getByteLength : function(s) {
+		if (s == null || s.length == 0) {
+			return 0;
+		}
+		var size = 0;
+
+		for ( var i = 0; i < s.length; i++) {
+			size += this.charByteSize(s.charAt(i));
+		}
+
+		return size;
+	},	
+	cutByteLength : function(s, len) {
+		if (s == null || s.length == 0) {
+			return 0;
+		}
+		var size = 0;
+		var rIndex = s.length;
+
+		for ( var i = 0; i < s.length; i++) {
+			size += this.charByteSize(s.charAt(i));
+			if( size == len ) {
+				rIndex = i + 1;
+				break;
+			} else if( size > len ) {
+				rIndex = i;
+				break;
+			}
+		}
+
+		return s.substring(0, rIndex);
+	},
+	charByteSize : function(ch) {
+		if (ch == null || ch.length == 0) {
+			return 0;
+		}
+
+		var charCode = ch.charCodeAt(0);
+
+		if (charCode <= 0x00007F) {
+			return 1;
+		} else if (charCode <= 0x0007FF) {
+			return 2;
+		} else if (charCode <= 0x00FFFF) {
+			return 3;
+		} else {
+			return 4;
+		}
+	}
+}; // https://zzznara2.tistory.com/458
+
 export const getPolygonRadius = function (p) {
-    let d = (90 - 180 / p) * (Math.PI * 2) / 360;
-    return Math.sqrt(Math.PI / (Math.sin(d) * Math.cos(d) * p));
+    return Math.sqrt(Math.PI / (Math.sin(Math.PI / p) * Math.cos(Math.PI / p) * p));
     //return 2 / (1+Math.cos(Math.PI/p));
 }
 

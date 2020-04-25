@@ -14,7 +14,7 @@ window.system = new System();
     }
     function onMouseWheel(e) {
         e = e || window.event;
-        preventDefault(e);
+        //preventDefault(e);
         if (!window['input'])
             return;
         window['input']['wheel'](e.wheelDelta / -120 || e.detail || 0);
