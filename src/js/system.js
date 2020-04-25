@@ -9,6 +9,9 @@ export default class System {
     constructor() {
         this.connect();
 
+        this.img = new Image();
+        this.img.src = 'background.png';
+
         this.cv = document.getElementById("canvas");
         this.ctx = this.cv.getContext("2d");
 
@@ -29,7 +32,9 @@ export default class System {
 
         this.gameSetting = {
             "gamemode": "sandbox",
-            "gameset": "Connecting",
+            "isConnecting": true,
+            "isNaming": false,
+            "isGaming": false,
         };
 
         this.playerSetting = {
@@ -71,20 +76,20 @@ export default class System {
             flushInputHooks: function(){},
             get_convar:function(key){},
             keyDown: function(){
-                if (this.gameSetting.gameset === "SetName") {
-                    if (this.textinput.value) this.textinput.value = calByte.cutByteLength(this.textinput.value,15);
+                if (this.gameSetting.isNaming) {
                     if (arguments[0] === 13) {
-                        this.gameSetting.gameset = "Gaming";
+                        this.gameSetting.isGaming = true;
                         this.textinputcontainer.style.display = "none";
                         this.textinputcontainer.style.top = "-" + this.textinputcontainer.style.top;
                         this.socketSend("init",this.textinput.value || "");
                         window['setTyping'](false);
                         localStorage['name'] = this.textinput.value;
+                        this.gameSetting.isNaming = false;
                         return;
                     } else {
                         return;
                     }
-                } else if (this.gameSetting.gameset === "Connecting") return;
+                } else if (this.gameSetting.isConnecting) return;
 
                 if (this.sameKeys[arguments[0]]) arguments[0]=this.sameKeys[arguments[0]];
                 if (this.keys[arguments[0]]) return;
@@ -139,10 +144,9 @@ export default class System {
                 this.socketSend("input",{"type":key,"value":value})
             }.bind(this),
             keyUp:function(){
-                if (this.gameSetting.gameset === "SetName") {
-                    if (this.textinput.value) this.textinput.value = calByte.cutByteLength(this.textinput.value,15);
+                if (this.gameSetting.isNaming) {
                     return;
-                } else if (this.gameSetting.gameset === "Connecting") return;
+                } else if (this.gameSetting.isConnecting) return;
 
                 if (this.sameKeys[arguments[0]]) arguments[0]=this.sameKeys[arguments[0]];
                 if (!this.keys[arguments[0]]) return;
@@ -221,10 +225,11 @@ export default class System {
 
         socket.onopen = () => {
             console.log("Successfully Connected");
-            this.gameSetting.gameset = "SetName";
+            this.gameSetting.isNaming = true;
             window['setTyping'](true);
             this.textinput.value = localStorage['name'] || '';
             this.textinputcontainer.style.display = "block";
+            this.gameSetting.isConnecting = false;
         };
 
         socket.onmessage = msg => {  
@@ -239,7 +244,7 @@ export default class System {
                     break;
                 }
                 case 'objectList': {
-                    if (this.gameSetting.gameset === "SetName") {
+                    if (this.gameSetting.isNaming) {
                         return;
                     }
 
@@ -291,7 +296,9 @@ export default class System {
         };
         
         socket.onclose = event => {
-            this.gameSetting.gameset = "Connecting";
+            this.gameSetting.isConnecting = true;
+            this.gameSetting.isNaming = false;
+            this.gameSetting.isGaming = false;
             this.textinputcontainer.style.display = "none";
             this.textinputcontainer.style.top = "-" + this.textinputcontainer.style.top;
             console.log("Socket Closed Connection: ", event);
@@ -305,7 +312,7 @@ export default class System {
     }
 
     socketSend(type,data) {
-        if (this.gameSetting.gameset === "Gaming") {
+        if (!this.gameSetting.isConnecting){
             const body = JSON.stringify({"event":type,"data":data});
             socket.send(body);
         }
@@ -328,89 +335,93 @@ export default class System {
 
         this.ctx.clearRect(0,0,this.cv.width,this.cv.height);
 
-        drawText(this.ctx,this.cv.width / 2 / this.camera.uiz, this.cv.height / 2 / this.camera.uiz, this.camera.uiz, this.connectinga, new RGB("#FFFFFF"), "Connecting...", 60);
+        if (this.gameSetting.isConnecting) {
+            this.textinputanime = 1;
+            this.connectinga = Math.min(this.connectinga + 0.2,1);
+        }
+        
+        if (this.gameSetting.isGaming) {
+            drawBackground(this.ctx, this.camera.x, this.camera.y, this.camera.z, this.cv.width, this.cv.height, this.area);
 
-        switch (this.gameSetting.gameset){
-            case "Connecting":
-                this.textinputanime = 1;
-                this.connectinga = Math.min(this.connectinga + 0.2,1);
-                break;
-            case "SetName":
-                let x = this.cv.width / 2 - 166 * this.camera.uiz,
-                y = (this.cv.height / 2 - 21 * this.camera.uiz) * (1-this.textinputanime),
-                w = 332 * this.camera.uiz,
-                h = 42 * this.camera.uiz;
-
-                this.textinputanime *= 0.95;
-                this.connectinga = Math.max(this.connectinga - 0.2,0);
-
-                this.textinputcontainer.style.left = window['unscale'](x) + "px";
-                this.textinputcontainer.style.top = window['unscale'](y) + "px";
-
-                this.textinput.style.width = window['unscale'](w) + "px";
-                this.textinput.style.height = window['unscale'](h) + "px";
-                this.textinput.style.fontSize = this.textinput.style.lineHeight = window['unscale'](h - 0.4) + "px";
-
-                drawText(this.ctx, (x + w / 2) / this.camera.uiz, y / this.camera.uiz - 11, this.camera.uiz, 1, new RGB("#FFFFFF"), "This is the tale of...", 20.2);
-                drawText(this.ctx, (x + w / 2) / this.camera.uiz, y / this.camera.uiz + 57, this.camera.uiz, 1, new RGB("#FFFFFF"), "(press enter to spawn)", 11.8);
-
-                this.ctx.save();
-
-                this.ctx.beginPath();
-
-                this.ctx.lineCap = "round";
-                this.ctx.lineJoin = "round";
-                this.ctx.lineWidth = 4.5 * this.camera.uiz;
-                this.ctx.fillStyle = "#FFFFFF";
-                this.ctx.strokeStyle = "#000000";
-
-                this.ctx.moveTo(x, y);
-                this.ctx.lineTo(x + w, y);
-                this.ctx.lineTo(x + w, y + h);
-                this.ctx.lineTo(x, y + h);
-                this.ctx.lineTo(x, y);
-
-                this.ctx.fill();
-                this.ctx.stroke();
-
-                this.ctx.closePath();
-
-                this.ctx.restore();
-
-                break;
-            case "Gaming":
-                drawBackground(this.ctx, this.camera.x, this.camera.y, this.camera.z, this.cv.width, this.cv.height, this.area);
-
-                for (let i=0;i<this.objectList.length;){
-                    if (this.objectList[i].isDelete){
-                        this.objectList.splice(i,1);
-                    } else {
-                        i++;
-                    }
+            for (let i=0;i<this.objectList.length;){
+                if (this.objectList[i].isDelete){
+                    this.objectList.splice(i,1);
+                } else {
+                    i++;
                 }
+            }
 
-                this.objectList.forEach((o) => {
-                    o.Animate(tick);
-                });
+            this.objectList.forEach((o) => {
+                o.Animate(tick);
+            });
 
-                this.objectList.forEach((o) => {
-                    o.Draw(this.ctx, this.camera);
-                });
+            this.objectList.forEach((o) => {
+                o.Draw(this.ctx, this.camera);
+            });
 
-                this.objectList.forEach((o) => {
-                    o.DrawName(this.ctx, this.camera);
-                });
+            this.objectList.forEach((o) => {
+                o.DrawName(this.ctx, this.camera);
+            });
 
-                this.objectList.forEach((o) => {
-                    o.DrawHPBar(this.ctx, this.camera);
-                });
+            this.objectList.forEach((o) => {
+                o.DrawHPBar(this.ctx, this.camera);
+            });
 
-                this.uiList.forEach((ui) => {
-                    ui.Draw(this.uictx);
-                });
-                break;
-            default:
-                break;
+            this.uiList.forEach((ui) => {
+                ui.Draw(this.uictx);
+            });
+        } else {
+            this.ctx.drawImage(this.img,
+                this.cv.width / 2 - this.img.width * this.camera.uiz / 2 / 2.4,
+                this.cv.height / 2 - this.img.height * this.camera.uiz / 2 / 2.4,
+                this.img.width * this.camera.uiz / 2.4,
+                this.img.height * this.camera.uiz / 2.4);
+            drawText(this.ctx,this.cv.width / 2 / this.camera.uiz, this.cv.height / 2 / this.camera.uiz, this.camera.uiz, this.connectinga, new RGB("#FFFFFF"), "Connecting...", 60);
+        }
+
+        if (this.gameSetting.isNaming) {
+            if (this.textinput.value) this.textinput.value = calByte.cutByteLength(this.textinput.value,15);
+
+            let x = this.cv.width / 2 - 166 * this.camera.uiz,
+            y = (this.cv.height / 2 - 21 * this.camera.uiz) * (1-this.textinputanime),
+            w = 332 * this.camera.uiz,
+            h = 42 * this.camera.uiz;
+
+            this.textinputanime *= 0.95;
+            this.connectinga = Math.max(this.connectinga - 0.2,0);
+
+            this.textinputcontainer.style.left = window['unscale'](x) + "px";
+            this.textinputcontainer.style.top = window['unscale'](y) + "px";
+
+            this.textinput.style.width = window['unscale'](w) + "px";
+            this.textinput.style.height = window['unscale'](h) + "px";
+            this.textinput.style.fontSize = this.textinput.style.lineHeight = window['unscale'](h - 0.4) + "px";
+
+            drawText(this.ctx, (x + w / 2) / this.camera.uiz, y / this.camera.uiz - 11, this.camera.uiz, 1, new RGB("#FFFFFF"), "This is the tale of...", 20.2);
+            drawText(this.ctx, (x + w / 2) / this.camera.uiz, y / this.camera.uiz + 57, this.camera.uiz, 1, new RGB("#FFFFFF"), "(press enter to spawn)", 11.8);
+
+            this.ctx.save();
+
+            this.ctx.beginPath();
+
+            this.ctx.lineCap = "round";
+            this.ctx.lineJoin = "round";
+            this.ctx.lineWidth = 4.5 * this.camera.uiz;
+            this.ctx.fillStyle = "#FFFFFF";
+            this.ctx.strokeStyle = "#000000";
+
+            this.ctx.moveTo(x, y);
+            this.ctx.lineTo(x + w, y);
+            this.ctx.lineTo(x + w, y + h);
+            this.ctx.lineTo(x, y + h);
+            this.ctx.lineTo(x, y);
+
+            this.ctx.fill();
+            this.ctx.stroke();
+
+            this.ctx.closePath();
+
+            this.ctx.restore();
         }
 
         requestAnimationFrame(this.loop.bind(this));
