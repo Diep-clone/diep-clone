@@ -168,19 +168,19 @@ func sendUpdates(ticker time.Ticker) {
 			u.CameraSet()
 
 			var objList []*obj.Object = quadtree.Retrieve(obj.Area{
-				X: u.Camera.Pos.X - 1280/u.Camera.Z,
-				Y: u.Camera.Pos.Y - 720/u.Camera.Z,
-				W: 1280 / u.Camera.Z * 2,
-				H: 720 / u.Camera.Z * 2,
+				X: u.Camera.Pos.X - 960/u.Camera.Z,
+				Y: u.Camera.Pos.Y - 540/u.Camera.Z,
+				W: 960 / u.Camera.Z * 2,
+				H: 540 / u.Camera.Z * 2,
 			})
 
 			var visibleObject []map[string]interface{} = make([]map[string]interface{}, 0, len(objList)) // 미리 할당
 
 			for _, o := range objList {
-				if o.X < u.Camera.Pos.X+1280/u.Camera.Z+o.R &&
-					o.X > u.Camera.Pos.X-1280/u.Camera.Z-o.R &&
-					o.Y < u.Camera.Pos.Y+720/u.Camera.Z+o.R &&
-					o.Y > u.Camera.Pos.Y-720/u.Camera.Z-o.R && o.Opacity > 0 {
+				if o.X < u.Camera.Pos.X+960/u.Camera.Z+o.R &&
+					o.X > u.Camera.Pos.X-960/u.Camera.Z-o.R &&
+					o.Y < u.Camera.Pos.Y+540/u.Camera.Z+o.R &&
+					o.Y > u.Camera.Pos.Y-540/u.Camera.Z-o.R && o.Opacity > 0 {
 					visibleObject = append(visibleObject, o.SocketObj())
 				}
 			}

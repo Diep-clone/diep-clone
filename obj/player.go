@@ -2,10 +2,11 @@ package obj
 
 import (
 	"bytes"
-	"encoding/json"
+	"encoding/binary"
 	"math"
 	"strconv"
 	"sync"
+	"unicode/utf8"
 
 	"app/lib"
 
@@ -145,87 +146,28 @@ func (p *Player) ReadPump() {
 func Event(p *Player, message []byte) {
 	p.Mu.Lock()
 	defer p.Mu.Unlock()
-	//fmt.Println(string(message))
 
-	var objmap map[string]interface{}
+	var socketType uint8 = uint8(message[0])
 
-	if err := json.Unmarshal(message, &objmap); err != nil {
-		log.WithFields(log.Fields{
-			"id":    p.ID,
-			"error": err,
-		}).Error("JSON Unmarshal Error")
-		return
-	}
-
-	event, ok := objmap["event"].(string)
-	if !ok {
-		return
-	}
-
-	//fmt.Println(objmap)
-
-	//fmt.Println(event)
-
-	switch event {
-	case "init":
+	switch socketType {
+	case 0:
 		if _, ok := Users[p.ID]; ok {
 			log.WithField("id", p.ID).Warn("Prevent Login")
 			return
 		}
+		var test []byte = message[1:16]
 
-		name, ok := objmap["data"].(string)
-		if !ok {
-			return
+		var name string = ""
+		for len(test) > 0 {
+			r, size := utf8.DecodeRune(test)
+			if string(r) != "\x00" {
+				name += string(r)
+			}
+			test = test[size:]
 		}
-
-		if len(name) > 15 {
-			name = ""
-		}
+		log.Println(name)
 
 		Users[p.ID] = p
-		/*
-			var gunList []obj.Gun
-			for i := -math.Pi / 2; i <= math.Pi; i += math.Pi / 2 {
-				gunList = append(gunList, *obj.NewGun(map[string]interface{}{
-					"dir": i,
-				}, obj.Users[c.ID].ControlObject, *obj.NewObject(map[string]interface{}{
-					"speed":  1,
-					"h":      1,
-					"damage": 0.65,
-					"r":      1,
-					"stance": 0.1,
-				}, []obj.Gun{*obj.NewGun(map[string]interface{}{
-					"delaytime": 3.,
-				}, nil, obj.Object{})}, obj.DefaultBulletTick, obj.DefaultCollision, nil, nil)))
-			}
-			for i := -math.Pi / 4 * 3; i <= math.Pi; i += math.Pi / 2 {
-				gunList = append(gunList, *obj.NewGun(map[string]interface{}{
-					"dir":      i,
-					"waittime": 0.5,
-				}, obj.Users[c.ID].ControlObject, *obj.NewObject(map[string]interface{}{
-					"speed":  1,
-					"h":      1,
-					"damage": 0.65,
-					"r":      1,
-					"stance": 0.1,
-				}, []obj.Gun{*obj.NewGun(map[string]interface{}{
-					"delaytime": 3.,
-				}, nil, obj.Object{})}, obj.DefaultBulletTick, obj.DefaultCollision, nil, nil)))
-			}
-			obj.Users[c.ID].ControlObject = obj.NewObject(map[string]interface{}{
-				"type":     "OctoTank",
-				"team":     string(c.ID),
-				"name":     name,
-				"x":        lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
-				"y":        lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
-				"h":        50,
-				"mh":       50,
-				"damage":   20,
-				"level":    45,
-				"stats":    [8]int{0, 0, 0, 7, 7, 7, 7, 5},
-				"maxStats": [8]int{7, 7, 7, 7, 7, 7, 7, 7},
-			}, gunList, obj.TankTick, obj.DefaultCollision, nil, nil)
-		*/
 		Users[p.ID].ControlObject = NewObject(map[string]interface{}{
 			"type":     "Necromanser",
 			"team":     string(p.ID),
@@ -245,51 +187,35 @@ func Event(p *Player, message []byte) {
 		}, nil, Object{})}, TankTick, DefaultCollision, NecroKillEvent, nil)
 		Users[p.ID].ControlObject.SetController(Users[p.ID])
 		Objects = append(Objects, Users[p.ID].ControlObject)
+	case 1:
+		if u, ok := Users[p.ID]; ok {
+			dir := math.Float32frombits(binary.BigEndian.Uint32(message[1:5]))
+			u.IsMove = (dir != 9.)
+			u.MoveDir = float64(dir)
 
-		/*Users[p.ID].Send(map[string]interface{}{
-			"event": "init",
-			"data":  "",
-		})*/
-	case "input":
-		if m, ok := objmap["data"].(map[string]interface{}); ok {
-			if t, ok := m["type"].(string); ok {
-				if u, ok := Users[p.ID]; ok {
-					switch t {
-					case "moveVector":
-						if value, ok := m["value"].(float64); ok {
-							u.IsMove = value != 9
-							u.MoveDir = value
-						}
-					case "mouseMove":
-						pos, ok := m["value"].(map[string]interface{})
-						if !ok {
-							return
-						}
-						if obj := u.ControlObject; obj != nil {
-							u.SetMousePoint(pos["x"].(float64)-obj.X, pos["y"].(float64)-obj.Y)
-						} else {
-							u.SetMousePoint(pos["x"].(float64), pos["y"].(float64))
-						}
-					case "mouseLeft":
-						if value, ok := m["value"].(bool); ok {
-							u.Ml = value
-						} else {
-							u.Ml = false
-						}
-					case "mouseRight":
-						if value, ok := m["value"].(bool); ok {
-							u.Mr = value
-						} else {
-							u.Mr = false
-						}
-					case "suicide":
-						if obj := u.ControlObject; obj != nil {
-							obj.H = 0
-						}
-					}
+			var x, y float32 = math.Float32frombits(binary.BigEndian.Uint32(message[5:9])), math.Float32frombits(binary.BigEndian.Uint32(message[9:13]))
+
+			if obj := u.ControlObject; obj != nil {
+				u.SetMousePoint(float64(x)-obj.X, float64(y)-obj.Y)
+			}
+
+			var value uint8 = uint8(message[13])
+
+			u.Ml = (value % 2) == 1
+			value /= 2
+			u.Mr = (value % 2) == 1
+			value /= 2
+			if value%2 == 1 {
+				if obj := u.ControlObject; obj != nil {
+					obj.H = 0
 				}
 			}
 		}
+	default:
+		log.WithFields(log.Fields{
+			"id": p.ID,
+		}).Error("socketType Error")
+		return
 	}
 }
 

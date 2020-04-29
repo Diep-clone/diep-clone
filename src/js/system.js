@@ -48,6 +48,7 @@ export default class System {
 
         this.input = {
             "moveVector": {x:0,y:0},
+            "mousePos": {x:0,y:0},
         }
 
         this.lastTime = Date.now();
@@ -81,7 +82,18 @@ export default class System {
                         this.gameSetting.isGaming = true;
                         this.textinputcontainer.style.display = "none";
                         this.textinputcontainer.style.top = "-" + this.textinputcontainer.style.top;
-                        this.socketSend("init",this.textinput.value || "");
+                        
+                        var buffer = new ArrayBuffer(31);
+                        var view = new DataView(buffer);
+
+                        var string = unescape(encodeURIComponent(this.textinput.value));
+                        
+                        view.setUint8(0, 0);
+                        for (var i = 0; i < string.length; i++) {
+                            view.setUint8(i+1, string[i].charCodeAt(0));
+                        }
+                        socket.send(buffer);
+                        
                         window['setTyping'](false);
                         localStorage['name'] = this.textinput.value;
                         this.gameSetting.isNaming = false;
@@ -94,54 +106,22 @@ export default class System {
                 if (this.sameKeys[arguments[0]]) arguments[0]=this.sameKeys[arguments[0]];
                 if (this.keys[arguments[0]]) return;
                 this.keys[arguments[0]] = true;
-                let key = "";
                 switch (arguments[0]){
-                    case 1:
-                    case 32:
-                        key = "mouseLeft";
-                        break;
-                    case 3:
-                    case 16:
-                        key = "mouseRight";
-                        break;
                     case 37:
                         this.input.moveVector.x-=1;
-                        key = "moveVector";
                         break;
                     case 38:
                         this.input.moveVector.y-=1;
-                        key = "moveVector";
                         break;
                     case 39:
                         this.input.moveVector.x+=1;
-                        key = "moveVector";
                         break;
                     case 40:
                         this.input.moveVector.y+=1;
-                        key = "moveVector";
-                        break;
-                    case 79:
-                        key = "suicide";
                         break;
                     default:
                         break;
                 }
-                let value = true;
-                switch (key){
-                    case "mouseLeft":
-                        value = this.keys[1] || this.keys[32];
-                        break;
-                    case "mouseRight":
-                        value = this.keys[3] || this.keys[16];
-                        break;
-                    case "moveVector":
-                        if (this.input.moveVector.x === 0 && this.input.moveVector.y === 0) value = 9;
-                        else value = Math.atan2(this.input.moveVector.y,this.input.moveVector.x);
-                        break;
-                    default:
-                        break;
-                }
-                this.socketSend("input",{"type":key,"value":value})
             }.bind(this),
             keyUp:function(){
                 if (this.gameSetting.isNaming) {
@@ -151,56 +131,25 @@ export default class System {
                 if (this.sameKeys[arguments[0]]) arguments[0]=this.sameKeys[arguments[0]];
                 if (!this.keys[arguments[0]]) return;
                 this.keys[arguments[0]] = false;
-                let key = "";
                 switch (arguments[0]){
-                    case 1:
-                    case 32:
-                        key = "mouseLeft";
-                        break;
-                    case 3:
-                    case 16:
-                        key = "mouseRight";
-                        break;
                     case 37:
                         this.input.moveVector.x+=1;
-                        key = "moveVector";
                         break;
                     case 38:
                         this.input.moveVector.y+=1;
-                        key = "moveVector";
                         break;
                     case 39:
                         this.input.moveVector.x-=1;
-                        key = "moveVector";
                         break;
                     case 40:
                         this.input.moveVector.y-=1;
-                        key = "moveVector";
                         break;
                     default:
                         break;
                 }
-                let value = false;
-                switch (key){
-                    case "mouseLeft":
-                        value = this.keys[1] || this.keys[32];
-                        break;
-                    case "mouseRight":
-                        value = this.keys[3] || this.keys[16];
-                        break;
-                    case "moveVector":
-                        if (this.input.moveVector.x === 0 && this.input.moveVector.y === 0) value = 9;
-                        else value = Math.atan2(this.input.moveVector.y,this.input.moveVector.x);
-                        break;
-                    default:
-                        break;
-                }
-                this.socketSend("input",{"type":key,"value":value})
             }.bind(this),
             mouse:function(){
-                this.socketSend("input",{"type":"mouseMove","value":{
-                    "x":arguments[0]/this.camera.z+this.camera.x,
-                    "y":arguments[1]/this.camera.z+this.camera.y}})
+                this.input.mousePos = {x:arguments[0], y:arguments[1]};
             }.bind(this),
             prevent_right_click: function(){
                 return true;
@@ -247,14 +196,12 @@ export default class System {
                     if (this.gameSetting.isNaming) {
                         return;
                     }
-
                     this.camera.z = this.camera.uiz * json.camera.Z;
     
                     this.camera.x = json.camera.Pos.X - this.cv.width / 2 / this.camera.uiz / json.camera.Z;
                     this.camera.y = json.camera.Pos.Y - this.cv.height / 2 / this.camera.uiz / json.camera.Z;
 
                     data.forEach((obj) => {
-                        
                         let isObjEnable = false;
                         
                         this.objectList.forEach((obi) => {
@@ -311,13 +258,6 @@ export default class System {
         };
     }
 
-    socketSend(type,data) {
-        if (!this.gameSetting.isConnecting){
-            const body = JSON.stringify({"event":type,"data":data});
-            socket.send(body);
-        }
-    }
-
     insertComma = (number) => number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
     loop() {
@@ -342,6 +282,24 @@ export default class System {
         
         if (this.gameSetting.isGaming) {
             drawBackground(this.ctx, this.camera.x, this.camera.y, this.camera.z, this.cv.width, this.cv.height, this.area);
+
+            var buffer = new ArrayBuffer(14);
+            var view = new DataView(buffer);
+            view.setUint8(0, 1);
+            if (this.input.moveVector.x === 0 && this.input.moveVector.y === 0) {
+                view.setFloat32(1, 9.);
+            } else {
+                view.setFloat32(1, Math.atan2(this.input.moveVector.y,this.input.moveVector.x));
+            }
+            view.setFloat32(5,this.input.mousePos.x/this.camera.z+this.camera.x);
+            view.setFloat32(9,this.input.mousePos.y/this.camera.z+this.camera.y);
+            view.setUint8(13,
+                ((this.keys[1] || this.keys[32]) || 0)
+                + ((this.keys[3] || this.keys[16]) || 0) * 2
+                + (this.keys[79] || 0) * 4
+            );
+
+            socket.send(buffer);
 
             for (let i=0;i<this.objectList.length;){
                 if (this.objectList[i].isDelete){
