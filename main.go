@@ -3,6 +3,7 @@ package main
 import (
 	//"database/sql"
 
+	"encoding/binary"
 	"math"
 	"math/rand"
 	"net/http"
@@ -174,19 +175,39 @@ func sendUpdates(ticker time.Ticker) {
 				H: 540 / u.Camera.Z * 2,
 			})
 
-			var visibleObject []map[string]interface{} = make([]map[string]interface{}, 0, len(objList)) // 미리 할당
+			var sendData []byte = make([]byte, 31)
+
+			sendData = append(sendData, 0)
+
+			binary.BigEndian.PutUint64(sendData[1:9], math.Float64bits(u.Camera.Pos.X))
+			binary.BigEndian.PutUint64(sendData[9:17], math.Float64bits(u.Camera.Pos.Y))
+			binary.BigEndian.PutUint64(sendData[17:25], math.Float64bits(u.Camera.Z))
+
+			sendData[25] = 0
+			if o := u.ControlObject; o != nil {
+				sendData[25] = 1
+				binary.BigEndian.PutUint32(sendData[26:30], uint32(u.ID))
+				binary.BigEndian.PutUint16(sendData[30:32], uint16(o.Level))
+				sendData = append(sendData, byte(u.Stat))
+				for i := 0; i < 8; i++ {
+					sendData = append(sendData, byte(o.Stats[i]))
+				}
+				for i := 0; i < 8; i++ {
+					sendData = append(sendData, byte(o.MaxStats[i]))
+				}
+			}
 
 			for _, o := range objList {
 				if o.X < u.Camera.Pos.X+960/u.Camera.Z+o.R &&
 					o.X > u.Camera.Pos.X-960/u.Camera.Z-o.R &&
 					o.Y < u.Camera.Pos.Y+540/u.Camera.Z+o.R &&
 					o.Y > u.Camera.Pos.Y-540/u.Camera.Z-o.R && o.Opacity > 0 {
-					visibleObject = append(visibleObject, o.SocketObj())
+					sendData = append(sendData, o.ObjBinaryData()...)
 				}
 			}
 
 			if u.Conn != nil {
-				go SendUpdate(u, visibleObject)
+				SendUpdate(u, sendData)
 			}
 		}
 
@@ -199,8 +220,13 @@ func sendUpdates(ticker time.Ticker) {
 	}
 }
 
-func SendUpdate(u *obj.Player, visibleObject []map[string]interface{}) {
-	if o := u.ControlObject; o != nil {
+func SendUpdate(u *obj.Player, data []byte) {
+	err := u.Send(data)
+	if err != nil {
+		log.Println("Send Error")
+		return
+	}
+	/*if o := u.ControlObject; o != nil {
 		u.Send(map[string]interface{}{
 			"event":       "playerSet",
 			"id":          u.ID,
@@ -212,8 +238,8 @@ func SendUpdate(u *obj.Player, visibleObject []map[string]interface{}) {
 		})
 	}
 
-	u.Send(map[string]interface{}{"event": "objectList", "data": visibleObject, "camera": u.Camera})
-	u.Send(map[string]interface{}{
+	u.Send(map[string]interface{}{"event": "objectList", "data": visibleObject, "camera": u.Camera})*/
+	/*u.Send(map[string]interface{}{
 		"event": "area",
 		"data": []obj.Area{
 			{
@@ -223,5 +249,5 @@ func SendUpdate(u *obj.Player, visibleObject []map[string]interface{}) {
 				H: setting.MapSize.Y * 2,
 			},
 		},
-	})
+	})*/
 }

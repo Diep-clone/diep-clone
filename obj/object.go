@@ -2,6 +2,7 @@ package obj
 
 import (
 	"app/lib"
+	"encoding/binary"
 	"encoding/json"
 	"math"
 )
@@ -55,11 +56,11 @@ type Object struct {
 
 //
 func (obj *Object) ObjectTick() {
-	obj.X += obj.Dx // * lib.GameSetting.GameSpeed
-	obj.Y += obj.Dy // * lib.GameSetting.GameSpeed
+	obj.X += obj.Dx * lib.GameSetting.GameSpeed
+	obj.Y += obj.Dy * lib.GameSetting.GameSpeed
 
-	obj.Dx *= 0.97 //math.Pow(0.97, setting.GameSpeed)
-	obj.Dy *= 0.97 //math.Pow(0.97, setting.GameSpeed)
+	obj.Dx *= 1 - 0.03*lib.GameSetting.GameSpeed //math.Pow(0.97, setting.GameSpeed)
+	obj.Dy *= 1 - 0.03*lib.GameSetting.GameSpeed //math.Pow(0.97, setting.GameSpeed)
 
 	if obj.IsBorder { // 화면 밖으로 벗어나는가?
 		if obj.X > lib.GameSetting.MapSize.X+lib.Grid*4 {
@@ -136,31 +137,34 @@ func DefaultCollision(a *Object, b *Object) {
 var objID int = 1
 
 //
-func (o Object) SocketObj() map[string]interface{} {
-	var ownerID int = -1
-	if o.Owner != nil {
-		ownerID = o.Owner.ID
-	}
+func (o Object) ObjBinaryData() []byte {
+	var data []byte = make([]byte, 64)
 	if !o.IsShowHealth {
 		o.Mh = 1
 		o.H = 1
 	}
-	return map[string]interface{}{
-		"id":      o.ID,
-		"team":    o.Team,
-		"type":    o.Type,
-		"x":       lib.Floor(o.X, 2),
-		"y":       lib.Floor(o.Y, 2),
-		"r":       lib.Floor(o.R, 1),
-		"dir":     lib.Floor(o.Dir, 2),
-		"mh":      lib.Floor(o.Mh, 1),
-		"h":       lib.Floor(o.H, 1),
-		"opacity": lib.Floor(o.Opacity, 2),
-		"exp":     o.Exp,
-		"name":    o.Name,
-		"owner":   ownerID,
-		"isDead":  o.IsDead,
+	binary.BigEndian.PutUint32(data[0:4], uint32(o.ID))
+	binary.BigEndian.PutUint64(data[4:12], math.Float64bits(lib.Floor(o.X, 2)))
+	binary.BigEndian.PutUint64(data[12:20], math.Float64bits(lib.Floor(o.Y, 2)))
+	binary.BigEndian.PutUint64(data[20:28], math.Float64bits(lib.Floor(o.R, 1)))
+	binary.BigEndian.PutUint64(data[28:36], math.Float64bits(lib.Floor(o.Dir, 2)))
+	binary.BigEndian.PutUint64(data[36:44], math.Float64bits(lib.Floor(o.Mh, 1)))
+	binary.BigEndian.PutUint64(data[44:52], math.Float64bits(lib.Floor(o.H, 1)))
+	binary.BigEndian.PutUint64(data[52:60], math.Float64bits(lib.Floor(o.Opacity, 2)))
+	binary.BigEndian.PutUint32(data[60:64], uint32(o.Exp))
+	if o.IsDead {
+		data = append(data, 1)
+	} else {
+		data = append(data, 0)
 	}
+	data = append(data, byte(len(o.Team)))
+	data = append(data, []byte(o.Team)...)
+	data = append(data, byte(len(o.Type)))
+	data = append(data, []byte(o.Type)...)
+	data = append(data, byte(len(o.Name)))
+	data = append(data, []byte(o.Name)...)
+
+	return data
 }
 
 func (o *Object) SetController(p *Player) {
@@ -170,7 +174,7 @@ func (o *Object) SetController(p *Player) {
 func NewObject(value map[string]interface{}, guns []Gun, t func(*Object), c func(*Object, *Object), k func(*Object, *Object), d func(*Object, *Object)) *Object {
 	m := map[string]interface{}{
 		"id":           objID,
-		"type":         "Square",
+		"type":         "squ",
 		"team":         "ffa",
 		"x":            -999999,
 		"y":            -999999,

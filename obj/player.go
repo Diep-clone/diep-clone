@@ -32,11 +32,11 @@ type Camera struct {
 	Z   float64
 }
 
-var Users map[string]*Player = make(map[string]*Player)
+var Users map[int]*Player = make(map[int]*Player)
 
 // Player is
 type Player struct {
-	ID            string
+	ID            int
 	Conn          *websocket.Conn
 	Mu            sync.Mutex
 	Camera        Camera
@@ -58,7 +58,7 @@ var playerID int = 1
 // NewPlayer is make player
 func NewPlayer(c *websocket.Conn) *Player {
 	p := Player{}
-	p.ID = strconv.Itoa(playerID)
+	p.ID = playerID
 	playerID++
 	p.Conn = c
 	p.StartTime = lib.Now()
@@ -107,10 +107,10 @@ var (
 )
 
 //
-func (p *Player) Send(v interface{}) error {
+func (p *Player) Send(v []byte) error {
 	p.Mu.Lock()
 	defer p.Mu.Unlock()
-	return p.Conn.WriteJSON(v)
+	return p.Conn.WriteMessage(websocket.BinaryMessage, v)
 }
 
 // Register == connect
@@ -170,7 +170,7 @@ func Event(p *Player, message []byte) {
 		Users[p.ID] = p
 		Users[p.ID].ControlObject = NewObject(map[string]interface{}{
 			"type":     "Necromanser",
-			"team":     string(p.ID),
+			"team":     strconv.Itoa(p.ID),
 			"name":     name,
 			"x":        lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
 			"y":        lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),

@@ -164,9 +164,9 @@ export const Obj = function(id) {
                 ctx.globalAlpha = o
                 ctx.drawImage(this.cv, x * z - this.cv.width / 2, (y - r - 15) * z - this.cv.height / 2);
 
-                this.cv.width = getTextWidth(this.score, "bold " + 0.4 * r * z + "px Ubuntu") + 5 * z;
+                this.cv.width = getTextWidth(this.score, "bold " + 0.6 * r * z + "px Ubuntu") + 5 * z;
                 this.cv.height = 5 * 0.4 * r * z
-                drawText(this.ctx, this.cv.width / 2 / z, this.cv.height / 2 / z, z, 1, new RGB("#FFFFFF"), this.score, 0.4 * r);
+                drawText(this.ctx, this.cv.width / 2 / z, this.cv.height / 2 / z, z, 1, new RGB("#FFFFFF"), this.score, 0.6 * r);
                 ctx.globalAlpha = o
                 ctx.drawImage(this.cv, x * z - this.cv.width / 2, (y - r - 5) * z - this.cv.height / 2);
             } else {
@@ -179,7 +179,7 @@ export const Obj = function(id) {
         } else {
             if (this.score) {
                 drawText(ctx, x, y - r - 15, z, 1, new RGB("#FFFFFF"), this.name, 0.8 * r);
-                drawText(ctx, x, y - r - 5, z, 1, new RGB("#FFFFFF"), this.score, 0.4 * r);
+                drawText(ctx, x, y - r - 5, z, 1, new RGB("#FFFFFF"), this.score, 0.6 * r);
             } else {
                 drawText(ctx, x, y - r - 5, z, 1, new RGB("#FFFFFF"), this.name, 0.8 * r);
             }

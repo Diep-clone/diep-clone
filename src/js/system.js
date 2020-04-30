@@ -40,10 +40,9 @@ export default class System {
         this.playerSetting = {
             "id": "",
             "level": 0,
-            "isCanRotate": false,
             "stat": 0,
-            "stats": [],
-            "maxstats": [],
+            "stats": [0,0,0,0,0,0,0,0],
+            "maxstats": [0,0,0,0,0,0,0,0],
         };
 
         this.input = {
@@ -181,7 +180,105 @@ export default class System {
             this.gameSetting.isConnecting = false;
         };
 
-        socket.onmessage = msg => {  
+        socket.onmessage = msg => {
+            var view = new DataView(msg.data);
+
+            switch (view.getUint8(0)){
+                case 0: {
+                    if (this.gameSetting.isNaming) {
+                        return;
+                    }
+                    this.camera.z = this.camera.uiz * view.getFloat64(17);
+    
+                    this.camera.x = view.getFloat64(1) - this.cv.width / 2 / this.camera.z;
+                    this.camera.y = view.getFloat64(9) - this.cv.height / 2 / this.camera.z;
+
+                    var i = 26;
+
+                    if (view.getInt8(25)) {
+                        this.playerSetting.id = view.getUint32(26).toString();
+                        this.playerSetting.level = view.getUint16(30);
+                        this.playerSetting.stat = view.getUint8(32);
+                        for (var j = 0; j < 8; j++){
+                            this.playerSetting.stats[j] = view.getUint8(33+j);
+                        }
+                        for (var j = 0; j < 8; j++){
+                            this.playerSetting.maxstats[j] = view.getUint8(41+j);
+                        }
+                        i = 49;
+                    }
+
+                    while (i<msg.data.byteLength) {
+                        let isObjEnable = false;
+
+                        var obj = {};
+                        obj.id = view.getUint32(i);
+                        i+=4;
+                        obj.x = view.getFloat64(i);
+                        i+=8;
+                        obj.y = view.getFloat64(i);
+                        i+=8;
+                        obj.r = view.getFloat64(i);
+                        i+=8;
+                        obj.dir = view.getFloat64(i);
+                        i+=8;
+                        obj.mh = view.getFloat64(i);
+                        i+=8;
+                        obj.h = view.getFloat64(i);
+                        i+=8;
+                        obj.opacity = view.getFloat64(i);
+                        i+=8;
+                        obj.score = view.getUint32(i);
+                        i+=4;
+                        obj.isDead = view.getUint8(i);
+                        i++;
+                        var len = view.getUint8(i);
+                        i++;
+                        var u = new Uint8Array(msg.data.slice(i,i+len));
+                        obj.team = String.fromCharCode.apply(null, u);
+                        i+=len;
+                        len = view.getUint8(i);
+                        i++;
+                        var u = new Uint8Array(msg.data.slice(i,i+len));
+                        obj.type = new TextDecoder().decode(u);
+                        i+=len;
+                        len = view.getUint8(i);
+                        i++;
+                        var u = new Uint8Array(msg.data.slice(i,i+len));
+                        obj.name = new TextDecoder().decode(u);
+                        i+=len;
+
+                        this.objectList.forEach((obi) => {
+                            if (obi.id === obj.id){
+                                obi.ObjSet(obj);
+                                isObjEnable = true;
+                            }
+                        });
+                        if (!isObjEnable && !obj.isDead) {
+                            let obi = new Obj(obj.id);
+                            console.log("new Object " + obj.id);
+                            obi.ObjSet(obj);
+                            this.objectList.push(obi);
+                        }
+                    }
+                    this.objectList.forEach((obj) => {
+                        if (!obj.isEnable){
+                            console.log("delete Object " + obj.id);
+                            obj.isDelete = true;
+                        }
+                        obj.isEnable = false;
+                    })
+
+                    break;
+                }
+                case 1: {
+                    break;
+                }
+                default: {
+                    break;
+                }
+            }
+            /*
             const json = JSON.parse(msg.data);
 
             const event = json.event;
@@ -198,48 +295,22 @@ export default class System {
                     }
                     this.camera.z = this.camera.uiz * json.camera.Z;
     
-                    this.camera.x = json.camera.Pos.X - this.cv.width / 2 / this.camera.uiz / json.camera.Z;
-                    this.camera.y = json.camera.Pos.Y - this.cv.height / 2 / this.camera.uiz / json.camera.Z;
+                    this.camera.x = json.camera.Pos.X - this.cv.width / 2 / this.camera.z;
+                    this.camera.y = json.camera.Pos.Y - this.cv.height / 2 / this.camera.z;
 
                     data.forEach((obj) => {
-                        let isObjEnable = false;
                         
-                        this.objectList.forEach((obi) => {
-                            if (obi.id === obj.id){
-                                obi.ObjSet(obj);
-                                isObjEnable = true;
-                            }
-                        });
-                        if (!isObjEnable && !obj.isDead) {
-                            let obi = new Obj(obj.id);
-                            console.log("new Object " + obj.id);
-                            obi.ObjSet(obj);
-                            this.objectList.push(obi);
-                        }
+                        
+                        
                     });
-                    this.objectList.forEach((obj) => {
-                        if (!obj.isEnable){
-                            console.log("delete Object " + obj.id);
-                            obj.isDelete = true;
-                        }
-                        obj.isEnable = false;
-                    })
-                    break;
-                }
-                case 'playerSet': {
-                    this.playerSetting.id = json.id;
-                    this.playerSetting.level = json.level;
-                    this.playerSetting.isCanRotate = json.isCanRotate;
-                    this.playerSetting.stat = json.stat;
-                    this.playerSetting.stats = json.stats;
-                    this.playerSetting.maxstats = json.maxstats;
+                    
                     break;
                 }
                 case 'area': {
                     this.area = data;
                     break;
                 }
-            }
+            }*/
         };
         
         socket.onclose = event => {
