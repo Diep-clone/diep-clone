@@ -382,7 +382,6 @@ export default class System {
                 ui.Draw(this.uictx);
             });
         } else {
-            
             this.ctx.drawImage(this.img, // draw Background image
                 this.cv.width / 2 - this.img.width * this.camera.uiz / 2 / 2.4,
                 this.cv.height / 2 - this.img.height * this.camera.uiz / 2 / 2.4,
@@ -409,10 +408,10 @@ export default class System {
         if (this.gameSetting.isNaming) {
             if (this.textinput.value) this.textinput.value = calByte.cutByteLength(this.textinput.value,15);
 
-            let x = this.cv.width / 2 - 166 * this.camera.uiz,
-            y = (this.cv.height / 2 - 21 * this.camera.uiz) * (1-this.textinputanime),
-            w = 332 * this.camera.uiz,
-            h = 42 * this.camera.uiz;
+            let x = this.cv.width / 2 - 167 * this.camera.uiz,
+            y = (this.cv.height / 2 - 20 * this.camera.uiz) * (1-this.textinputanime),
+            w = 333 * this.camera.uiz,
+            h = 41 * this.camera.uiz;
 
             this.textinputanime *= 0.95;
             this.connectinga = Math.max(this.connectinga - 0.2,0);
@@ -424,8 +423,8 @@ export default class System {
             this.textinput.style.height = window['unscale'](h) + "px";
             this.textinput.style.fontSize = this.textinput.style.lineHeight = window['unscale'](h - 0.4) + "px";
 
-            drawText(this.ctx, (x + w / 2) / this.camera.uiz, y / this.camera.uiz - 11, this.camera.uiz, 1, new RGB("#FFFFFF"), "This is the tale of...", 20.2);
-            drawText(this.ctx, (x + w / 2) / this.camera.uiz, y / this.camera.uiz + 57, this.camera.uiz, 1, new RGB("#FFFFFF"), "(press enter to spawn)", 11.8);
+            drawText(this.ctx, (x + w / 2) / this.camera.uiz, y / this.camera.uiz - 11, this.camera.uiz, 1, new RGB("#FFFFFF"), "This is the tale of...", 20);
+            drawText(this.ctx, (x + w / 2) / this.camera.uiz, y / this.camera.uiz + 57, this.camera.uiz, 1, new RGB("#FFFFFF"), "(press enter to spawn)", 11.7);
 
             this.ctx.save();
 
@@ -437,11 +436,11 @@ export default class System {
             this.ctx.fillStyle = "#FFFFFF";
             this.ctx.strokeStyle = "#000000";
 
-            this.ctx.moveTo(x, y);
-            this.ctx.lineTo(x + w, y);
-            this.ctx.lineTo(x + w, y + h);
-            this.ctx.lineTo(x, y + h);
-            this.ctx.lineTo(x, y);
+            this.ctx.moveTo(x, y + 1);
+            this.ctx.lineTo(x + w, y + 1);
+            this.ctx.lineTo(x + w, y + h + 1);
+            this.ctx.lineTo(x, y + h + 1);
+            this.ctx.lineTo(x, y + 1);
 
             this.ctx.fill();
             this.ctx.stroke();

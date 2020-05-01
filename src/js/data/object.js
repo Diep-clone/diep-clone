@@ -133,6 +133,7 @@ export const Obj = function(id) {
             });
             ctx.save();
             ctx.globalAlpha = o;
+            ctx.imageSmoothingEnabled = false;
             ctx.drawImage(this.cv,Math.floor(s.x * z - x),Math.floor(s.y * z - y));
             ctx.restore();
         } else {
@@ -156,34 +157,31 @@ export const Obj = function(id) {
 
         const {x, y, z, r, o} = this.DrawSet(camera);
         
-        if (o < 1){
+        if (this.name){
             if (this.score){
                 this.cv.width = getTextWidth(this.name, "bold " + 0.8 * r * z + "px Ubuntu") + 5 * z;
-                this.cv.height = 5 * 0.8 * r * z
+                this.cv.height = 5 * 0.8 * r * z;
+                this.ctx.imageSmoothingEnabled = false;
                 drawText(this.ctx, this.cv.width / 2 / z, this.cv.height / 2 / z, z, 1, new RGB("#FFFFFF"), this.name, 0.8 * r);
-                ctx.globalAlpha = o
+                ctx.globalAlpha = o;
                 ctx.drawImage(this.cv, x * z - this.cv.width / 2, (y - r - 15) * z - this.cv.height / 2);
 
                 this.cv.width = getTextWidth(this.score, "bold " + 0.6 * r * z + "px Ubuntu") + 5 * z;
-                this.cv.height = 5 * 0.4 * r * z
+                this.cv.height = 5 * 0.4 * r * z;
+                this.ctx.imageSmoothingEnabled = false;
                 drawText(this.ctx, this.cv.width / 2 / z, this.cv.height / 2 / z, z, 1, new RGB("#FFFFFF"), this.score, 0.6 * r);
-                ctx.globalAlpha = o
+                ctx.globalAlpha = o;
                 ctx.drawImage(this.cv, x * z - this.cv.width / 2, (y - r - 5) * z - this.cv.height / 2);
             } else {
                 this.cv.width = getTextWidth(this.name, "bold " + 0.8 * r * z + "px Ubuntu") + 5 * z;
-                this.cv.height = 5 * 0.8 * r * z
+                this.cv.height = 5 * 0.8 * r * z;
+                this.ctx.imageSmoothingEnabled = false;
                 drawText(this.ctx, this.cv.width / 2 / z, this.cv.height / 2 / z, z, 1, new RGB("#FFFFFF"), this.name, 0.8 * r);
-                ctx.globalAlpha = o
+                ctx.globalAlpha = o;
                 ctx.drawImage(this.cv, x * z - this.cv.width / 2, (y - r - 5) * z - this.cv.height / 2);
             }
-        } else {
-            if (this.score) {
-                drawText(ctx, x, y - r - 15, z, 1, new RGB("#FFFFFF"), this.name, 0.8 * r);
-                drawText(ctx, x, y - r - 5, z, 1, new RGB("#FFFFFF"), this.score, 0.6 * r);
-            } else {
-                drawText(ctx, x, y - r - 5, z, 1, new RGB("#FFFFFF"), this.name, 0.8 * r);
-            }
         }
+
         ctx.restore();
     }
 
@@ -200,8 +198,6 @@ export const Obj = function(id) {
         } else {
             this.hpBarO = Math.max(this.hpBarO-0.2,0);
         }
-
-        //console.log(healthPercent,this.hpBarP,this.hpBarO);
 
         if (this.hpBarO > 0) {
             const {x, y, z, r, o} = this.DrawSet(camera);

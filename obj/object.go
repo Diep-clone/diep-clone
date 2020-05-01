@@ -47,6 +47,7 @@ type Object struct {
 	IsCollision  bool    `json:"isCollision"`
 	IsShot       bool    `json:"isShot"`
 	IsShowHealth bool    `json:"isShowHealth"`
+	IsShowName   bool    `json:"isShowName"`
 	HitObject    *Object
 	Tick         func(*Object)
 	Collision    func(*Object, *Object)
@@ -161,6 +162,9 @@ func (o Object) ObjBinaryData() []byte {
 	data = append(data, []byte(o.Team)...)
 	data = append(data, byte(len(o.Type)))
 	data = append(data, []byte(o.Type)...)
+	if !o.IsShowName {
+		o.Name = ""
+	}
 	data = append(data, byte(len(o.Name)))
 	data = append(data, []byte(o.Name)...)
 
@@ -197,6 +201,7 @@ func NewObject(value map[string]interface{}, guns []Gun, t func(*Object), c func
 		"isDead":       false,
 		"isCollision":  false,
 		"isShowHealth": true,
+		"isShowName":   false,
 	}
 	objID++
 
