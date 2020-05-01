@@ -382,23 +382,32 @@ export default class System {
                 ui.Draw(this.uictx);
             });
         } else {
-            this.ctx.drawImage(this.img,
+            
+            this.ctx.drawImage(this.img, // draw Background image
                 this.cv.width / 2 - this.img.width * this.camera.uiz / 2 / 2.4,
                 this.cv.height / 2 - this.img.height * this.camera.uiz / 2 / 2.4,
                 this.img.width * this.camera.uiz / 2.4,
                 this.img.height * this.camera.uiz / 2.4);
-            drawText(this.ctx,this.cv.width / 2 / this.camera.uiz, this.cv.height / 2 / this.camera.uiz, this.camera.uiz, this.connectinga, new RGB("#FFFFFF"), "Connecting...", 60);
         }
 
-        if (this.gameSetting.isNaming) {
-            if (this.textinput.value) this.textinput.value = calByte.cutByteLength(this.textinput.value,15);
-            this.panela = Math.min(this.panela + 0.05, 0.4);
+        if (this.gameSetting.isNaming || this.gameSetting.isConnecting) {
+            this.panela = Math.min(this.panela + 0.05, 0.4); // draw Black Alpha Panel
 
             this.ctx.save();
             this.ctx.globalAlpha = this.panela;
             this.ctx.fillStyle = "#000000";
             this.ctx.fillRect(0,0,this.cv.width,this.cv.height);
             this.ctx.restore();
+        } else {
+            this.panela = 0;
+        }
+
+        if (!this.gameSetting.isGaming) { // Connecting...
+            drawText(this.ctx,this.cv.width / 2 / this.camera.uiz, this.cv.height / 2 / this.camera.uiz, this.camera.uiz, this.connectinga, new RGB("#FFFFFF"), "Connecting...", 60);
+        }
+
+        if (this.gameSetting.isNaming) {
+            if (this.textinput.value) this.textinput.value = calByte.cutByteLength(this.textinput.value,15);
 
             let x = this.cv.width / 2 - 166 * this.camera.uiz,
             y = (this.cv.height / 2 - 21 * this.camera.uiz) * (1-this.textinputanime),
@@ -442,7 +451,6 @@ export default class System {
             this.ctx.restore();
         } else {
             this.textinputanime = 1;
-            this.panela = 0;
         }
 
         requestAnimationFrame(this.loop.bind(this));

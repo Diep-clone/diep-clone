@@ -80,9 +80,13 @@ func main() {
 
 var su = new(sync.Mutex)
 
+var im = 50
+
 func moveloop(ticker time.Ticker) {
 	for range ticker.C {
 		su.Lock()
+		st := time.Now()
+
 		for ; obj.ShapeCount > 0; obj.ShapeCount-- {
 			obj.Objects = append(obj.Objects, obj.NewObject(map[string]interface{}{
 				"type":   "Square",
@@ -153,17 +157,19 @@ func moveloop(ticker time.Ticker) {
 			}
 		}
 
+		if im == 0 {
+			log.Println(time.Since(st))
+			im = 100
+		}
+		im--
+
 		su.Unlock()
 	}
 }
 
-var im = 50
-
 func sendUpdates(ticker time.Ticker) {
 	for range ticker.C {
 		su.Lock()
-		st := time.Now()
-
 		for _, u := range obj.Users {
 			u.CameraSet()
 
@@ -213,12 +219,6 @@ func sendUpdates(ticker time.Ticker) {
 				}
 			}
 		}
-
-		if im == 0 {
-			log.Println(time.Since(st))
-			im = 50
-		}
-		im--
 		su.Unlock()
 	}
 }
