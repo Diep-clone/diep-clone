@@ -23,6 +23,7 @@ export default class System {
 
         this.textinputanime = 1;
         this.connectinga = 1;
+        this.panela = 0.4;
 
         this.textinput.style.paddingLeft = "5px";
         this.textinput.style.paddingRight = "5px";
@@ -87,7 +88,7 @@ export default class System {
 
                         var string = unescape(encodeURIComponent(this.textinput.value));
                         
-                        view.setUint8(0, 0);
+                        view.setUint8(0, 2);
                         for (var i = 0; i < string.length; i++) {
                             view.setUint8(i+1, string[i].charCodeAt(0));
                         }
@@ -173,6 +174,11 @@ export default class System {
 
         socket.onopen = () => {
             console.log("Successfully Connected");
+            var buffer = new ArrayBuffer(1);
+            var view = new DataView(buffer);
+            view.setUint8(0, 0);
+            socket.send(buffer);
+
             this.gameSetting.isNaming = true;
             window['setTyping'](true);
             this.textinput.value = localStorage['name'] || '';
@@ -185,7 +191,7 @@ export default class System {
 
             switch (view.getUint8(0)){
                 case 0: {
-                    if (this.gameSetting.isNaming) {
+                    if (!this.gameSetting.isGaming) {
                         return;
                     }
                     this.camera.z = this.camera.uiz * view.getFloat64(17);
@@ -193,7 +199,7 @@ export default class System {
                     this.camera.x = view.getFloat64(1) - this.cv.width / 2 / this.camera.z;
                     this.camera.y = view.getFloat64(9) - this.cv.height / 2 / this.camera.z;
 
-                    var i = 26;
+                    var i = 32;
 
                     if (view.getInt8(25)) {
                         this.playerSetting.id = view.getUint32(26).toString();
@@ -273,6 +279,14 @@ export default class System {
                     for (var i = 1, j = 0; i < msg.data.byteLength; i+=4) {
                         this.area[j++] = view.getInt32(i);
                     }
+                    break;
+                }
+                case 2: {
+                    this.gameSetting.isNaming = true;
+                    window['setTyping'](true);
+                    this.textinput.value = localStorage['name'] || '';
+                    this.textinputcontainer.style.display = "block";
+                    this.gameSetting.isConnecting = false;
                     break;
                 }
                 default: {
@@ -378,6 +392,13 @@ export default class System {
 
         if (this.gameSetting.isNaming) {
             if (this.textinput.value) this.textinput.value = calByte.cutByteLength(this.textinput.value,15);
+            this.panela = Math.min(this.panela + 0.05, 0.4);
+
+            this.ctx.save();
+            this.ctx.globalAlpha = this.panela;
+            this.ctx.fillStyle = "#000000";
+            this.ctx.fillRect(0,0,this.cv.width,this.cv.height);
+            this.ctx.restore();
 
             let x = this.cv.width / 2 - 166 * this.camera.uiz,
             y = (this.cv.height / 2 - 21 * this.camera.uiz) * (1-this.textinputanime),
@@ -419,6 +440,9 @@ export default class System {
             this.ctx.closePath();
 
             this.ctx.restore();
+        } else {
+            this.textinputanime = 1;
+            this.panela = 0;
         }
 
         requestAnimationFrame(this.loop.bind(this));

@@ -80,11 +80,6 @@ func (p *Player) CameraSet() {
 			Pos: Pos{X: lib.Floor(obj.X, 2), Y: lib.Floor(obj.Y, 2)},
 			Z:   16. / 9. * math.Pow(0.995, float64(obj.Level)-1) / float64(obj.Sight),
 		}
-	} else {
-		p.Camera = Camera{
-			Pos: Pos{X: 0, Y: 0},
-			Z:   1,
-		}
 	}
 }
 
@@ -97,6 +92,10 @@ func (p *Player) PlayerSet() {
 		}
 		if p.IsCanDir {
 			obj.Dir = math.Atan2(p.My, p.Mx)
+		}
+		if obj.DeadTime == 0 {
+			p.Send([]byte{2})
+			p.ControlObject = nil
 		}
 	}
 }
@@ -156,38 +155,7 @@ func Event(p *Player, message []byte) {
 			log.WithField("id", p.ID).Warn("Prevent Login")
 			return
 		}
-		var test []byte = message[1:16]
-
-		var name string = ""
-		for len(test) > 0 {
-			r, size := utf8.DecodeRune(test)
-			if string(r) != "\x00" {
-				name += string(r)
-			}
-			test = test[size:]
-		}
-		log.Println(name)
-
 		Users[p.ID] = p
-		Users[p.ID].ControlObject = NewObject(map[string]interface{}{
-			"type":     "Necromanser",
-			"team":     strconv.Itoa(p.ID),
-			"name":     name,
-			"x":        lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
-			"y":        lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
-			"h":        50,
-			"mh":       50,
-			"damage":   20,
-			"level":    45,
-			"stats":    [8]int{0, 0, 0, 7, 7, 7, 7, 5},
-			"maxStats": [8]int{7, 7, 7, 7, 7, 7, 7, 7},
-			"sight":    1.11,
-		}, []Gun{*NewGun(map[string]interface{}{
-			"owner": nil,
-			"limit": 0,
-		}, nil, Object{})}, TankTick, DefaultCollision, NecroKillEvent, nil)
-		Users[p.ID].ControlObject.SetController(Users[p.ID])
-		Objects = append(Objects, Users[p.ID].ControlObject)
 	case 1:
 		if u, ok := Users[p.ID]; ok {
 			dir := math.Float32frombits(binary.BigEndian.Uint32(message[1:5]))
@@ -212,6 +180,38 @@ func Event(p *Player, message []byte) {
 				}
 			}
 		}
+	case 2:
+		var test []byte = message[1:16]
+
+		var name string = ""
+		for len(test) > 0 {
+			r, size := utf8.DecodeRune(test)
+			if string(r) != "\x00" {
+				name += string(r)
+			}
+			test = test[size:]
+		}
+		log.Println(name)
+
+		p.ControlObject = NewObject(map[string]interface{}{
+			"type":     "Necromanser",
+			"team":     strconv.Itoa(p.ID),
+			"name":     name,
+			"x":        lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
+			"y":        lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
+			"h":        50,
+			"mh":       50,
+			"damage":   20,
+			"level":    45,
+			"stats":    [8]int{0, 0, 0, 7, 7, 7, 7, 5},
+			"maxStats": [8]int{7, 7, 7, 7, 7, 7, 7, 7},
+			"sight":    1.11,
+		}, []Gun{*NewGun(map[string]interface{}{
+			"owner": nil,
+			"limit": 0,
+		}, nil, Object{})}, TankTick, DefaultCollision, NecroKillEvent, nil)
+		p.ControlObject.SetController(p)
+		Objects = append(Objects, p.ControlObject)
 	default:
 		log.WithFields(log.Fields{
 			"id": p.ID,
@@ -227,7 +227,9 @@ func (p *Player) UnRegister() {
 		return
 	}
 
-	Users[p.ID].ControlObject.Controller = nil
+	if p.ControlObject != nil {
+		p.ControlObject.Controller = nil
+	}
 
 	delete(Users, p.ID)
 

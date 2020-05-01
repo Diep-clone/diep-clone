@@ -79,7 +79,6 @@ func main() {
 }
 
 var su = new(sync.Mutex)
-var isSend = false
 
 func moveloop(ticker time.Ticker) {
 	for range ticker.C {
