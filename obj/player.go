@@ -116,6 +116,7 @@ func (p *Player) Send(v []byte) error {
 // Register == connect
 func (p *Player) Register() {
 	log.WithField("id", p.ID).Info("User Connected")
+	p.Send(AreaSocket())
 }
 
 //ReadPump is

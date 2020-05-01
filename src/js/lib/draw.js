@@ -73,11 +73,11 @@ export const drawBackground = function (ctx, x, y, z, w, h, area) {
     drawC(ctx, backgroundColor.getDarkRGB());
     ctx.fillRect(0,0,w,h);
     drawC(ctx, backgroundColor);
-    ctx.fillRect((area[0].X - x) * z, (area[0].Y - y) * z, area[0].W * z, area[0].H * z);
+    ctx.fillRect((area[0] - x) * z, (area[1] - y) * z, area[2] * z, area[3] * z);
 
-    for (let i=1;i<area.length;i++){
-        drawC(ctx, area[i].c);
-        ctx.fillRect((area[i].X - x) * z, (area[i].Y - y) * z, area[i].W * z, area[i].H * z);
+    for (let i=4;i<area.length;){
+        drawC(ctx, area[i++]);
+        ctx.fillRect((area[i++] - x) * z, (area[i++] - y) * z, area[i++] * z, area[i++] * z);
     }
 
     ctx.beginPath(); // draw grid

@@ -207,7 +207,11 @@ func sendUpdates(ticker time.Ticker) {
 			}
 
 			if u.Conn != nil {
-				SendUpdate(u, sendData)
+				err := u.Send(sendData)
+				if err != nil {
+					log.Println("Send Error")
+					return
+				}
 			}
 		}
 
@@ -218,36 +222,4 @@ func sendUpdates(ticker time.Ticker) {
 		im--
 		su.Unlock()
 	}
-}
-
-func SendUpdate(u *obj.Player, data []byte) {
-	err := u.Send(data)
-	if err != nil {
-		log.Println("Send Error")
-		return
-	}
-	/*if o := u.ControlObject; o != nil {
-		u.Send(map[string]interface{}{
-			"event":       "playerSet",
-			"id":          u.ID,
-			"level":       o.Level,
-			"isCanRotate": u.IsCanDir,
-			"stat":        u.Stat,
-			"stats":       o.Stats,
-			"maxstats":    o.MaxStats,
-		})
-	}
-
-	u.Send(map[string]interface{}{"event": "objectList", "data": visibleObject, "camera": u.Camera})*/
-	/*u.Send(map[string]interface{}{
-		"event": "area",
-		"data": []obj.Area{
-			{
-				X: -setting.MapSize.X,
-				Y: -setting.MapSize.Y,
-				W: setting.MapSize.X * 2,
-				H: setting.MapSize.Y * 2,
-			},
-		},
-	})*/
 }

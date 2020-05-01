@@ -60,7 +60,7 @@ export default class System {
             uiz: 1,
         }
 
-        this.area = [{X:0,Y:0,W:0,H:0}];
+        this.area = [];
 
         this.keys = {};
         this.sameKeys = {
@@ -256,14 +256,12 @@ export default class System {
                         });
                         if (!isObjEnable && !obj.isDead) {
                             let obi = new Obj(obj.id);
-                            console.log("new Object " + obj.id);
                             obi.ObjSet(obj);
                             this.objectList.push(obi);
                         }
                     }
                     this.objectList.forEach((obj) => {
                         if (!obj.isEnable){
-                            console.log("delete Object " + obj.id);
                             obj.isDelete = true;
                         }
                         obj.isEnable = false;
@@ -272,45 +270,15 @@ export default class System {
                     break;
                 }
                 case 1: {
+                    for (var i = 1, j = 0; i < msg.data.byteLength; i+=4) {
+                        this.area[j++] = view.getInt32(i);
+                    }
                     break;
                 }
                 default: {
                     break;
                 }
             }
-            /*
-            const json = JSON.parse(msg.data);
-
-            const event = json.event;
-            const data = json.data;
-
-            switch (event) {
-                case 'init': {
-                    console.log('init you');
-                    break;
-                }
-                case 'objectList': {
-                    if (this.gameSetting.isNaming) {
-                        return;
-                    }
-                    this.camera.z = this.camera.uiz * json.camera.Z;
-    
-                    this.camera.x = json.camera.Pos.X - this.cv.width / 2 / this.camera.z;
-                    this.camera.y = json.camera.Pos.Y - this.cv.height / 2 / this.camera.z;
-
-                    data.forEach((obj) => {
-                        
-                        
-                        
-                    });
-                    
-                    break;
-                }
-                case 'area': {
-                    this.area = data;
-                    break;
-                }
-            }*/
         };
         
         socket.onclose = event => {
