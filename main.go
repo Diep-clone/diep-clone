@@ -80,12 +80,9 @@ func main() {
 
 var su = new(sync.Mutex)
 
-var im = 50
-
 func moveloop(ticker time.Ticker) {
 	for range ticker.C {
 		su.Lock()
-		st := time.Now()
 
 		for ; obj.ShapeCount > 0; obj.ShapeCount-- {
 			obj.Objects = append(obj.Objects, obj.NewObject(map[string]interface{}{
@@ -95,7 +92,7 @@ func moveloop(ticker time.Ticker) {
 				"x":      lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
 				"y":      lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
 				"dir":    lib.RandomRange(-math.Pi, math.Pi),
-				"stance": 0.2,
+				"stance": 0.1,
 				"exp":    10,
 			}, nil, nil, obj.DefaultCollision, nil, func(o *obj.Object, killer *obj.Object) {
 				obj.ShapeCount++
@@ -163,12 +160,6 @@ func moveloop(ticker time.Ticker) {
 				o.DeadTime = -1
 			}
 		}
-
-		if im == 0 {
-			log.Println(time.Since(st))
-			im = 100
-		}
-		im--
 
 		su.Unlock()
 	}

@@ -40,7 +40,7 @@ func NecroKillEvent(a *Object, b *Object) {
 		b.Mh = (8 + 6*float64(a.Stats[4])) * 0.5
 		b.H = b.Mh
 		b.Damage = (7 + 3*float64(a.Stats[5])) * 1.68
-		b.Speed = (0.056 + 0.01*float64(a.Stats[3])) * 0.5
+		b.Speed = (0.056 + 0.02*float64(a.Stats[3])) * 0.5
 		b.IsDead = false
 		b.IsShowHealth = false
 		b.KillEvent = NecroDroneKillEvent
