@@ -15,14 +15,14 @@ type Quadtree struct {
 }
 
 // NewQuadtree is
-func NewQuadtree(x float64, y float64, w float64, h float64, level int) *Quadtree {
+func NewQuadtree(x, y, w, h float64, level int) *Quadtree {
 	q := Quadtree{
 		x:       x,
 		y:       y,
 		w:       w,
 		h:       h,
 		level:   level,
-		objects: make([]*Object, 0, MaxObj),
+		objects: []*Object{},
 		nodes:   nil,
 	}
 	return &q
@@ -32,61 +32,52 @@ func NewQuadtree(x float64, y float64, w float64, h float64, level int) *Quadtre
 func (q *Quadtree) split() {
 	xx := [4]float64{0, 1, 0, 1}
 	yy := [4]float64{0, 0, 1, 1}
+	q.nodes = make([]Quadtree, 4)
 	for i := 0; i < 4; i++ {
-		q.nodes[i] = Quadtree{
-			x:       q.x + xx[i]*q.w/2,
-			y:       q.y + yy[i]*q.h/2,
-			w:       q.w / 2,
-			h:       q.h / 2,
-			level:   q.level + 1,
-			objects: []*Object{},
-			nodes:   []Quadtree{},
-		}
+		q.nodes[i] = *NewQuadtree(
+			q.x+xx[i]*q.w/2,
+			q.y+yy[i]*q.h/2,
+			q.w/2,
+			q.h/2,
+			q.level+1,
+		)
 	}
 }
 
 // getIndex is
-func (q Quadtree) getIndex(area interface{}) int {
-	obj, b := area.(Object)
+func (q Quadtree) getIndex(area Area) int {
 	x := q.x + q.w/2
 	y := q.y + q.h/2
-	if b {
-		if obj.X+obj.R >= x && obj.X-obj.R <= x || obj.Y+obj.R >= y && obj.Y-obj.R <= y {
-			return -1
-		}
-	} else {
-		obj, _ := area.(Area)
-		if obj.X <= x && obj.X+obj.W >= x || obj.Y <= y && obj.Y+obj.H >= y {
-			return -1
-		}
+
+	if area.X <= x && area.X+area.W >= x || area.Y <= y && area.Y+area.H >= y {
+		return -1
 	}
-	// 2 1
-	// 3 4
-	if obj.X > x {
-		if obj.Y > y {
-			return 4
+	// 1 0
+	// 2 3
+	if area.X > x {
+		if area.Y > y {
+			return 3
 		}
-		return 1
+		return 0
 	}
 
-	if obj.Y > y {
-		return 3
+	if area.Y > y {
+		return 2
 	}
-
-	return 2
+	return 1
 }
 
 // Insert insert quadtree
 func (q *Quadtree) Insert(obj *Object) {
 	var index = -1
 
-	if obj.X+obj.R < q.x || obj.X-obj.R > q.x+q.w ||
-		obj.Y+obj.R < q.y || obj.Y-obj.R > q.y+q.h {
-		return
-	}
-
 	if q.nodes != nil {
-		index = q.getIndex(obj)
+		index = q.getIndex(Area{
+			X: obj.X - obj.R,
+			Y: obj.Y - obj.R,
+			W: obj.R * 2,
+			H: obj.R * 2,
+		})
 		if index != -1 {
 			q.nodes[index].Insert(obj)
 			return
@@ -96,12 +87,17 @@ func (q *Quadtree) Insert(obj *Object) {
 	q.objects = append(q.objects, obj)
 
 	if len(q.objects) > MaxObj {
-		if q.nodes != nil {
+		if q.nodes == nil {
 			q.split()
 		}
 
 		for i := 0; i < len(q.objects); {
-			index = q.getIndex(q.objects[i])
+			index = q.getIndex(Area{
+				X: q.objects[i].X - q.objects[i].R,
+				Y: q.objects[i].Y - q.objects[i].R,
+				W: q.objects[i].R * 2,
+				H: q.objects[i].R * 2,
+			})
 			if index != -1 {
 				q.nodes[index].Insert(q.objects[i])
 				q.objects[i] = q.objects[len(q.objects)-1]
@@ -113,20 +109,10 @@ func (q *Quadtree) Insert(obj *Object) {
 	}
 }
 
-// Retrieve is
-func (q Quadtree) Retrieve(area interface{}) []*Object {
-	index := q.getIndex(area)
-	var returnObjects []*Object = make([]*Object, 0, 20)
-
-	if o, ok := area.(*Object); ok {
-		for _, obj := range q.objects {
-			if !obj.IsDead && (obj.Owner != o.Owner || obj.IsOwnCol && o.IsOwnCol) && o != obj.Owner && obj != o.Owner {
-				returnObjects = append(returnObjects, obj)
-			}
-		}
-	} else {
-		returnObjects = q.objects
-	}
+// RetrieveArea is
+func (q Quadtree) Retrieve(area Area) []*Object {
+	var index int = q.getIndex(area)
+	var returnObjects []*Object = q.objects
 
 	if q.nodes != nil {
 		if index != -1 {

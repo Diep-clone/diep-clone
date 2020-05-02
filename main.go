@@ -128,12 +128,19 @@ func moveloop(ticker time.Ticker) {
 			o.ObjectTick()
 
 			if !o.IsDead {
-				objList := quadtree.Retrieve(o)
+				objList := quadtree.Retrieve(obj.Area{
+					X: o.X - o.R,
+					Y: o.Y - o.R,
+					W: o.R * 2,
+					H: o.R * 2,
+				})
 
 				for _, obj2 := range objList {
-					if math.Sqrt((o.X-obj2.X)*(o.X-obj2.X)+(o.Y-obj2.Y)*(o.Y-obj2.Y)) < o.R+obj2.R {
-						o.Collision(o, obj2)
-						obj2.Collision(obj2, o)
+					if !obj2.IsDead && (obj2.Owner != o.Owner || obj2.IsOwnCol && o.IsOwnCol) && o != obj2.Owner && obj2 != o.Owner {
+						if math.Sqrt((o.X-obj2.X)*(o.X-obj2.X)+(o.Y-obj2.Y)*(o.Y-obj2.Y)) < o.R+obj2.R {
+							o.Collision(o, obj2)
+							obj2.Collision(obj2, o)
+						}
 					}
 				}
 			}
