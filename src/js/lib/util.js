@@ -117,6 +117,7 @@ export const calByte = {
 }; // https://zzznara2.tistory.com/458
 
 export const getPolygonRadius = function (p) {
+    if (p === 0) return 1;
     return Math.sqrt(Math.PI / (Math.sin(Math.PI / p) * Math.cos(Math.PI / p) * p));
     //return 2 / (1+Math.cos(Math.PI/p));
 }
@@ -145,4 +146,27 @@ export const getTextWidth = function(text, font) {
     context.font = font;
     var metrics = context.measureText(text);
     return metrics.width;
+}
+
+export const getUIPosition = function(x, y, posx, posy) {
+    switch (posx) {
+        case "middle":
+            x += system.cv.width / 2;
+            break;
+        case "right":
+            x += system.cv.width;
+            break;
+        default:
+            break;
+    }
+    switch (posy) {
+        case "middle":
+            y += system.cv.height / 2;
+            break;
+        case "right":
+            y += system.cv.height;
+            break;
+        default:
+            break;
+    }
 }

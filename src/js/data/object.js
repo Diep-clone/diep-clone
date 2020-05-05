@@ -1,6 +1,7 @@
 import { RGB, getPolygonRadius, getObjectPoint, getTextWidth } from '../lib/util';
 import { colorList, colorType, gunList } from '../data/index';
 import { drawC, drawObj, drawText } from '../lib/draw';
+import System from '../system';
 
 export const Obj = function(id) {
     'use strict';
@@ -21,6 +22,7 @@ export const Obj = function(id) {
     this.opacity;
     this.score;
     this.isDead;
+    this.isCol;
 
     this.isEnable = true;
     this.isDelete = false;
@@ -51,7 +53,9 @@ export const Obj = function(id) {
         this.y = data.y;
         if (!this.isDead){
             this.r = data.r;
-            this.dir = data.dir;
+            if (system.playerSetting.id !== this.id) {
+                this.dir = data.dir;
+            }
             this.h = data.h;
             this.mh = data.mh;
             this.opacity = data.opacity;
@@ -60,7 +64,7 @@ export const Obj = function(id) {
         this.isDead = data.isDead;
 
         this.name = data.name;
-        if (this.type !== data.type){
+        if (this.type !== data.type) {
             this.guns = (gunList[data.type] == undefined)?[]:gunList[data.type];
         }
         this.type = data.type;
@@ -91,8 +95,8 @@ export const Obj = function(id) {
     this.SetCanvasSize = function (camera) {
         var {z, t, c, r, dir, o} = this.DrawSet(camera);
         let rr = r * getPolygonRadius(getObjectPoint(t));
-        var size = {x: rr * z, y: rr * z,};
-        var pos = {x: rr * z / 2, y: rr * z / 2,};
+        var size = {x: rr * z * 2, y: rr * z * 2,};
+        var pos = {x: rr * z, y: rr * z,};
         this.guns.forEach((g) => g.SetCanvasSize(camera, size, pos, rr, dir));
         this.cv.width = size.x + 4 * camera.z;
         this.cv.height = size.y + 4 * camera.z;
@@ -164,21 +168,21 @@ export const Obj = function(id) {
                 this.ctx.imageSmoothingEnabled = false;
                 drawText(this.ctx, this.cv.width / 2 / z, this.cv.height / 2 / z, z, 1, new RGB("#FFFFFF"), this.name, 0.8 * r);
                 ctx.globalAlpha = o;
-                ctx.drawImage(this.cv, x * z - this.cv.width / 2, (y - r - 15) * z - this.cv.height / 2);
+                ctx.drawImage(this.cv, x * z - this.cv.width / 2, (y - r * 1.8) * z - this.cv.height / 2);
 
                 this.cv.width = getTextWidth(this.score, "bold " + 0.6 * r * z + "px Ubuntu") + 5 * z;
                 this.cv.height = 5 * 0.4 * r * z;
                 this.ctx.imageSmoothingEnabled = false;
                 drawText(this.ctx, this.cv.width / 2 / z, this.cv.height / 2 / z, z, 1, new RGB("#FFFFFF"), this.score, 0.6 * r);
                 ctx.globalAlpha = o;
-                ctx.drawImage(this.cv, x * z - this.cv.width / 2, (y - r - 5) * z - this.cv.height / 2);
+                ctx.drawImage(this.cv, x * z - this.cv.width / 2, (y - r * 1.2) * z - this.cv.height / 2);
             } else {
                 this.cv.width = getTextWidth(this.name, "bold " + 0.8 * r * z + "px Ubuntu") + 5 * z;
                 this.cv.height = 5 * 0.8 * r * z;
                 this.ctx.imageSmoothingEnabled = false;
                 drawText(this.ctx, this.cv.width / 2 / z, this.cv.height / 2 / z, z, 1, new RGB("#FFFFFF"), this.name, 0.8 * r);
                 ctx.globalAlpha = o;
-                ctx.drawImage(this.cv, x * z - this.cv.width / 2, (y - r - 5) * z - this.cv.height / 2);
+                ctx.drawImage(this.cv, x * z - this.cv.width / 2, (y - r * 1.5) * z - this.cv.height / 2);
             }
         }
 

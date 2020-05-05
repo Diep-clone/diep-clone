@@ -39,7 +39,9 @@ export default class System {
         };
 
         this.playerSetting = {
-            "id": "",
+            "obj": null,
+            "id": 0,
+            "team": "",
             "level": 0,
             "stat": 0,
             "stats": [0,0,0,0,0,0,0,0],
@@ -49,6 +51,8 @@ export default class System {
         this.input = {
             "moveVector": {x:0,y:0},
             "mousePos": {x:0,y:0},
+            "e":0,
+            "c":0,
         }
 
         this.lastTime = Date.now();
@@ -118,6 +122,12 @@ export default class System {
                         break;
                     case 40:
                         this.input.moveVector.y+=1;
+                        break;
+                    case 69:
+                        this.input.e = 1 - this.input.e;
+                        break;
+                    case 67:
+                        this.input.c = 1 - this.input.c;
                         break;
                     default:
                         break;
@@ -202,16 +212,21 @@ export default class System {
                     var i = 32;
 
                     if (view.getInt8(25)) {
-                        this.playerSetting.id = view.getUint32(26).toString();
+                        this.playerSetting.id = view.getUint32(26);
                         this.playerSetting.level = view.getUint16(30);
                         this.playerSetting.stat = view.getUint8(32);
-                        for (var j = 0; j < 8; j++){
+                        for (var j = 0; j < 8; j++) {
                             this.playerSetting.stats[j] = view.getUint8(33+j);
                         }
-                        for (var j = 0; j < 8; j++){
+                        for (var j = 0; j < 8; j++) {
                             this.playerSetting.maxstats[j] = view.getUint8(41+j);
                         }
                         i = 49;
+                        var len = view.getUint8(i);
+                        i++;
+                        var u = new Uint8Array(msg.data.slice(i,i+len));
+                        this.playerSetting.team = String.fromCharCode.apply(null, u);
+                        i+=len;
                     }
 
                     while (i<msg.data.byteLength) {
@@ -262,6 +277,9 @@ export default class System {
                         });
                         if (!isObjEnable && !obj.isDead) {
                             let obi = new Obj(obj.id);
+                            if (obj.id === this.playerSetting.id) {
+                                this.playerSetting.obj = obi;
+                            }
                             obi.ObjSet(obj);
                             this.objectList.push(obi);
                         }
@@ -317,7 +335,7 @@ export default class System {
         const tick = Date.now() - this.lastTime;
         this.lastTime = Date.now();
 
-        if (this.cv.width <= this.cv.height/9*16){
+        if (this.cv.width <= this.cv.height/9*16) {
             this.camera.uiz = this.cv.height / 900;
         } else {
             this.camera.uiz = this.cv.width / 1600;
@@ -344,10 +362,23 @@ export default class System {
             } else {
                 view.setFloat32(1, Math.atan2(this.input.moveVector.y,this.input.moveVector.x));
             }
-            view.setFloat32(5,this.input.mousePos.x/this.camera.z+this.camera.x);
-            view.setFloat32(9,this.input.mousePos.y/this.camera.z+this.camera.y);
+
+            let x, y;
+            if (this.input.c && this.playerSetting.obj){
+                x = Math.cos(this.playerSetting.obj.dir + 0.02)*200 + this.playerSetting.obj.x;
+                y = Math.sin(this.playerSetting.obj.dir + 0.02)*200 + this.playerSetting.obj.y;
+            } else {
+                x = this.input.mousePos.x/this.camera.z + this.camera.x;
+                y = this.input.mousePos.y/this.camera.z + this.camera.y;
+            }
+            if (this.playerSetting.obj) {
+                this.playerSetting.obj.dir = Math.atan2(y - this.playerSetting.obj.y, x - this.playerSetting.obj.x);
+            }
+
+            view.setFloat32(5, x);
+            view.setFloat32(9, y);
             view.setUint8(13,
-                ((this.keys[1] || this.keys[32]) || 0)
+                ((this.keys[1] || this.keys[32] || this.input.e) || 0)
                 + ((this.keys[3] || this.keys[16]) || 0) * 2
                 + (this.keys[79] || 0) * 4
             );
@@ -408,10 +439,10 @@ export default class System {
         if (this.gameSetting.isNaming) {
             if (this.textinput.value) this.textinput.value = calByte.cutByteLength(this.textinput.value,15);
 
-            let x = this.cv.width / 2 - 167 * this.camera.uiz,
-            y = (this.cv.height / 2 - 20 * this.camera.uiz) * (1-this.textinputanime),
-            w = 333 * this.camera.uiz,
-            h = 41 * this.camera.uiz;
+            let x = Math.floor(this.cv.width / 2 - 167 * this.camera.uiz),
+            y = Math.floor((this.cv.height / 2 - 20 * this.camera.uiz) * (1-this.textinputanime)),
+            w = Math.floor(333 * this.camera.uiz),
+            h = Math.floor(41 * this.camera.uiz);
 
             this.textinputanime *= 0.95;
             this.connectinga = Math.max(this.connectinga - 0.2,0);

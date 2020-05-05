@@ -135,6 +135,14 @@ func DefaultCollision(a *Object, b *Object) {
 	a.IsCollision = true
 }
 
+func DefaultKillEvent(o *Object, deader *Object) {
+	var owner *Object = o
+	for owner.Owner != nil {
+		owner = owner.Owner
+	}
+	owner.Exp += int(math.Min(float64(deader.Exp), 23536.))
+}
+
 var objID int = 1
 
 //
@@ -175,7 +183,7 @@ func (o *Object) SetController(p *Player) {
 	o.Controller = p
 }
 
-func NewObject(value map[string]interface{}, guns []Gun, t func(*Object), c func(*Object, *Object), k func(*Object, *Object), d func(*Object, *Object)) *Object {
+func NewObject(value map[string]interface{}, t func(*Object), c func(*Object, *Object), k func(*Object, *Object), d func(*Object, *Object)) *Object {
 	m := map[string]interface{}{
 		"id":           objID,
 		"type":         "squ",
@@ -213,7 +221,6 @@ func NewObject(value map[string]interface{}, guns []Gun, t func(*Object), c func
 
 	s := Object{}
 	json.Unmarshal(jsonString, &s)
-	s.Guns = guns
 	s.Tick = t
 	s.Collision = c
 	s.KillEvent = k

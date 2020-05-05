@@ -2,7 +2,6 @@ package obj
 
 import (
 	"encoding/json"
-	"log"
 	"math"
 
 	"app/lib"
@@ -11,12 +10,19 @@ import (
 // Gun is
 type Gun struct {
 	Owner     *Object
-	Bullet    Object
+	Speed     float64 `json:"speed"`
+	Damage    float64 `json:"damage"`
+	Health    float64 `json:"health"`
+	Radius    float64 `json:"radius"`
+	Bound     float64 `json:"bound"`
+	Stance    float64 `json:"stance"`
+	LifeTime  float64 `json:"lifetime"`
+	Guns      []Gun
 	Sx        float64 `json:"sx"`
 	Sy        float64 `json:"sy"`
 	Dir       float64 `json:"dir"`
 	Rdir      float64 `json:"rdir"`
-	Bound     float64 `json:"bound"`
+	GunBound  float64 `json:"gunbound"`
 	Reload    float64 `json:"reload"`    // default delay
 	DelayTime float64 `json:"delaytime"` // when shot
 	WaitTime  float64 `json:"waittime"`  // first wait time
@@ -29,34 +35,33 @@ func (g *Gun) Shot() {
 	if g.Owner == nil || g.Owner.Controller == nil {
 		return
 	}
-	log.Println("AA")
 	if g.AutoShot || g.Owner.Controller.Ml {
 		g.ShotTime += 1000 / 60
 		var GunOwner = g.Owner
 		for GunOwner.Owner != nil {
 			GunOwner = GunOwner.Owner
 		}
-		log.Println("Bb")
 		g.Owner.IsShot = true
 		if g.DelayTime <= 0 && g.WaitTime <= g.ShotTime/((0.6-0.04*float64(GunOwner.Stats[6]))/g.Reload*1000) {
-			log.Println("Ww")
 			dir := g.Owner.Dir + g.Dir + lib.RandomRange(-g.Rdir, g.Rdir)
-			bullet := g.Bullet
-			bullet.ID = objID
-			objID++
-			bullet.Type = "Bullet"
-			bullet.Team = GunOwner.Team
+			var bullet Object = *NewObject(map[string]interface{}{
+				"type":         "Bullet",
+				"team":         GunOwner.Team,
+				"x":            g.Owner.X + math.Cos(g.Owner.Dir+g.Dir-math.Pi/2)*g.Sx*g.Owner.R + math.Cos(g.Owner.Dir+g.Dir)*g.Sy*g.Owner.R,
+				"y":            g.Owner.Y + math.Sin(g.Owner.Dir+g.Dir-math.Pi/2)*g.Sx*g.Owner.R + math.Sin(g.Owner.Dir+g.Dir)*g.Sy*g.Owner.R,
+				"dir":          dir,
+				"speed":        (0.056 + 0.02*float64(GunOwner.Stats[3])) * g.Speed,
+				"dx":           math.Cos(dir) * (4 + 0.4*float64(GunOwner.Stats[3])) * g.Speed,
+				"dy":           math.Sin(dir) * (4 + 0.4*float64(GunOwner.Stats[3])) * g.Speed,
+				"mh":           (8 + 6*float64(GunOwner.Stats[4])) * g.Health,
+				"h":            (8 + 6*float64(GunOwner.Stats[4])) * g.Health,
+				"damage":       (7 + 3*float64(GunOwner.Stats[5])) * g.Damage,
+				"r":            0.4 * g.Radius * 12.9 * math.Pow(1.01, float64(g.Owner.Level)-1),
+				"deadtime":     1000 * g.LifeTime,
+				"isShowHealth": false,
+			}, DefaultBulletTick, DefaultCollision, DefaultKillEvent, nil)
+			bullet.Guns = g.Guns
 			bullet.Owner = GunOwner
-			bullet.X = g.Owner.X + math.Cos(g.Owner.Dir+g.Dir-math.Pi/2)*g.Sx*g.Owner.R + math.Cos(g.Owner.Dir+g.Dir)*g.Sy*g.Owner.R
-			bullet.Y = g.Owner.Y + math.Sin(g.Owner.Dir+g.Dir-math.Pi/2)*g.Sx*g.Owner.R + math.Sin(g.Owner.Dir+g.Dir)*g.Sy*g.Owner.R
-			bullet.Dir = dir
-			bullet.Speed = (0.056 + 0.02*float64(GunOwner.Stats[3])) * bullet.Speed
-			bullet.Dx = math.Cos(dir) * bullet.Speed * 20
-			bullet.Dx = math.Sin(dir) * bullet.Speed * 20
-			bullet.Mh = (8 + 6*float64(GunOwner.Stats[4])) * bullet.Mh
-			bullet.H = (8 + 6*float64(GunOwner.Stats[4])) * bullet.H
-			bullet.Damage = (7 + 3*float64(GunOwner.Stats[5])) * bullet.Damage
-			bullet.R = 10 * bullet.R * math.Pow(1.01, float64(g.Owner.Level)-1)
 			g.Owner.Dx -= math.Cos(g.Owner.Dir+g.Dir) * 0.1 * g.Bound
 			g.Owner.Dy -= math.Sin(g.Owner.Dir+g.Dir) * 0.1 * g.Bound
 			g.DelayTime = (0.6 - 0.04*float64(GunOwner.Stats[6])) / g.Reload * 1000
@@ -70,13 +75,20 @@ func (g *Gun) Shot() {
 }
 
 // New Gun1!!!!!!!!!!11!!!
-func NewGun(value map[string]interface{}, own *Object, b Object) *Gun {
+func NewGun(own *Object, value map[string]interface{}) *Gun {
 	m := map[string]interface{}{
+		"speed":     1,
+		"damage":    1,
+		"health":    1,
+		"radius":    1,
+		"bound":     1,
+		"stance":    1,
+		"lifetime":  3,
 		"sx":        0,
 		"sy":        1.88,
 		"dir":       0,
 		"rdir":      math.Pi / 36,
-		"bound":     1,
+		"gunbound":  1,
 		"reload":    1,
 		"delaytime": 0,
 		"waittime":  0,
@@ -94,6 +106,5 @@ func NewGun(value map[string]interface{}, own *Object, b Object) *Gun {
 	s := Gun{}
 	json.Unmarshal(jsonString, &s)
 	s.Owner = own
-	s.Bullet = b
 	return &s
 }

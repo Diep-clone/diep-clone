@@ -1,4 +1,4 @@
-import { backgroundColor } from '../data/index'
+import { backgroundColor, minimapBackgroundColor, minimapBorderColor } from '../data/index'
 import { RGB, getPolygonRadius, getObjectPoint } from './util';
 
 export const drawCircle = function (ctx, x, y, z, r) {
@@ -37,9 +37,9 @@ export const drawObj = function (ctx, x, y, z, r, dir, t, o, c) {
     let im = getObjectPoint(t);
     if (im == 0) {
         drawC(ctx, c.getDarkRGB());
-        drawCircle(ctx, x, y, z, (r + 2));
+        drawCircle(ctx, x, y, z, (r + 1));
         drawC(ctx,c);
-        drawCircle(ctx, x, y, z, r);
+        drawCircle(ctx, x, y, z, (r - 1));
     } else {
         drawC(ctx, c, c.getDarkRGB());
         drawPolygon(ctx, x, y, z, r, dir, im);
@@ -64,6 +64,23 @@ export const drawText = function (ctx, x, y, z, o, c, text, size, dir) {
 
     ctx.strokeText(text, 0, 0);
     ctx.fillText(text, 0, 0);
+
+    ctx.restore();
+}
+
+export const drawMiniMap = function (ctx, x, y, z, w, h, area, pos, dir, ping) {
+    ctx.save();
+
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = 4.5 * z;
+
+    drawC(ctx, minimapBackgroundColor, minimapBorderColor);
+    
+    for (let i=4;i<area.length;){
+        drawC(ctx, area[i++]);
+        
+    }
 
     ctx.restore();
 }

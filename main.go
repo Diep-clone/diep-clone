@@ -67,12 +67,15 @@ func main() {
 
 	moveLoopTicker := time.NewTicker(time.Second / 60)
 	sendUpdatesTicker := time.NewTicker(time.Second / 30)
+	scoreBoardTicker := time.NewTicker(time.Second / 100)
 
 	defer moveLoopTicker.Stop()
 	defer sendUpdatesTicker.Stop()
+	defer scoreBoardTicker.Stop()
 
 	go moveloop(*moveLoopTicker)
 	go sendUpdates(*sendUpdatesTicker)
+	go scoreBoard(*scoreBoardTicker)
 
 	log.Info("Server is Running Port ", port)
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+port, nil))
@@ -84,20 +87,7 @@ func moveloop(ticker time.Ticker) {
 	for range ticker.C {
 		su.Lock()
 
-		for ; obj.ShapeCount > 0; obj.ShapeCount-- {
-			obj.Objects = append(obj.Objects, obj.NewObject(map[string]interface{}{
-				"type":   "Square",
-				"name":   "Square",
-				"team":   "shape",
-				"x":      lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
-				"y":      lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
-				"dir":    lib.RandomRange(-math.Pi, math.Pi),
-				"stance": 0.1,
-				"exp":    10,
-			}, nil, nil, obj.DefaultCollision, nil, func(o *obj.Object, killer *obj.Object) {
-				obj.ShapeCount++
-			}))
-		}
+		obj.AddShape()
 
 		scoreboard := lib.Scoreboard{}
 
@@ -156,8 +146,6 @@ func moveloop(ticker time.Ticker) {
 				} else {
 					o.DeadTime = math.Max(o.DeadTime-1000./60., 0.)
 				}
-			} else {
-				o.DeadTime = -1
 			}
 		}
 
@@ -189,7 +177,7 @@ func sendUpdates(ticker time.Ticker) {
 			sendData[25] = 0
 			if o := u.ControlObject; o != nil {
 				sendData[25] = 1
-				binary.BigEndian.PutUint32(sendData[26:30], uint32(u.ID))
+				binary.BigEndian.PutUint32(sendData[26:30], uint32(o.ID))
 				binary.BigEndian.PutUint16(sendData[30:32], uint16(o.Level))
 				sendData = append(sendData, byte(u.Stat))
 				for i := 0; i < 8; i++ {
@@ -198,6 +186,8 @@ func sendUpdates(ticker time.Ticker) {
 				for i := 0; i < 8; i++ {
 					sendData = append(sendData, byte(o.MaxStats[i]))
 				}
+				sendData = append(sendData, byte(len(o.Team)))
+				sendData = append(sendData, []byte(o.Team)...)
 			}
 
 			for _, o := range objList {
@@ -217,6 +207,14 @@ func sendUpdates(ticker time.Ticker) {
 				}
 			}
 		}
+		su.Unlock()
+	}
+}
+
+func scoreBoard(ticker time.Ticker) {
+	for range ticker.C {
+		su.Lock()
+
 		su.Unlock()
 	}
 }

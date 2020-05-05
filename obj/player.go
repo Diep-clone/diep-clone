@@ -193,24 +193,9 @@ func Event(p *Player, message []byte) {
 		}
 		log.Println(name)
 
-		p.ControlObject = NewObject(map[string]interface{}{
-			"type":       "Necromanser",
-			"team":       strconv.Itoa(p.ID),
-			"name":       name,
-			"x":          lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
-			"y":          lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
-			"h":          50,
-			"mh":         50,
-			"damage":     20,
-			"level":      45,
-			"stats":      [8]int{0, 0, 0, 7, 7, 7, 7, 5},
-			"maxStats":   [8]int{7, 7, 7, 7, 7, 7, 7, 7},
-			"sight":      1.11,
-			"isShowName": true,
-		}, []Gun{*NewGun(map[string]interface{}{
-			"owner": nil,
-			"limit": 0,
-		}, nil, Object{})}, TankTick, DefaultCollision, NecroKillEvent, nil)
+		p.ControlObject = NewTestNecro()
+		p.ControlObject.Team = strconv.Itoa(p.ID)
+		p.ControlObject.Name = name
 		p.ControlObject.SetController(p)
 		Objects = append(Objects, p.ControlObject)
 	default:

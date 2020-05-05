@@ -2,6 +2,8 @@ package obj
 
 import (
 	"math"
+
+	"app/lib"
 )
 
 func TankTick(obj *Object) {
@@ -27,6 +29,44 @@ func TankTick(obj *Object) {
 	} else {
 		obj.GetDH -= obj.Mh / 60 / 10
 	}
+}
+
+func NewBasic() *Object {
+	var obj *Object = NewObject(map[string]interface{}{
+		"type":       "Basic",
+		"x":          lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
+		"y":          lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
+		"h":          50,
+		"mh":         50,
+		"damage":     20,
+		"level":      1,
+		"stats":      [8]int{0, 0, 0, 0, 0, 0, 0, 0},
+		"maxStats":   [8]int{7, 7, 7, 7, 7, 7, 7, 7},
+		"isShowName": true,
+	}, nil, DefaultCollision, DefaultKillEvent, nil)
+	obj.Guns = []Gun{*NewGun(obj, map[string]interface{}{})}
+	return obj
+}
+
+func NewTestNecro() *Object {
+	var obj *Object = NewObject(map[string]interface{}{
+		"type":       "Necromanser",
+		"x":          lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
+		"y":          lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
+		"h":          50,
+		"mh":         50,
+		"damage":     20,
+		"level":      45,
+		"exp":        23536,
+		"stats":      [8]int{0, 0, 0, 7, 7, 7, 5, 7},
+		"maxStats":   [8]int{7, 7, 7, 7, 7, 7, 7, 7},
+		"sight":      1.11,
+		"isShowName": true,
+	}, TankTick, DefaultCollision, NecroKillEvent, nil)
+	obj.Guns = []Gun{*NewGun(nil, map[string]interface{}{
+		"limit": 0,
+	})}
+	return obj
 }
 
 func NecroKillEvent(a *Object, b *Object) {
@@ -67,6 +107,8 @@ func NecroKillEvent(a *Object, b *Object) {
 				obj.Dy += math.Sin(obj.Dir) * obj.Speed
 			}
 		}
+	} else {
+		DefaultKillEvent(a, b)
 	}
 }
 

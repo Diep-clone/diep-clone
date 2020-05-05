@@ -16,9 +16,9 @@ export const Gun = function (paths, dir, color, isFront) {
 
     this.SetCanvasSize = function (camera, size, pos, r, dir) {
         this.paths.forEach((p) => {
-            let x = (Math.cos(dir - Math.PI/2 + this.dir) * p[0] * camera.z * r
+            const x = Math.floor(Math.cos(dir - Math.PI/2 + this.dir) * p[0] * camera.z * r
             + Math.cos(dir + this.dir) * (p[1] * camera.z * r + this.back) + pos.x);
-            let y = (Math.sin(dir - Math.PI/2 + this.dir) * p[0] * camera.z * r
+            const y = Math.floor(Math.sin(dir - Math.PI/2 + this.dir) * p[0] * camera.z * r
             + Math.sin(dir + this.dir) * (p[1] * camera.z * r + this.back) + pos.y);
             
             if (x < 0) {

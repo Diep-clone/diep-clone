@@ -20,18 +20,18 @@ export const colorList = [
     new RGB("#F14E54"), // Red 4
     new RGB("#BE7FF5"), // Purple 5
     new RGB("#00F46C"), // Green 6
-    new RGB("#D68163"), //  7
-    new RGB("#89FF69"), // Shiny 8
-    new RGB("#FFE869"), // Square 9
-    new RGB("#FC7677"), // Triangle 10
-    new RGB("#768DFC"), // Pentagon 11
-    new RGB("#FF77DC"), // Crashers 12
-    new RGB("#FFE869"), // AC 13
-    new RGB("#44FFA0"), // Scoreboard 14
-    new RGB("#BBBBBB"), // Maze Walls 15
-    new RGB("#F14E54"), // FFA other's color 16
-    new RGB("#fcc276"), // Necromanser's Drone color 17
-    new RGB("#C0C0C0"), // Fallen 18
+    //new RGB("#D68163"), //  6 Brown (Old)
+    new RGB("#89FF69"), // Shiny 7
+    new RGB("#FFE869"), // Square 8
+    new RGB("#FC7677"), // Triangle 9
+    new RGB("#768DFC"), // Pentagon 10
+    new RGB("#FF77DC"), // Crashers 11
+    new RGB("#FFE869"), // AC 12
+    new RGB("#44FFA0"), // Scoreboard 13
+    new RGB("#BBBBBB"), // Maze Walls 14
+    new RGB("#F14E54"), // FFA other's color 15
+    new RGB("#fcc276"), // Necromanser's Drone color 16
+    new RGB("#C0C0C0"), // Fallen 17
 ];
 
 export const colorType = function(type, team){
@@ -39,7 +39,7 @@ export const colorType = function(type, team){
         case "shape":
             switch (type){
                 case "Square":
-                    return 9;
+                    return 8;
                 default:
                     return 2;
             }
@@ -51,26 +51,64 @@ export const colorType = function(type, team){
             return 5;
         case "green":
             return 6;
-        case system.playerSetting.id:
+        case system.playerSetting.team:
             switch (type){
                 case "NecroSquare":
-                    return 17;
+                    return 16;
                 default:
                     return 2;
             }
         default:
             switch (type){
                 case "NecroSquare":
-                    return 17;
-                default:
                     return 16;
+                default:
+                    return 15;
             }
     }
 }
 
-export const backgroundColor = new RGB(205,205,205);
+export const backgroundColor = new RGB("#CDCDCD");
+export const minimapBackgroundColor = new RGB("#CDCDCD");
+export const minimapBorderColor = new RGB("#555555");
 
 export const gunList = {
+    "Basic":[
+        new Gun([[0,0],[0.42,0],[0.42,1.88],[-0.42,1.88],[-0.42, 0]],0,1),
+    ],
+    "Twin": [
+
+    ],
+    "Triplet": [
+
+    ],
+    "TripleShot": [
+
+    ],
+    "QuadTank": [
+
+    ],
+    "OctoTank": [
+
+    ],
+    "Sniper": [
+
+    ],
+    "MachineGun": [
+
+    ],
+    "Flank Guard": [
+
+    ],
+    "Tri-Angle": [
+
+    ],
+    "Destroyer": [
+
+    ],
+    "Overseer": [
+
+    ],
     "Necromanser":[
         new Gun([[0.43,0],[0.73,1.4],[-0.73,1.4],[-0.43,0]],Math.PI/2,1),
         new Gun([[0.43,0],[0.73,1.4],[-0.73,1.4],[-0.43,0]],-Math.PI/2,1),
