@@ -68,7 +68,7 @@ export const drawText = function (ctx, x, y, z, o, c, text, size, dir) {
     ctx.restore();
 }
 
-export const drawMiniMap = function (ctx, x, y, z, w, h, area, pos, dir, ping) {
+export const drawMiniMap = function (ctx, x, y, z, w, h, area, pos, dir) {
     ctx.save();
 
     ctx.lineCap = "round";

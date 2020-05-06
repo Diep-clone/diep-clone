@@ -48,6 +48,10 @@ func Floor(value float64, c int) float64 {
 	return math.Floor(value*math.Pow10(c)) / math.Pow10(c)
 }
 
+func Lerp(a, b float64, per float64) float64 {
+	return (1-per)*a + per*b
+}
+
 func Ccw(p1, p2, p3 Pos) int {
 	temp := (p1.X*p2.Y + p2.X*p3.Y + p3.X*p1.Y) - (p1.Y*p2.X - p2.Y*p3.X - p3.Y*p1.X)
 	if temp > 0 {

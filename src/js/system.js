@@ -15,9 +15,6 @@ export default class System {
         this.cv = document.getElementById("canvas");
         this.ctx = this.cv.getContext("2d");
 
-        this.uicv = document.createElement("canvas");
-        this.uictx = this.uicv.getContext("2d");
-
         this.textinputcontainer = document.getElementById("textInputContainer");
         this.textinput = document.getElementById("textInput");
 
@@ -29,7 +26,6 @@ export default class System {
         this.textinput.style.paddingRight = "5px";
 
         this.objectList = [];
-        this.uiList = [];
 
         this.gameSetting = {
             "gamemode": "sandbox",
@@ -251,6 +247,8 @@ export default class System {
                         i+=8;
                         obj.score = view.getUint32(i);
                         i+=4;
+                        obj.hitTime = view.getUint8(i);
+                        i++;
                         obj.isDead = view.getUint8(i);
                         i++;
                         var len = view.getUint8(i);
@@ -341,9 +339,6 @@ export default class System {
             this.camera.uiz = this.cv.width / 1600;
         }
 
-        this.uicv.width = this.cv.width;
-        this.uicv.height = this.cv.height;
-
         this.ctx.clearRect(0,0,this.cv.width,this.cv.height);
 
         if (this.gameSetting.isConnecting) {
@@ -409,9 +404,6 @@ export default class System {
                 o.DrawHPBar(this.ctx, this.camera);
             });
 
-            this.uiList.forEach((ui) => {
-                ui.Draw(this.uictx);
-            });
         } else {
             this.ctx.drawImage(this.img, // draw Background image
                 this.cv.width / 2 - this.img.width * this.camera.uiz / 2 / 2.4,

@@ -1,7 +1,6 @@
 import { RGB, getPolygonRadius, getObjectPoint, getTextWidth } from '../lib/util';
 import { colorList, colorType, gunList } from '../data/index';
 import { drawC, drawObj, drawText } from '../lib/draw';
-import System from '../system';
 
 export const Obj = function(id) {
     'use strict';
@@ -22,7 +21,6 @@ export const Obj = function(id) {
     this.opacity;
     this.score;
     this.isDead;
-    this.isCol;
 
     this.isEnable = true;
     this.isDelete = false;
@@ -44,8 +42,6 @@ export const Obj = function(id) {
         }
 
         this.guns.forEach((g) => g.Animate());
-
-        this.hitTime = Math.max(this.hitTime - tick,0);
     }
 
     this.ObjSet = function (data) {
@@ -62,6 +58,7 @@ export const Obj = function(id) {
             this.score = data.score;
         }
         this.isDead = data.isDead;
+        this.hitTime = data.hitTime;
 
         this.name = data.name;
         if (this.type !== data.type) {
@@ -75,10 +72,10 @@ export const Obj = function(id) {
 
     this.DrawSet = function (camera) {
         let c = colorList[this.color];
-        if (this.hitTime > 60) {
-            c = c.getLightRGB(1 - (this.hitTime - 60) / 40);
+        if (this.hitTime > 50) {
+            c = c.getLightRGB((this.hitTime - 50) / 60);
         } else if (this.hitTime > 0) {
-            c = c.getRedRGB(1 - this.hitTime / 60);
+            c = c.getRedRGB(this.hitTime / 60);
         }
         return {
             x: this.x - camera.x,

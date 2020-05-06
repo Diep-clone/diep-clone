@@ -34,6 +34,10 @@ export const colorList = [
     new RGB("#C0C0C0"), // Fallen 17
 ];
 
+export const backgroundColor = new RGB("#CDCDCD");
+export const minimapBackgroundColor = new RGB("#CDCDCD");
+export const minimapBorderColor = new RGB("#555555");
+
 export const colorType = function(type, team){
     switch (team){
         case "shape":
@@ -67,10 +71,6 @@ export const colorType = function(type, team){
             }
     }
 }
-
-export const backgroundColor = new RGB("#CDCDCD");
-export const minimapBackgroundColor = new RGB("#CDCDCD");
-export const minimapBorderColor = new RGB("#555555");
 
 export const gunList = {
     "Basic":[

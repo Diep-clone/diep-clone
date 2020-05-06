@@ -57,11 +57,11 @@ type Object struct {
 
 //
 func (obj *Object) ObjectTick() {
-	obj.X += obj.Dx * lib.GameSetting.GameSpeed
+	obj.X += obj.Dx * lib.GameSetting.GameSpeed // 좌표값에 속도 적용
 	obj.Y += obj.Dy * lib.GameSetting.GameSpeed
 
-	obj.Dx *= 1 - 0.03*lib.GameSetting.GameSpeed //math.Pow(0.97, setting.GameSpeed)
-	obj.Dy *= 1 - 0.03*lib.GameSetting.GameSpeed //math.Pow(0.97, setting.GameSpeed)
+	obj.Dx *= 0.97 //math.Pow(0.97, lib.GameSetting.GameSpeed) 감속 코드
+	obj.Dy *= 0.97 //math.Pow(0.97, lib.GameSetting.GameSpeed)
 
 	if obj.IsBorder { // 화면 밖으로 벗어나는가?
 		if obj.X > lib.GameSetting.MapSize.X+lib.Grid*4 {
@@ -161,6 +161,11 @@ func (o Object) ObjBinaryData() []byte {
 	binary.BigEndian.PutUint64(data[44:52], math.Float64bits(lib.Floor(o.H, 1)))
 	binary.BigEndian.PutUint64(data[52:60], math.Float64bits(lib.Floor(o.Opacity, 2)))
 	binary.BigEndian.PutUint32(data[60:64], uint32(o.Exp))
+	if o.HitTime+100-lib.Now() > 0 {
+		data = append(data, byte(uint8(o.HitTime+100-lib.Now())))
+	} else {
+		data = append(data, byte(0))
+	}
 	if o.IsDead {
 		data = append(data, 1)
 	} else {
@@ -202,7 +207,7 @@ func NewObject(value map[string]interface{}, t func(*Object), c func(*Object, *O
 		"opacity":      1,
 		"sight":        1,
 		"spawnTime":    lib.Now(),
-		"hitTime":      lib.Now(),
+		"hitTime":      0,
 		"deadTime":     -1,
 		"isBorder":     true,
 		"isOwnCol":     true,
