@@ -6,12 +6,17 @@ export default class UISystem {
         this.uiList = [];
     }
 
-    draw(w, h, z) {
+    draw(ctx, w, h, z) {
         this.uicv.width = w;
         this.uicv.height = h;
 
         this.uiList.forEach(obj => {
-            obj.Draw(this.uictx, z);
+            
         });
+
+        ctx.save();
+        ctx.globalAlpha = 0.7;
+        ctx.drawImage(this.uicv, 0, 0, w, h);
+        ctx.restore();
     }
 }

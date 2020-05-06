@@ -72,8 +72,8 @@ export const Obj = function(id) {
 
     this.DrawSet = function (camera) {
         let c = colorList[this.color];
-        if (this.hitTime > 50) {
-            c = c.getLightRGB((this.hitTime - 50) / 60);
+        if (this.hitTime > 60) {
+            c = c.getLightRGB((this.hitTime - 60) / 70);
         } else if (this.hitTime > 0) {
             c = c.getRedRGB(this.hitTime / 60);
         }

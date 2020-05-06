@@ -89,18 +89,8 @@ func moveloop(ticker time.Ticker) {
 
 		obj.AddShape()
 
-		scoreboard := lib.Scoreboard{}
-
 		for _, u := range obj.Users {
 			u.PlayerSet()
-
-			if u.ControlObject != nil {
-				scoreboard.Push(lib.Score{
-					Name:  u.ControlObject.Name,
-					Type:  u.ControlObject.Type,
-					Score: u.ControlObject.Exp,
-				})
-			}
 		}
 
 		quadtree = *obj.NewQuadtree(-lib.GameSetting.MapSize.X-lib.Grid*4, -lib.GameSetting.MapSize.Y-lib.Grid*4, lib.GameSetting.MapSize.X*2+lib.Grid*8, lib.GameSetting.MapSize.Y*2+lib.Grid*8, 1)
@@ -166,9 +156,7 @@ func sendUpdates(ticker time.Ticker) {
 				H: 540 / u.Camera.Z * 2,
 			})
 
-			var sendData []byte = make([]byte, 31)
-
-			sendData = append(sendData, 0)
+			var sendData []byte = make([]byte, 32)
 
 			binary.BigEndian.PutUint64(sendData[1:9], math.Float64bits(u.Camera.Pos.X))
 			binary.BigEndian.PutUint64(sendData[9:17], math.Float64bits(u.Camera.Pos.Y))
@@ -215,6 +203,45 @@ func scoreBoard(ticker time.Ticker) {
 	for range ticker.C {
 		su.Lock()
 
+		var scoreBoard lib.Scoreboard
+
+		for _, u := range obj.Users {
+			if o := u.ControlObject; o != nil {
+				scoreBoard.Push(lib.Score{
+					Team:  o.Team,
+					Name:  o.Name,
+					Type:  o.Type,
+					Score: o.Exp,
+				})
+			}
+		}
+
+		var sendData []byte = make([]byte, 5)
+
+		sendData[0] = 3
+
+		for _, v := range scoreBoard {
+			var data []byte = make([]byte, 4)
+			binary.BigEndian.PutUint32(data[0:4], uint32(v.Score))
+
+			sendData = append(sendData, data...)
+			sendData = append(sendData, byte(len(v.Team)))
+			sendData = append(sendData, []byte(v.Team)...)
+			sendData = append(sendData, byte(len(v.Type)))
+			sendData = append(sendData, []byte(v.Type)...)
+			sendData = append(sendData, byte(len(v.Name)))
+			sendData = append(sendData, []byte(v.Name)...)
+		}
+
+		for _, u := range obj.Users {
+			if u.Conn != nil {
+				err := u.Send(sendData)
+				if err != nil {
+					log.Println("send Error")
+					return
+				}
+			}
+		}
 		su.Unlock()
 	}
 }

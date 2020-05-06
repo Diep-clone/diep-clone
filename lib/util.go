@@ -18,6 +18,7 @@ type Pos struct {
 type Score struct {
 	Name  string
 	Type  string
+	Team  string
 	Score int
 }
 

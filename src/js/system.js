@@ -76,7 +76,7 @@ export default class System {
             execute:function(v){},
             flushInputHooks: function(){},
             get_convar:function(key){},
-            keyDown: function(){
+            keyDown: function() {
                 if (this.gameSetting.isNaming) {
                     if (arguments[0] === 13) {
                         this.gameSetting.isGaming = true;
@@ -106,7 +106,7 @@ export default class System {
                 if (this.sameKeys[arguments[0]]) arguments[0]=this.sameKeys[arguments[0]];
                 if (this.keys[arguments[0]]) return;
                 this.keys[arguments[0]] = true;
-                switch (arguments[0]){
+                switch (arguments[0]) {
                     case 37:
                         this.input.moveVector.x-=1;
                         break;
@@ -129,7 +129,7 @@ export default class System {
                         break;
                 }
             }.bind(this),
-            keyUp:function(){
+            keyUp:function() {
                 if (this.gameSetting.isNaming) {
                     return;
                 } else if (this.gameSetting.isConnecting) return;
@@ -154,18 +154,18 @@ export default class System {
                         break;
                 }
             }.bind(this),
-            mouse:function(){
+            mouse:function() {
                 this.input.mousePos = {x:arguments[0], y:arguments[1]};
             }.bind(this),
-            prevent_right_click: function(){
+            prevent_right_click: function() {
                 return true;
             },
             print_convar_help: function(){},
             set_convar: function(key,value){},
-            should_prevent_unload: function(){
+            should_prevent_unload: function() {
                 return true;
             },
-            wheel: function(){
+            wheel: function() {
                 return true;
             },
         };
@@ -305,6 +305,10 @@ export default class System {
                     this.gameSetting.isConnecting = false;
                     break;
                 }
+                case 3: {
+                    
+                    break;
+                }
                 default: {
                     break;
                 }
@@ -343,7 +347,7 @@ export default class System {
 
         if (this.gameSetting.isConnecting) {
             this.textinputanime = 1;
-            this.connectinga = Math.min(this.connectinga + 0.2,1);
+            this.connectinga = Math.min(this.connectinga + 0.01 * tick,1);
         }
         
         if (this.gameSetting.isGaming) {
@@ -359,9 +363,9 @@ export default class System {
             }
 
             let x, y;
-            if (this.input.c && this.playerSetting.obj){
-                x = Math.cos(this.playerSetting.obj.dir + 0.02)*200 + this.playerSetting.obj.x;
-                y = Math.sin(this.playerSetting.obj.dir + 0.02)*200 + this.playerSetting.obj.y;
+            if (this.input.c && this.playerSetting.obj) {
+                x = Math.cos(this.playerSetting.obj.dir + 0.001 * tick) * 200 + this.playerSetting.obj.x;
+                y = Math.sin(this.playerSetting.obj.dir + 0.001 * tick) * 200 + this.playerSetting.obj.y;
             } else {
                 x = this.input.mousePos.x/this.camera.z + this.camera.x;
                 y = this.input.mousePos.y/this.camera.z + this.camera.y;
