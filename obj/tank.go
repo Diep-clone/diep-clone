@@ -63,7 +63,7 @@ func NewOverload() *Object {
 		"y":          lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
 		"level":      45,
 		"exp":        23536,
-		"stats":      [8]int{0, 0, 0, 7, 0, 7, 5, 7},
+		"stats":      [8]int{0, 0, 0, 7, 7, 7, 5, 7},
 		"maxStats":   [8]int{7, 7, 7, 7, 7, 7, 7, 7},
 		"sight":      1.11,
 		"isShowName": true,
