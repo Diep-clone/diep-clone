@@ -31,31 +31,68 @@ func TankTick(obj *Object) {
 	}
 }
 
+func (o *Object) ChangeTank(c *Object) {
+	o.Type = c.Type
+	o.Bound = c.Bound
+	o.Stance = c.Stance
+	o.Sight = c.Sight
+	o.MaxStats = c.MaxStats
+	o.Guns = c.Guns
+	o.Tick = c.Tick
+	o.Collision = c.Collision
+	o.KillEvent = c.KillEvent
+	o.DeadEvent = c.DeadEvent
+}
+
 func NewBasic() *Object {
 	var obj *Object = NewObject(map[string]interface{}{
 		"type":       "Basic",
 		"x":          lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
 		"y":          lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
-		"h":          50,
-		"mh":         50,
-		"damage":     20,
-		"level":      1,
-		"stats":      [8]int{0, 0, 0, 0, 0, 0, 0, 0},
 		"maxStats":   [8]int{7, 7, 7, 7, 7, 7, 7, 7},
 		"isShowName": true,
 	}, nil, DefaultCollision, DefaultKillEvent, nil)
-	obj.Guns = []Gun{*NewGun(obj, map[string]interface{}{})}
+	obj.Guns = []Gun{*NewGun(obj, map[string]interface{}{}, nil, nil, nil, nil)}
 	return obj
 }
 
-func NewTestNecro() *Object {
+func NewOverload() *Object {
+	var obj *Object = NewObject(map[string]interface{}{
+		"type":       "Overload",
+		"x":          lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
+		"y":          lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
+		"level":      45,
+		"exp":        23536,
+		"stats":      [8]int{0, 0, 0, 7, 0, 7, 5, 7},
+		"maxStats":   [8]int{7, 7, 7, 7, 7, 7, 7, 7},
+		"sight":      1.11,
+		"isShowName": true,
+	}, TankTick, DefaultCollision, nil, nil)
+	var dir float64 = -math.Pi / 2
+	obj.Guns = []Gun{}
+	for i := 0; i < 4; i++ {
+		obj.Guns = append(obj.Guns, *NewGun(obj, map[string]interface{}{
+			"type":     "Drone",
+			"speed":    0.6,
+			"damage":   0.7,
+			"health":   2,
+			"bound":    0.4,
+			"reload":   0.167,
+			"autoshot": true,
+			"sy":       1.6,
+			"dir":      dir,
+			"limit":    2,
+		}, nil, nil, nil, nil))
+		dir += math.Pi / 2
+	}
+	return obj
+}
+
+func NewNecro() *Object {
 	var obj *Object = NewObject(map[string]interface{}{
 		"type":       "Necromanser",
 		"x":          lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
 		"y":          lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
-		"h":          50,
-		"mh":         50,
-		"damage":     20,
 		"level":      45,
 		"exp":        23536,
 		"stats":      [8]int{0, 0, 0, 7, 7, 7, 5, 7},
@@ -65,7 +102,7 @@ func NewTestNecro() *Object {
 	}, TankTick, DefaultCollision, NecroKillEvent, nil)
 	obj.Guns = []Gun{*NewGun(nil, map[string]interface{}{
 		"limit": 0,
-	})}
+	}, nil, nil, nil, nil)}
 	return obj
 }
 
@@ -88,25 +125,7 @@ func NecroKillEvent(a *Object, b *Object) {
 			obj.Owner.Guns[0].Limit--
 			ShapeCount++
 		}
-		b.Tick = func(obj *Object) {
-			p := obj.Controller
-			if p == nil {
-				return
-			}
-			if obj.Owner.DeadTime == 0 {
-				obj.H = 0
-				return
-			}
-			if p.Mr {
-				obj.Dir = math.Atan2(obj.Y-(obj.Owner.Y+p.My), obj.X-(obj.Owner.X+p.Mx))
-				obj.Dx += math.Cos(obj.Dir) * obj.Speed
-				obj.Dy += math.Sin(obj.Dir) * obj.Speed
-			} else if p.Ml {
-				obj.Dir = math.Atan2((obj.Owner.Y+p.My)-obj.Y, (obj.Owner.X+p.Mx)-obj.X)
-				obj.Dx += math.Cos(obj.Dir) * obj.Speed
-				obj.Dy += math.Sin(obj.Dir) * obj.Speed
-			}
-		}
+		b.Tick = DefaultDroneTick
 	} else {
 		DefaultKillEvent(a, b)
 	}

@@ -27,6 +27,8 @@ export default class System {
 
         this.objectList = [];
 
+        this.scoreboard = [];
+
         this.gameSetting = {
             "gamemode": "sandbox",
             "isConnecting": true,

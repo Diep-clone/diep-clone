@@ -82,6 +82,8 @@ export const drawMiniMap = function (ctx, x, y, z, w, h, area, pos, dir) {
         
     }
 
+    
+
     ctx.restore();
 }
 

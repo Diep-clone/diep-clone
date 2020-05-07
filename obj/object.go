@@ -11,48 +11,52 @@ var Objects []*Object
 
 // Object is
 type Object struct {
-	Controller   *Player `json:"controller"`
-	Owner        *Object `json:"owner"`
-	ID           int     `json:"id"`
-	Type         string  `json:"type"`
-	Team         string  `json:"team"`
-	Name         string  `json:"name"`
-	X            float64 `json:"x"`
-	Y            float64 `json:"y"`
-	R            float64 `json:"r"`
-	Dx           float64 `json:"dx"`
-	Dy           float64 `json:"dy"`
-	Dir          float64 `json:"dir"`
-	Level        int     `json:"level"`
-	Exp          int     `json:"exp"`
-	H            float64 `json:"h"`
-	Mh           float64 `json:"mh"`
-	Lh           float64 `json:"lh"`
-	Damage       float64 `json:"damage"`
-	GetDH        float64 `json:"getdh"`
-	Speed        float64 `json:"speed"`
-	Bound        float64 `json:"bound"`
-	Stance       float64 `json:"stance"`
-	Opacity      float64 `json:"opacity"`
-	Sight        float64 `json:"sight"`
-	Stats        [8]int  `json:"stats"`
-	MaxStats     [8]int  `json:"maxStats"`
-	Guns         []Gun   `json:"guns"`
-	SpawnTime    int64   `json:"spawnTime"`
-	HitTime      int64   `json:"hitTime"`
-	DeadTime     float64 `json:"deadTime"`
-	IsBorder     bool    `json:"isBorder"`
-	IsOwnCol     bool    `json:"isOwnCol"`
-	IsDead       bool    `json:"isDead"`
-	IsCollision  bool    `json:"isCollision"`
-	IsShot       bool    `json:"isShot"`
-	IsShowHealth bool    `json:"isShowHealth"`
-	IsShowName   bool    `json:"isShowName"`
-	HitObject    *Object
-	Tick         func(*Object)
-	Collision    func(*Object, *Object)
-	KillEvent    func(*Object, *Object)
-	DeadEvent    func(*Object, *Object)
+	Controller *Player `json:"controller"`
+	Owner      *Object `json:"owner"`
+	ID         int     `json:"id"`
+	Type       string  `json:"type"`
+	Team       string  `json:"team"`
+	Name       string  `json:"name"`
+
+	X       float64 `json:"x"`
+	Y       float64 `json:"y"`
+	R       float64 `json:"r"`
+	Dx      float64 `json:"dx"`
+	Dy      float64 `json:"dy"`
+	Dir     float64 `json:"dir"`
+	Level   int     `json:"level"`
+	Exp     int     `json:"exp"`
+	H       float64 `json:"h"`
+	Mh      float64 `json:"mh"`
+	Lh      float64 `json:"lh"`
+	Damage  float64 `json:"damage"`
+	GetDH   float64 `json:"getdh"`
+	Speed   float64 `json:"speed"`
+	Bound   float64 `json:"bound"`
+	Stance  float64 `json:"stance"`
+	Opacity float64 `json:"opacity"`
+
+	Sight     float64 `json:"sight"`
+	Stats     [8]int  `json:"stats"`
+	MaxStats  [8]int  `json:"maxStats"`
+	Guns      []Gun   `json:"guns"`
+	SpawnTime int64   `json:"spawnTime"`
+	HitTime   int64   `json:"hitTime"`
+	DeadTime  float64 `json:"deadTime"`
+
+	IsBorder     bool `json:"isBorder"`
+	IsOwnCol     bool `json:"isOwnCol"`
+	IsDead       bool `json:"isDead"`
+	IsCollision  bool `json:"isCollision"`
+	IsShot       bool `json:"isShot"`
+	IsShowHealth bool `json:"isShowHealth"`
+	IsShowName   bool `json:"isShowName"`
+
+	HitObject *Object
+	Tick      func(*Object)
+	Collision func(*Object, *Object)
+	KillEvent func(*Object, *Object)
+	DeadEvent func(*Object, *Object)
 }
 
 //

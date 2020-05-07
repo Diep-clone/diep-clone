@@ -47,11 +47,11 @@ export const Obj = function(id) {
     this.ObjSet = function (data) {
         this.x = data.x;
         this.y = data.y;
+        if (system.playerSetting.id !== this.id) {
+            this.dir = data.dir;
+        }
         if (!this.isDead){
             this.r = data.r;
-            if (system.playerSetting.id !== this.id) {
-                this.dir = data.dir;
-            }
             this.h = data.h;
             this.mh = data.mh;
             this.opacity = data.opacity;

@@ -5,11 +5,14 @@ import (
 	"encoding/binary"
 )
 
+var AreaList Area
+
 type Area struct {
-	X float64
-	Y float64
-	W float64
-	H float64
+	X    float64
+	Y    float64
+	W    float64
+	H    float64
+	Team string
 }
 
 func AreaSocket() []byte {
