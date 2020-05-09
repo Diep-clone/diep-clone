@@ -85,15 +85,16 @@ export default class System {
                         this.textinputcontainer.style.display = "none";
                         this.textinputcontainer.style.top = "-" + this.textinputcontainer.style.top;
                         
-                        var buffer = new ArrayBuffer(31);
-                        var view = new DataView(buffer);
+                        let buffer = new ArrayBuffer(31);
+                        let view = new DataView(buffer);
 
-                        var string = unescape(encodeURIComponent(this.textinput.value));
+                        let string = unescape(encodeURIComponent(this.textinput.value));
                         
                         view.setUint8(0, 2);
-                        for (var i = 0; i < string.length; i++) {
+                        for (let i = 0; i < string.length; i++) {
                             view.setUint8(i+1, string[i].charCodeAt(0));
                         }
+
                         socket.send(buffer);
                         
                         window['setTyping'](false);
@@ -182,8 +183,8 @@ export default class System {
 
         socket.onopen = () => {
             console.log("Successfully Connected");
-            var buffer = new ArrayBuffer(1);
-            var view = new DataView(buffer);
+            let buffer = new ArrayBuffer(1);
+            let view = new DataView(buffer);
             view.setUint8(0, 0);
             socket.send(buffer);
 
@@ -195,7 +196,7 @@ export default class System {
         };
 
         socket.onmessage = msg => {
-            var view = new DataView(msg.data);
+            let view = new DataView(msg.data);
 
             switch (view.getUint8(0)){
                 case 0: {
@@ -207,67 +208,82 @@ export default class System {
                     this.camera.x = view.getFloat64(1) - this.cv.width / 2 / this.camera.z;
                     this.camera.y = view.getFloat64(9) - this.cv.height / 2 / this.camera.z;
 
-                    var i = 32;
+                    let i = 32;
 
                     if (view.getInt8(25)) {
                         this.playerSetting.id = view.getUint32(26);
                         this.playerSetting.level = view.getUint16(30);
                         this.playerSetting.stat = view.getUint8(32);
-                        for (var j = 0; j < 8; j++) {
+                        for (let j = 0; j < 8; j++) {
                             this.playerSetting.stats[j] = view.getUint8(33+j);
                         }
-                        for (var j = 0; j < 8; j++) {
+                        for (let j = 0; j < 8; j++) {
                             this.playerSetting.maxstats[j] = view.getUint8(41+j);
                         }
                         i = 49;
-                        var len = view.getUint8(i);
+                        let len = view.getUint8(i);
                         i++;
-                        var u = new Uint8Array(msg.data.slice(i,i+len));
+                        let u = new Uint8Array(msg.data.slice(i,i+len));
                         this.playerSetting.team = String.fromCharCode.apply(null, u);
                         i+=len;
                     }
 
-                    while (i<msg.data.byteLength) {
+                    while (i < msg.data.byteLength) {
                         let isObjEnable = false;
 
-                        var obj = {};
                         obj.id = view.getUint32(i);
                         i+=4;
+
                         obj.x = view.getFloat64(i);
                         i+=8;
+
                         obj.y = view.getFloat64(i);
                         i+=8;
+
                         obj.r = view.getFloat64(i);
                         i+=8;
+
                         obj.dir = view.getFloat64(i);
                         i+=8;
+
                         obj.mh = view.getFloat64(i);
                         i+=8;
+
                         obj.h = view.getFloat64(i);
                         i+=8;
+
                         obj.opacity = view.getFloat64(i);
                         i+=8;
+
                         obj.score = view.getUint32(i);
                         i+=4;
+
                         obj.hitTime = view.getUint8(i);
                         i++;
+
                         obj.isDead = view.getUint8(i);
                         i++;
-                        var len = view.getUint8(i);
+
+                        let len = view.getUint8(i);
                         i++;
-                        var u = new Uint8Array(msg.data.slice(i,i+len));
+
+                        let u = new Uint8Array(msg.data.slice(i,i+len))
+                        
                         obj.team = String.fromCharCode.apply(null, u);
                         i+=len;
+
                         len = view.getUint8(i);
                         i++;
-                        var u = new Uint8Array(msg.data.slice(i,i+len));
+
+                        u = new Uint8Array(msg.data.slice(i,i+len));
                         obj.type = new TextDecoder().decode(u);
-                        i+=len;
+                        i += len;
                         len = view.getUint8(i);
                         i++;
-                        var u = new Uint8Array(msg.data.slice(i,i+len));
+
+                        u = new Uint8Array(msg.data.slice(i,i+len));
                         obj.name = new TextDecoder().decode(u);
-                        i+=len;
+                        i += len;
 
                         this.objectList.forEach((obi) => {
                             if (obi.id === obj.id){
