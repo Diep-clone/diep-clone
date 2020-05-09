@@ -231,6 +231,8 @@ export default class System {
                     while (i < msg.data.byteLength) {
                         let isObjEnable = false;
 
+                        let obj = {};
+
                         obj.id = view.getUint32(i);
                         i+=4;
 
@@ -297,7 +299,16 @@ export default class System {
                                 this.playerSetting.obj = obi;
                             }
                             obi.ObjSet(obj);
-                            this.objectList.push(obi);
+                            for (let i = 0; i < this.objectList.length; i++) {
+                                if (this.objectList[i].id > obi.id){
+                                    this.objectList.splice(i, 0, obi);
+                                    obi = null;
+                                    break;
+                                }
+                            }
+                            if (obi) {
+                                this.objectList.splice(this.objectList.length, 0, obi);
+                            }
                         }
                     }
                     this.objectList.forEach((obj) => {
@@ -371,8 +382,8 @@ export default class System {
         if (this.gameSetting.isGaming) {
             drawBackground(this.ctx, this.camera.x, this.camera.y, this.camera.z, this.cv.width, this.cv.height, this.area);
 
-            var buffer = new ArrayBuffer(14);
-            var view = new DataView(buffer);
+            let buffer = new ArrayBuffer(14);
+            let view = new DataView(buffer);
             view.setUint8(0, 1);
             if (this.input.moveVector.x === 0 && this.input.moveVector.y === 0) {
                 view.setFloat32(1, 9.);
