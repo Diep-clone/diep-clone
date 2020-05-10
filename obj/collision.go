@@ -1,7 +1,14 @@
 package obj
 
+import (
+	"app/lib"
+	"math"
+)
+
 // MaxObj is Object Max length
 var MaxObj = 4
+
+var Qt Quadtree
 
 // Quadtree is
 type Quadtree struct {
@@ -129,6 +136,26 @@ func (q Quadtree) Retrieve(area Area) []*Object {
 	}
 
 	return returnObjects
+}
+
+func NearObject(o *Object, ran, dir, rdir float64) *Object {
+	var objList []*Object = Qt.Retrieve(Area{
+		X: o.X - ran,
+		Y: o.Y - ran,
+		W: ran * 2,
+		H: ran * 2,
+	})
+	var nearObj *Object = nil
+
+	for _, obj := range objList {
+		if math.Abs(dir-math.Atan2(o.Y-obj.Y, o.X-obj.X)) < rdir && o != obj && o.Owner != obj && o.Team != obj.Team && !obj.IsDead {
+			if nearObj == nil || lib.Distance(o.X, o.Y, obj.X, obj.Y) < lib.Distance(o.X, o.Y, nearObj.X, nearObj.Y) {
+				nearObj = obj
+			}
+		}
+	}
+
+	return nearObj
 }
 
 // Clear is

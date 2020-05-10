@@ -51,7 +51,7 @@ func NewBasic() *Object {
 		"y":          lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
 		"maxStats":   [8]int{7, 7, 7, 7, 7, 7, 7, 7},
 		"isShowName": true,
-	}, nil, DefaultCollision, DefaultKillEvent, nil)
+	}, TankTick, DefaultCollision, DefaultKillEvent, nil)
 	obj.Guns = []Gun{*NewGun(obj, map[string]interface{}{}, nil, nil, nil, nil)}
 	return obj
 }
@@ -67,7 +67,7 @@ func NewOverload() *Object {
 		"maxStats":   [8]int{7, 7, 7, 7, 7, 7, 7, 7},
 		"sight":      1.11,
 		"isShowName": true,
-	}, TankTick, DefaultCollision, nil, nil)
+	}, TankTick, DefaultCollision, DefaultKillEvent, nil)
 	var dir float64 = -math.Pi / 2
 	obj.Guns = []Gun{}
 	for i := 0; i < 4; i++ {
@@ -104,6 +104,48 @@ func NewNecro() *Object {
 		"limit": 0,
 	}, nil, nil, nil, nil)}
 	return obj
+}
+
+func NewAuto5() *Object {
+	var obj *Object = NewObject(map[string]interface{}{
+		"type":       "Auto5",
+		"x":          lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
+		"y":          lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
+		"level":      45,
+		"exp":        23536,
+		"stats":      [8]int{0, 0, 0, 7, 7, 7, 5, 7},
+		"maxStats":   [8]int{7, 7, 7, 7, 7, 7, 7, 7},
+		"isShowName": true,
+	}, TankTick, DefaultCollision, DefaultKillEvent, nil)
+	var dir float64 = -math.Pi * 4 / 5
+	for i := 0; i < 5; i++ {
+		dir += math.Pi * 2 / 5
+	}
+	return obj
+}
+
+func NewAutoGun(dx, dy, r float64) *Object {
+	var obj *Object = NewObject(map[string]interface{}{
+		"type":  "AutoGun",
+		"dx":    dx,
+		"dy":    dy,
+		"r":     r,
+		"sight": math.Pi / 2,
+	}, AutoGunTick, nil, nil, nil)
+	return obj
+}
+
+func AutoGunTick(o *Object) {
+	o.X = o.Owner.X
+	o.Y = o.Owner.Y
+
+	var imX, imY = o.Dx, o.Dy
+	var dis, dir = lib.Distance(0, 0, imX, imY), math.Atan2(imY, imX) + 0.02
+
+	o.Dx = math.Cos(dir) * dis
+	o.Dy = math.Sin(dir) * dis
+
+	o.Dir = dir
 }
 
 func NecroKillEvent(a *Object, b *Object) {

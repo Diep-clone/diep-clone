@@ -39,13 +39,13 @@ export const minimapBackgroundColor = new RGB("#CDCDCD");
 export const minimapBorderColor = new RGB("#555555");
 
 export const colorType = function(type, team){
-    switch (team){
+    switch (team){            
         case "shape":
             switch (type){
                 case "Square":
                     return 8;
                 default:
-                    return 2;
+                    return 7;
             }
         case "red":
             return 4;
@@ -64,6 +64,8 @@ export const colorType = function(type, team){
             }
         default:
             switch (type){
+                case "AutoGun":
+                    return 1;
                 case "NecroSquare":
                     return 16;
                 default:
@@ -73,6 +75,9 @@ export const colorType = function(type, team){
 }
 
 export const gunList = {
+    "AutoGun":[
+        new Gun([[0,0],[0.42,0],[0.42,1.88],[-0.42,1.88],[-0.42, 0]],0,1),
+    ],
     "Basic":[
         new Gun([[0,0],[0.42,0],[0.42,1.88],[-0.42,1.88],[-0.42, 0]],0,1),
     ],

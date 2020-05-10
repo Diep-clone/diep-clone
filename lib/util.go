@@ -45,6 +45,10 @@ func RandomRange(x, y float64) float64 {
 	return rand.Float64()*(y-x) + x
 }
 
+func Distance(x1, y1, x2, y2 float64) float64 {
+	return math.Sqrt(((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2)))
+}
+
 func Floor(value float64, c int) float64 {
 	return math.Floor(value*math.Pow10(c)) / math.Pow10(c)
 }
@@ -54,7 +58,7 @@ func Lerp(a, b float64, per float64) float64 {
 }
 
 func Ccw(p1, p2, p3 Pos) int {
-	temp := (p1.X*p2.Y + p2.X*p3.Y + p3.X*p1.Y) - (p1.Y*p2.X - p2.Y*p3.X - p3.Y*p1.X)
+	var temp float64 = (p1.X*p2.Y + p2.X*p3.Y + p3.X*p1.Y) - (p1.Y*p2.X - p2.Y*p3.X - p3.Y*p1.X)
 	if temp > 0 {
 		return 1
 	} else if temp < 0 {

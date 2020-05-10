@@ -1,6 +1,8 @@
 package obj
 
 import (
+	"sync"
+
 	"app/lib"
 	"encoding/binary"
 	"encoding/json"
@@ -8,6 +10,8 @@ import (
 )
 
 var Objects []*Object
+
+var ObjMutex = new(sync.Mutex)
 
 // Object is
 type Object struct {
@@ -51,8 +55,10 @@ type Object struct {
 	IsShot       bool `json:"isShot"`
 	IsShowHealth bool `json:"isShowHealth"`
 	IsShowName   bool `json:"isShowName"`
+	IsBack       bool
 
 	HitObject *Object
+	Target    *Object
 	Tick      func(*Object)
 	Collision func(*Object, *Object)
 	KillEvent func(*Object, *Object)
@@ -61,8 +67,8 @@ type Object struct {
 
 //
 func (obj *Object) ObjectTick() {
-	obj.X += obj.Dx * lib.GameSetting.GameSpeed // 좌표값에 속도 적용
-	obj.Y += obj.Dy * lib.GameSetting.GameSpeed
+	obj.X += obj.Dx //* lib.GameSetting.GameSpeed // 좌표값에 속도 적용
+	obj.Y += obj.Dy //* lib.GameSetting.GameSpeed
 
 	obj.Dx *= 0.97 //math.Pow(0.97, lib.GameSetting.GameSpeed) 감속 코드
 	obj.Dy *= 0.97 //math.Pow(0.97, lib.GameSetting.GameSpeed)
@@ -106,8 +112,6 @@ func (obj *Object) ObjectTick() {
 	}
 
 	obj.Lh = obj.H
-
-	obj.IsCollision = false
 }
 
 //
@@ -146,8 +150,6 @@ func DefaultKillEvent(o *Object, deader *Object) {
 	}
 	owner.Exp += int(math.Min(float64(deader.Exp), 23536.))
 }
-
-var objID int = 1
 
 //
 func (o Object) ObjBinaryData() []byte {
@@ -191,6 +193,8 @@ func (o Object) ObjBinaryData() []byte {
 func (o *Object) SetController(p *Player) {
 	o.Controller = p
 }
+
+var objID int = 1
 
 func NewObject(value map[string]interface{}, t func(*Object), c func(*Object, *Object), k func(*Object, *Object), d func(*Object, *Object)) *Object {
 	m := map[string]interface{}{

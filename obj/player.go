@@ -145,7 +145,9 @@ func (p *Player) ReadPump() {
 // Event Catch Message
 func Event(p *Player, message []byte) {
 	p.Mu.Lock()
+	//ObjMutex.Lock()
 	defer p.Mu.Unlock()
+	//defer ObjMutex.Unlock()
 
 	var socketType uint8 = uint8(message[0])
 
@@ -206,8 +208,8 @@ func Event(p *Player, message []byte) {
 		log.WithFields(log.Fields{
 			"id": p.ID,
 		}).Error("socketType Error")
-		return
 	}
+	return
 }
 
 // UnRegister == close

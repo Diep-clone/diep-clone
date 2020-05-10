@@ -18,6 +18,7 @@ type Gun struct {
 	Bound     float64 `json:"bound"`
 	Stance    float64 `json:"stance"`
 	LifeTime  float64 `json:"lifetime"`
+	IsAi      bool    `json:"isai"`
 	Guns      []Gun
 	Tick      func(*Object)
 	Collision func(*Object, *Object)
@@ -77,7 +78,9 @@ func (g *Gun) Shot() {
 				}
 				g.Tick(o)
 			}, g.Collision, g.KillEvent, g.DeadEvent)
-			bullet.SetController(GunOwner.Controller)
+			if !g.IsAi {
+				bullet.SetController(GunOwner.Controller)
+			}
 			if g.Limit != -1 {
 				g.Limit--
 			}
@@ -106,6 +109,7 @@ func NewGun(own *Object, value map[string]interface{}, t func(*Object), c func(*
 		"bound":     1,
 		"stance":    1,
 		"lifetime":  3,
+		"isai":      false,
 		"sx":        0,
 		"sy":        1.88,
 		"dir":       0,

@@ -10,7 +10,6 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"runtime"
-	"sync"
 	"time"
 
 	"app/lib"
@@ -21,7 +20,6 @@ import (
 	//sq "github.com/mattn/go-sqlite3"
 )
 
-var quadtree obj.Quadtree
 var setting lib.Setting = lib.ReadSetting()
 
 var upgrader = websocket.Upgrader{
@@ -82,11 +80,9 @@ func main() {
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+port, nil))
 }
 
-var su = new(sync.Mutex)
-
 func moveloop(ticker time.Ticker) {
 	for range ticker.C {
-		su.Lock()
+		obj.ObjMutex.Lock()
 
 		obj.AddShape()
 
@@ -94,7 +90,12 @@ func moveloop(ticker time.Ticker) {
 			u.PlayerSet()
 		}
 
-		quadtree = *obj.NewQuadtree(-lib.GameSetting.MapSize.X-lib.Grid*4, -lib.GameSetting.MapSize.Y-lib.Grid*4, lib.GameSetting.MapSize.X*2+lib.Grid*8, lib.GameSetting.MapSize.Y*2+lib.Grid*8, 1)
+		obj.Qt = *obj.NewQuadtree(-lib.GameSetting.MapSize.X-lib.Grid*4, -lib.GameSetting.MapSize.Y-lib.Grid*4, lib.GameSetting.MapSize.X*2+lib.Grid*8, lib.GameSetting.MapSize.Y*2+lib.Grid*8, 1)
+
+		for _, o := range obj.Objects {
+			obj.Qt.Insert(o)
+			o.IsCollision = false
+		}
 
 		for i := 0; i < len(obj.Objects); i++ {
 			o := obj.Objects[i]
@@ -106,7 +107,7 @@ func moveloop(ticker time.Ticker) {
 			o.ObjectTick()
 
 			if !o.IsDead {
-				objList := quadtree.Retrieve(obj.Area{
+				var objList []*obj.Object = obj.Qt.Retrieve(obj.Area{
 					X: o.X - o.R,
 					Y: o.Y - o.R,
 					W: o.R * 2,
@@ -114,16 +115,13 @@ func moveloop(ticker time.Ticker) {
 				})
 
 				for _, obj2 := range objList {
-					if !obj2.IsDead && (obj2.Owner != o.Owner || obj2.IsOwnCol && o.IsOwnCol) && o != obj2.Owner && obj2 != o.Owner {
+					if o != obj2 && !obj2.IsDead && !(o.IsCollision && obj2.IsCollision) && (obj2.Owner != o.Owner || obj2.IsOwnCol && o.IsOwnCol) && o != obj2.Owner && obj2 != o.Owner {
 						if math.Sqrt((o.X-obj2.X)*(o.X-obj2.X)+(o.Y-obj2.Y)*(o.Y-obj2.Y)) < o.R+obj2.R {
 							o.Collision(o, obj2)
-							obj2.Collision(obj2, o)
 						}
 					}
 				}
 			}
-
-			quadtree.Insert(o)
 
 			if o.IsDead {
 				if o.DeadTime == -1 {
@@ -140,17 +138,17 @@ func moveloop(ticker time.Ticker) {
 			}
 		}
 
-		su.Unlock()
+		obj.ObjMutex.Unlock()
 	}
 }
 
 func sendUpdates(ticker time.Ticker) {
 	for range ticker.C {
-		su.Lock()
+		obj.ObjMutex.Lock()
 		for _, u := range obj.Users {
 			u.CameraSet()
 
-			var objList []*obj.Object = quadtree.Retrieve(obj.Area{
+			var objList []*obj.Object = obj.Qt.Retrieve(obj.Area{
 				X: u.Camera.Pos.X - 960/u.Camera.Z,
 				Y: u.Camera.Pos.Y - 540/u.Camera.Z,
 				W: 960 / u.Camera.Z * 2,
@@ -196,13 +194,13 @@ func sendUpdates(ticker time.Ticker) {
 				}
 			}
 		}
-		su.Unlock()
+		obj.ObjMutex.Unlock()
 	}
 }
 
 func scoreBoard(ticker time.Ticker) {
 	for range ticker.C {
-		su.Lock()
+		obj.ObjMutex.Lock()
 
 		var scoreBoard lib.Scoreboard
 
@@ -243,6 +241,6 @@ func scoreBoard(ticker time.Ticker) {
 				}
 			}
 		}
-		su.Unlock()
+		obj.ObjMutex.Unlock()
 	}
 }
