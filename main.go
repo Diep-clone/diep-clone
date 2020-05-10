@@ -7,6 +7,7 @@ import (
 	"math"
 	"math/rand"
 	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"runtime"
 	"sync"
