@@ -48,7 +48,18 @@ export const Obj = function(id) {
         this.x = data.x;
         this.y = data.y;
         if (system.playerSetting.id !== this.id) {
-            this.dir = data.dir;
+            if (this.dir) {
+                let ccw = Math.cos(data.dir)*Math.sin(this.dir)-Math.sin(data.dir)*Math.cos(this.dir);
+                let a = -((Math.cos(data.dir)*Math.cos(this.dir)) + (Math.sin(data.dir)*Math.sin(this.dir))-1) * Math.PI / 2;
+
+                if (ccw > 0) {
+                    this.dir -= a / 3;
+                } else if (ccw < 0) {
+                    this.dir += a / 3;
+                }
+            } else {
+                this.dir = data.dir;
+            }
         }
         if (!this.isDead){
             this.r = data.r;
