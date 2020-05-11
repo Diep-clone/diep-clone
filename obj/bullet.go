@@ -3,6 +3,8 @@ package obj
 import (
 	"app/lib"
 	"math"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func DefaultBulletTick(obj *Object) {
@@ -50,9 +52,9 @@ func DefaultDroneTick(obj *Object) {
 			obj.Dy += math.Sin(obj.Dir) * obj.Speed
 		}
 	} else if obj.Target != nil {
-		if obj.Target.IsDead {
+		if obj.Target.IsDead || obj.Owner == obj.Target || obj.Target.Team == obj.Team {
 			obj.Target = target
-		} else if dis > 500 {
+		} else if dis > 700 {
 			obj.Target = nil
 		} else {
 			obj.Dir = math.Atan2(obj.Target.Y-obj.Y, obj.Target.X-obj.X)
@@ -65,6 +67,7 @@ func DefaultDroneTick(obj *Object) {
 		obj.Dy += math.Sin(dir) * 0.02
 		obj.Dir = math.Atan2(obj.Dy, obj.Dx)
 		if target != nil {
+			log.Println("hello")
 			obj.Target = target
 		}
 	} else {
