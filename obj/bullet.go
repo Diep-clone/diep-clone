@@ -64,7 +64,9 @@ func DefaultDroneTick(obj *Object) {
 		obj.Dx += math.Cos(dir) * 0.02
 		obj.Dy += math.Sin(dir) * 0.02
 		obj.Dir = math.Atan2(obj.Dy, obj.Dx)
-		obj.Target = target
+		if target != nil {
+			obj.Target = target
+		}
 	} else {
 		obj.IsBack = true
 	}
