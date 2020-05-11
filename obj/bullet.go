@@ -42,7 +42,7 @@ func DefaultDroneTick(obj *Object) {
 	var target *Object = NearObject(obj, 300, 0, math.Pi)
 
 	if obj.IsBack {
-		if dis < 300 {
+		if dis < 120 {
 			obj.IsBack = false
 		} else {
 			obj.Dir = math.Atan2(obj.Owner.Y-obj.Y, obj.Owner.X-obj.X)
@@ -64,9 +64,7 @@ func DefaultDroneTick(obj *Object) {
 		obj.Dx += math.Cos(dir) * 0.02
 		obj.Dy += math.Sin(dir) * 0.02
 		obj.Dir = math.Atan2(obj.Dy, obj.Dx)
-		if target != nil {
-			obj.Target = target
-		}
+		obj.Target = target
 	} else {
 		obj.IsBack = true
 	}
