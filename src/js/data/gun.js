@@ -8,10 +8,11 @@ export const Gun = function (paths, dir, color, isFront) {
     this.dir = dir;
     this.color = color;
     this.isFront = isFront || false;
+    this.shotTime = 0;
     this.back = 0;
 
     this.Animate = function (tick) {
-        
+        this.back = 1 / 8000 * this.shotTime * this.shotTime - 1 / 40 * this.shotTime;
     }
 
     this.SetCanvasSize = function (camera, size, pos, r, dir) {

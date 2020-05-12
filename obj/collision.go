@@ -22,13 +22,13 @@ type Quadtree struct {
 }
 
 // NewQuadtree is
-func NewQuadtree(x, y, w, h float64, level int) *Quadtree {
-	q := Quadtree{
+func NewQuadtree(x, y, w, h float64) *Quadtree {
+	var q Quadtree = Quadtree{
 		x:       x,
 		y:       y,
 		w:       w,
 		h:       h,
-		level:   level,
+		level:   1,
 		objects: []*Object{},
 		nodes:   nil,
 	}
@@ -41,13 +41,15 @@ func (q *Quadtree) split() {
 	yy := [4]float64{0, 0, 1, 1}
 	q.nodes = make([]Quadtree, 4)
 	for i := 0; i < 4; i++ {
-		q.nodes[i] = *NewQuadtree(
-			q.x+xx[i]*q.w/2,
-			q.y+yy[i]*q.h/2,
-			q.w/2,
-			q.h/2,
-			q.level+1,
-		)
+		q.nodes[i] = Quadtree{
+			x:       q.x + xx[i]*q.w/2,
+			y:       q.y + yy[i]*q.h/2,
+			w:       q.w / 2,
+			h:       q.h / 2,
+			level:   q.level + 1,
+			objects: []*Object{},
+			nodes:   nil,
+		}
 	}
 }
 
@@ -76,6 +78,10 @@ func (q Quadtree) getIndex(area Area) int {
 
 // Insert insert quadtree
 func (q *Quadtree) Insert(obj *Object) {
+	if q.level == 1 && (obj.X+obj.R < q.x || obj.X-obj.R > q.x+q.w || obj.Y+obj.R < q.y || obj.Y-obj.R > q.y+q.h) {
+		return
+	}
+
 	var index = -1
 
 	if q.nodes != nil {

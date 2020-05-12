@@ -18,7 +18,7 @@ export const drawPolygon = function (ctx, x, y, z, r, dir, p) {
     ctx.beginPath();
     let t = (p % 2)? 0: Math.PI/p;
     ctx.moveTo((x + Math.cos(t+dir) * r) * z,(y + Math.sin(t+dir) * r) * z);
-    for (;t >= -Math.PI * 2;t -= Math.PI*2/p){
+    for (;t >= -Math.PI * 2; t -= Math.PI*2/p) {
         ctx.lineTo((x + Math.cos(t+dir) * r) * z,(y + Math.sin(t+dir) * r) * z);
     }
     ctx.fill();
@@ -94,17 +94,17 @@ export const drawBackground = function (ctx, x, y, z, w, h, area) {
     drawC(ctx, backgroundColor);
     ctx.fillRect((area[0] - x) * z, (area[1] - y) * z, area[2] * z, area[3] * z);
 
-    for (let i=4;i<area.length;){
+    for (let i=4;i<area.length;) {
         drawC(ctx, area[i++]);
         ctx.fillRect((area[i++] - x) * z, (area[i++] - y) * z, area[i++] * z, area[i++] * z);
     }
 
     ctx.beginPath(); // draw grid
-    for (let i = -x % 12.9 * z; i <= w; i += 12.9 * z){
+    for (let i = -x % 12.9 * z; i <= w; i += 12.9 * z) {
         ctx.moveTo(i, 0);
         ctx.lineTo(i, h);
     }
-    for (let i = -y % 12.9 * z; i <= h; i += 12.9 * z){
+    for (let i = -y % 12.9 * z; i <= h; i += 12.9 * z) {
         ctx.moveTo(0, i);
         ctx.lineTo(w, i);
     }

@@ -228,6 +228,8 @@ export default class System {
                         i+=len;
                     }
 
+                    let imObjList = [];
+
                     while (i < msg.data.byteLength) {
                         let isObjEnable = false;
 
@@ -260,6 +262,13 @@ export default class System {
                         obj.score = view.getUint32(i);
                         i+=4;
 
+                        let gunLen = view.getUint8(i);
+                        i++;
+                        obj.guns = [];
+                        for (let j = 0; gunLen > 0; i++,j++,gunLen--) {
+                            obj.guns[j] = view.getUint8(i);
+                        }
+
                         obj.hitTime = view.getUint8(i);
                         i++;
 
@@ -291,6 +300,7 @@ export default class System {
                             if (obi.id === obj.id){
                                 obi.ObjSet(obj);
                                 isObjEnable = true;
+                                imObjList.push(obi);
                             }
                         });
                         if (!isObjEnable && !obj.isDead) {
@@ -299,32 +309,19 @@ export default class System {
                                 this.playerSetting.obj = obi;
                             }
                             obi.ObjSet(obj);
-                            for (let i = 0; i < this.objectList.length; i++) {
-                                if (this.objectList[i].id > obi.id){
-                                    this.objectList.splice(i, 0, obi);
-                                    obi = null;
-                                    break;
-                                }
-                            }
-                            if (obi) {
-                                this.objectList.splice(this.objectList.length, 0, obi);
-                            }
+                            imObjList.push(obi);
                         }
                     }
-                    this.objectList.forEach((obj) => {
-                        if (!obj.isEnable){
-                            obj.isDelete = true;
-                        }
-                        obj.isEnable = false;
-                    })
 
-                    break;
+                    this.objectList = imObjList;
+
+                    return;
                 }
                 case 1: {
-                    for (var i = 1, j = 0; i < msg.data.byteLength; i+=4) {
+                    for (let i = 1, j = 0; i < msg.data.byteLength; i+=4) {
                         this.area[j++] = view.getInt32(i);
                     }
-                    break;
+                    return;
                 }
                 case 2: {
                     this.gameSetting.isNaming = true;
@@ -332,14 +329,14 @@ export default class System {
                     this.textinput.value = localStorage['name'] || '';
                     this.textinputcontainer.style.display = "block";
                     this.gameSetting.isConnecting = false;
-                    break;
+                    return;
                 }
                 case 3: {
                     
-                    break;
+                    return;
                 }
                 default: {
-                    break;
+                    return;
                 }
             }
         };
@@ -412,14 +409,6 @@ export default class System {
             );
 
             socket.send(buffer);
-
-            for (let i=0;i<this.objectList.length;){
-                if (this.objectList[i].isDelete){
-                    this.objectList.splice(i,1);
-                } else {
-                    i++;
-                }
-            }
 
             this.objectList.forEach((o) => {
                 o.Animate(tick);

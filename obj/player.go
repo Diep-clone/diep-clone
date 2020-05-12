@@ -145,9 +145,7 @@ func (p *Player) ReadPump() {
 // Event Catch Message
 func Event(p *Player, message []byte) {
 	p.Mu.Lock()
-	//ObjMutex.Lock()
 	defer p.Mu.Unlock()
-	//defer ObjMutex.Unlock()
 
 	var socketType uint8 = uint8(message[0])
 
@@ -194,12 +192,14 @@ func Event(p *Player, message []byte) {
 			test = test[size:]
 		}
 		log.Println(name)
-
-		if p.StartTime%2 == 1 {
-			p.ControlObject = NewNecro()
-		} else {
-			p.ControlObject = NewOverload()
-		}
+		p.ControlObject = NewBasic()
+		/*
+			if p.StartTime%2 == 1 {
+				p.ControlObject = NewNecro()
+			} else {
+				p.ControlObject = NewOverload()
+			}
+		*/
 		p.ControlObject.Team = strconv.Itoa(p.ID)
 		p.ControlObject.Name = name
 		p.ControlObject.SetController(p)
@@ -209,6 +209,7 @@ func Event(p *Player, message []byte) {
 			"id": p.ID,
 		}).Error("socketType Error")
 	}
+
 	return
 }
 

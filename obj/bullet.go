@@ -40,31 +40,40 @@ func DefaultDroneTick(obj *Object) {
 	}
 	var dis float64 = lib.Distance(obj.Owner.X, obj.Owner.Y, obj.X, obj.Y)
 	var target *Object = NearObject(obj, 300, 0, math.Pi)
+	var targetdis float64
+	if target != nil {
+		targetdis = lib.Distance(target.X, target.Y, obj.Owner.X, obj.Owner.Y)
+	}
 
 	if obj.IsBack {
-		if dis < 120 {
+		if dis < 60 {
 			obj.IsBack = false
+		} else if dis < 550 && target != nil && targetdis < 550 {
+			obj.IsBack = false
+			obj.Target = target
 		} else {
 			obj.Dir = math.Atan2(obj.Owner.Y-obj.Y, obj.Owner.X-obj.X)
 			obj.Dx += math.Cos(obj.Dir) * obj.Speed
 			obj.Dy += math.Sin(obj.Dir) * obj.Speed
 		}
 	} else if obj.Target != nil {
-		if obj.Target.IsDead || obj.Owner == obj.Target || obj.Target.Team == obj.Team {
+		if (obj.Target.IsDead || obj.Owner == obj.Target || obj.Target.Team == obj.Team) && targetdis < 550 {
 			obj.Target = target
-		} else if dis > 700 {
+		} else if dis > 550 || targetdis >= 550 {
 			obj.Target = nil
 		} else {
 			obj.Dir = math.Atan2(obj.Target.Y-obj.Y, obj.Target.X-obj.X)
 			obj.Dx += math.Cos(obj.Dir) * obj.Speed
 			obj.Dy += math.Sin(obj.Dir) * obj.Speed
 		}
-	} else if dis < lib.RandomRange(139.32, 150) {
+	} else if dis < lib.RandomRange(130, 150) {
 		var dir float64 = math.Atan2(obj.Owner.Y-obj.Y, obj.Owner.X-obj.X) - math.Pi/2
 		obj.Dx += math.Cos(dir) * 0.02
 		obj.Dy += math.Sin(dir) * 0.02
 		obj.Dir = math.Atan2(obj.Dy, obj.Dx)
-		obj.Target = target
+		if targetdis < 550 {
+			obj.Target = target
+		}
 	} else {
 		obj.IsBack = true
 	}

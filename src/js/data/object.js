@@ -53,15 +53,15 @@ export const Obj = function(id) {
                 let a = -((Math.cos(data.dir)*Math.cos(this.dir)) + (Math.sin(data.dir)*Math.sin(this.dir))-1) * Math.PI / 2;
 
                 if (ccw > 0) {
-                    this.dir -= a / 3;
+                    this.dir -= a / 2;
                 } else if (ccw < 0) {
-                    this.dir += a / 3;
+                    this.dir += a / 2;
                 }
             } else {
                 this.dir = data.dir;
             }
         }
-        if (!this.isDead){
+        if (!this.isDead) {
             this.r = data.r;
             this.h = data.h;
             this.mh = data.mh;
@@ -74,6 +74,9 @@ export const Obj = function(id) {
         this.name = data.name;
         if (this.type !== data.type) {
             this.guns = (gunList[data.type] == undefined)?[]:gunList[data.type];
+        }
+        for (let i = 0; i < this.guns.length && i < data.guns.length; i++) {
+            this.guns[i].shotTime = data.guns[i];
         }
         this.type = data.type;
         this.color = colorType(data.type,data.team);

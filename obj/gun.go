@@ -18,6 +18,7 @@ type Gun struct {
 	Bound     float64 `json:"bound"`
 	Stance    float64 `json:"stance"`
 	LifeTime  float64 `json:"lifetime"`
+	IsBorder  bool    `json:"isborder"`
 	IsAi      bool    `json:"isai"`
 	Guns      []Gun
 	Tick      func(*Object)
@@ -25,76 +26,84 @@ type Gun struct {
 	KillEvent func(*Object, *Object)
 	DeadEvent func(*Object, *Object)
 
-	Sx        float64 `json:"sx"`
-	Sy        float64 `json:"sy"`
-	Dir       float64 `json:"dir"`
-	Rdir      float64 `json:"rdir"`
-	GunBound  float64 `json:"gunbound"`
-	Reload    float64 `json:"reload"`    // default delay
-	DelayTime float64 `json:"delaytime"` // when shot
-	WaitTime  float64 `json:"waittime"`  // first wait time
-	ShotTime  float64 `json:"shottime"`  // click time to delay
-	Limit     int     `json:"limit"`
-	AutoShot  bool    `json:"autoshot"`
+	Sx           float64 `json:"sx"`
+	Sy           float64 `json:"sy"`
+	Dir          float64 `json:"dir"`
+	Rdir         float64 `json:"rdir"`
+	GunBound     float64 `json:"gunbound"`
+	Reload       float64 `json:"reload"`    // default delay
+	DelayTime    float64 `json:"delaytime"` // when shot
+	WaitTime     float64 `json:"waittime"`  // first wait time
+	ShotTime     float64 `json:"shottime"`  // click time to delay
+	ShotTimeUnix int64
+	Limit        int  `json:"limit"`
+	AutoShot     bool `json:"autoshot"`
 }
 
-func (g *Gun) Shot() {
-	if g.Owner == nil || g.Owner.Controller == nil {
+func (obj *Object) Shot(objIndex int) {
+	if obj.Guns == nil || obj == nil || obj.Controller == nil {
 		return
 	}
-	if g.AutoShot || g.Owner.Controller.Ml {
-		g.ShotTime += 1000. / 60.
-		var GunOwner = g.Owner
-		for GunOwner.Owner != nil {
-			GunOwner = GunOwner.Owner
-		}
-		g.Owner.IsShot = g.Owner.Controller.Ml
-		if g.DelayTime <= 0 && g.WaitTime < g.ShotTime/((0.6-0.04*float64(GunOwner.Stats[6]))/g.Reload*1000) && g.Limit != 0 {
-			dir := g.Owner.Dir + g.Dir + lib.RandomRange(-g.Rdir, g.Rdir)
-			var bullet Object = *NewObject(map[string]interface{}{
-				"type":         g.Type,
-				"team":         GunOwner.Team,
-				"x":            g.Owner.X + math.Cos(g.Owner.Dir+g.Dir-math.Pi/2)*g.Sx*g.Owner.R + math.Cos(g.Owner.Dir+g.Dir)*g.Sy*g.Owner.R,
-				"y":            g.Owner.Y + math.Sin(g.Owner.Dir+g.Dir-math.Pi/2)*g.Sx*g.Owner.R + math.Sin(g.Owner.Dir+g.Dir)*g.Sy*g.Owner.R,
-				"dir":          dir,
-				"speed":        (0.056 + 0.02*float64(GunOwner.Stats[3])) * g.Speed,
-				"dx":           math.Cos(dir) * (4 + 0.4*float64(GunOwner.Stats[3])) * g.Speed,
-				"dy":           math.Sin(dir) * (4 + 0.4*float64(GunOwner.Stats[3])) * g.Speed,
-				"mh":           (8 + 6*float64(GunOwner.Stats[4])) * g.Health,
-				"h":            (8 + 6*float64(GunOwner.Stats[4])) * g.Health,
-				"damage":       (7 + 3*float64(GunOwner.Stats[5])) * g.Damage,
-				"r":            0.4 * g.Radius * 12.9 * math.Pow(1.01, float64(g.Owner.Level)-1),
-				"bound":        g.Bound,
-				"stance":       g.Stance,
-				"deadtime":     1000 * g.LifeTime,
-				"isShowHealth": false,
-			}, func(o *Object) {
-				if g.Limit == -1 {
-					o.Tick = g.Tick
-				}
-				if o.IsDead {
-					g.Limit++
-					o.Tick = g.Tick
-				}
-				g.Tick(o)
-			}, g.Collision, g.KillEvent, g.DeadEvent)
-			if !g.IsAi {
-				bullet.SetController(GunOwner.Controller)
+	for i := 0; i < len(obj.Guns); i++ {
+		g := &obj.Guns[i]
+		if g.AutoShot || obj.Controller.Ml {
+			g.ShotTime += 1000. / 60.
+			var GunOwner = obj
+			for GunOwner.Owner != nil {
+				GunOwner = GunOwner.Owner
 			}
-			if g.Limit != -1 {
-				g.Limit--
+			obj.IsShot = obj.Controller.Ml
+			if g.DelayTime <= 0 && g.WaitTime < g.ShotTime/((0.6-0.04*float64(GunOwner.Stats[6]))/g.Reload*1000) && g.Limit != 0 {
+				dir := obj.Dir + g.Dir + lib.RandomRange(-g.Rdir, g.Rdir)
+				var bullet Object = *NewObject(map[string]interface{}{
+					"type":         g.Type,
+					"team":         GunOwner.Team,
+					"x":            obj.X + math.Cos(obj.Dir+g.Dir-math.Pi/2)*g.Sx*obj.R + math.Cos(obj.Dir+g.Dir)*g.Sy*obj.R,
+					"y":            obj.Y + math.Sin(obj.Dir+g.Dir-math.Pi/2)*g.Sx*obj.R + math.Sin(obj.Dir+g.Dir)*g.Sy*obj.R,
+					"dir":          dir,
+					"speed":        (0.056 + 0.02*float64(GunOwner.Stats[3])) * g.Speed,
+					"dx":           math.Cos(dir) * (4 + 0.4*float64(GunOwner.Stats[3])) * g.Speed,
+					"dy":           math.Sin(dir) * (4 + 0.4*float64(GunOwner.Stats[3])) * g.Speed,
+					"mh":           (8 + 6*float64(GunOwner.Stats[4])) * g.Health,
+					"h":            (8 + 6*float64(GunOwner.Stats[4])) * g.Health,
+					"damage":       (7 + 3*float64(GunOwner.Stats[5])) * g.Damage,
+					"r":            0.4 * g.Radius * 12.9 * math.Pow(1.01, float64(obj.Level)-1),
+					"bound":        g.Bound,
+					"stance":       g.Stance,
+					"deadtime":     1000 * g.LifeTime,
+					"isShowHealth": false,
+					"isBorder":     g.IsBorder,
+				}, func(o *Object) {
+					if g.Limit == -1 {
+						o.Tick = g.Tick
+					}
+					if o.IsDead {
+						g.Limit++
+						o.Tick = g.Tick
+					}
+					g.Tick(o)
+				}, g.Collision, g.KillEvent, g.DeadEvent)
+				if !g.IsAi {
+					bullet.SetController(GunOwner.Controller)
+				}
+				if g.Limit != -1 {
+					g.Limit--
+				}
+				bullet.Guns = g.Guns
+				bullet.Owner = GunOwner
+				g.Owner.Dx -= math.Cos(g.Owner.Dir+g.Dir) * 0.1 * g.Bound
+				g.Owner.Dy -= math.Sin(g.Owner.Dir+g.Dir) * 0.1 * g.Bound
+				g.DelayTime = (0.6 - 0.04*float64(GunOwner.Stats[6])) / g.Reload * 1000
+				g.ShotTimeUnix = lib.Now()
+				Objects[objIndex] = &bullet
+				objIndex = len(Objects)
+				Objects = append(Objects, obj)
 			}
-			bullet.Guns = g.Guns
-			bullet.Owner = GunOwner
-			g.Owner.Dx -= math.Cos(g.Owner.Dir+g.Dir) * 0.1 * g.Bound
-			g.Owner.Dy -= math.Sin(g.Owner.Dir+g.Dir) * 0.1 * g.Bound
-			g.DelayTime = (0.6 - 0.04*float64(GunOwner.Stats[6])) / g.Reload * 1000
-			Objects = append(Objects, &bullet)
+		} else {
+			g.ShotTime = 0
 		}
-	} else {
-		g.ShotTime = 0
+		g.DelayTime = math.Max(g.DelayTime-1000./60., 0)
 	}
-	g.DelayTime = math.Max(g.DelayTime-1000./60., 0)
 	return
 }
 
@@ -109,6 +118,7 @@ func NewGun(own *Object, value map[string]interface{}, t func(*Object), c func(*
 		"bound":     1,
 		"stance":    1,
 		"lifetime":  3,
+		"isborder":  true,
 		"isai":      false,
 		"sx":        0,
 		"sy":        1.88,
@@ -141,6 +151,9 @@ func NewGun(own *Object, value map[string]interface{}, t func(*Object), c func(*
 		}
 	}
 	s.Tick = t
+	if s.Type == "Bullet" {
+		s.IsBorder = false
+	}
 	if s.Type == "Drone" && value["lifetime"] == nil {
 		s.LifeTime = -0.001
 	}

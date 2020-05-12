@@ -80,9 +80,14 @@ func main() {
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+port, nil))
 }
 
+var count = 0
+var count2 = 0
+
 func moveloop(ticker time.Ticker) {
 	for range ticker.C {
 		obj.ObjMutex.Lock()
+
+		t := time.Now()
 
 		obj.AddShape()
 
@@ -90,21 +95,22 @@ func moveloop(ticker time.Ticker) {
 			u.PlayerSet()
 		}
 
-		obj.Qt = *obj.NewQuadtree(-lib.GameSetting.MapSize.X-lib.Grid*4, -lib.GameSetting.MapSize.Y-lib.Grid*4, lib.GameSetting.MapSize.X*2+lib.Grid*8, lib.GameSetting.MapSize.Y*2+lib.Grid*8, 1)
+		obj.Qt = *obj.NewQuadtree(-lib.GameSetting.MapSize.X-lib.Grid*4, -lib.GameSetting.MapSize.Y-lib.Grid*4, lib.GameSetting.MapSize.X*2+lib.Grid*8, lib.GameSetting.MapSize.Y*2+lib.Grid*8)
 
 		for _, o := range obj.Objects {
 			obj.Qt.Insert(o)
 			o.IsCollision = false
 		}
 
-		for i := 0; i < len(obj.Objects); i++ {
-			o := obj.Objects[i]
-
+		for i, o := range obj.Objects {
 			if o.Tick != nil {
 				o.Tick(o)
 			}
 
-			o.ObjectTick()
+			o.ObjectTick(i)
+		}
+
+		for i, o := range obj.Objects {
 
 			if !o.IsDead {
 				var objList []*obj.Object = obj.Qt.Retrieve(obj.Area{
@@ -118,6 +124,7 @@ func moveloop(ticker time.Ticker) {
 					if o != obj2 && !obj2.IsDead && !(o.IsCollision && obj2.IsCollision) && (obj2.Owner != o.Owner || obj2.IsOwnCol && o.IsOwnCol) && o != obj2.Owner && obj2 != o.Owner {
 						if math.Sqrt((o.X-obj2.X)*(o.X-obj2.X)+(o.Y-obj2.Y)*(o.Y-obj2.Y)) < o.R+obj2.R {
 							o.Collision(o, obj2)
+							obj2.Collision(obj2, o)
 						}
 					}
 				}
@@ -130,6 +137,7 @@ func moveloop(ticker time.Ticker) {
 					if o.DeadEvent != nil {
 						o.DeadEvent(o, o.HitObject)
 					}
+					obj.ObjIDList = append(obj.ObjIDList, o.ID)
 					obj.Objects = append(obj.Objects[:i], obj.Objects[i+1:]...)
 					i--
 				} else {
@@ -138,6 +146,12 @@ func moveloop(ticker time.Ticker) {
 			}
 		}
 
+		if count == 0 {
+			log.WithField("time", time.Since(t)).Info("moveloop")
+			count = 60
+		}
+		count--
+
 		obj.ObjMutex.Unlock()
 	}
 }
@@ -145,15 +159,11 @@ func moveloop(ticker time.Ticker) {
 func sendUpdates(ticker time.Ticker) {
 	for range ticker.C {
 		obj.ObjMutex.Lock()
+
+		t := time.Now()
+
 		for _, u := range obj.Users {
 			u.CameraSet()
-
-			var objList []*obj.Object = obj.Qt.Retrieve(obj.Area{
-				X: u.Camera.Pos.X - 960/u.Camera.Z,
-				Y: u.Camera.Pos.Y - 540/u.Camera.Z,
-				W: 960 / u.Camera.Z * 2,
-				H: 540 / u.Camera.Z * 2,
-			})
 
 			var sendData []byte = make([]byte, 32)
 
@@ -177,7 +187,7 @@ func sendUpdates(ticker time.Ticker) {
 				sendData = append(sendData, []byte(o.Team)...)
 			}
 
-			for _, o := range objList {
+			for _, o := range obj.Objects {
 				if o.X < u.Camera.Pos.X+960/u.Camera.Z+o.R &&
 					o.X > u.Camera.Pos.X-960/u.Camera.Z-o.R &&
 					o.Y < u.Camera.Pos.Y+540/u.Camera.Z+o.R &&
@@ -190,10 +200,17 @@ func sendUpdates(ticker time.Ticker) {
 				err := u.Send(sendData)
 				if err != nil {
 					log.Println("Send Error")
-					return
+					continue
 				}
 			}
 		}
+
+		if count2 == 0 {
+			log.WithField("time", time.Since(t)).Info("sendUpdates")
+			count2 = 30
+		}
+		count2--
+
 		obj.ObjMutex.Unlock()
 	}
 }
@@ -237,7 +254,7 @@ func scoreBoard(ticker time.Ticker) {
 				err := u.Send(sendData)
 				if err != nil {
 					log.Println("send Error")
-					return
+					continue
 				}
 			}
 		}

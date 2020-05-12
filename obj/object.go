@@ -66,7 +66,7 @@ type Object struct {
 }
 
 //
-func (obj *Object) ObjectTick() {
+func (obj *Object) ObjectTick(objIndex int) {
 	obj.X += obj.Dx //* lib.GameSetting.GameSpeed // 좌표값에 속도 적용
 	obj.Y += obj.Dy //* lib.GameSetting.GameSpeed
 
@@ -94,11 +94,7 @@ func (obj *Object) ObjectTick() {
 		return
 	}
 
-	if obj.Guns != nil {
-		for i := 0; i < len(obj.Guns); i++ {
-			obj.Guns[i].Shot()
-		}
-	}
+	obj.Shot(objIndex)
 
 	if obj.Controller != nil && lib.Now()-int64(30000.*lib.GameSetting.GameSpeed) > obj.HitTime {
 		obj.H += obj.Mh / 60 / 10 * lib.GameSetting.GameSpeed
@@ -167,6 +163,14 @@ func (o Object) ObjBinaryData() []byte {
 	binary.BigEndian.PutUint64(data[44:52], math.Float64bits(lib.Floor(o.H, 1)))
 	binary.BigEndian.PutUint64(data[52:60], math.Float64bits(lib.Floor(o.Opacity, 2)))
 	binary.BigEndian.PutUint32(data[60:64], uint32(o.Exp))
+	data = append(data, byte(len(o.Guns)))
+	for _, g := range o.Guns {
+		if g.ShotTimeUnix+200-lib.Now() > 0 {
+			data = append(data, byte(uint8(g.ShotTimeUnix+200-lib.Now())))
+		} else {
+			data = append(data, byte(0))
+		}
+	}
 	if o.HitTime+100-lib.Now() > 0 {
 		data = append(data, byte(uint8(o.HitTime+100-lib.Now())))
 	} else {
@@ -194,11 +198,23 @@ func (o *Object) SetController(p *Player) {
 	o.Controller = p
 }
 
-var objID int = 1
+var objID = 1
+var ObjIDList []int
 
 func NewObject(value map[string]interface{}, t func(*Object), c func(*Object, *Object), k func(*Object, *Object), d func(*Object, *Object)) *Object {
+	ID := objID
+	objID++
+	if len(ObjIDList) > 0 {
+		ID = ObjIDList[0]
+		if len(ObjIDList) < 2 {
+			ObjIDList = nil
+		} else {
+			ObjIDList = ObjIDList[1 : len(ObjIDList)-1]
+		}
+		objID--
+	}
 	m := map[string]interface{}{
-		"id":           objID,
+		"id":           ID,
 		"type":         "squ",
 		"team":         "ffa",
 		"x":            -999999,
@@ -220,11 +236,10 @@ func NewObject(value map[string]interface{}, t func(*Object), c func(*Object, *O
 		"isBorder":     true,
 		"isOwnCol":     true,
 		"isDead":       false,
-		"isCollision":  false,
+		"isCollision":  true,
 		"isShowHealth": true,
 		"isShowName":   false,
 	}
-	objID++
 
 	for key, val := range value {
 		m[key] = val

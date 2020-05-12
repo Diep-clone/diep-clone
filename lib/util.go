@@ -28,7 +28,7 @@ type Scoreboard [11]Score
 // Scoreboard Push
 func (sc *Scoreboard) Push(value Score) {
 	var index = 0
-	for ; value.Score < sc[index+1].Score && index < 10; index++ {
+	for ; value.Score < sc[index+1].Score && index < 9; index++ {
 	}
 	for j := 9; j >= index; j-- {
 		sc[j+1] = sc[j]

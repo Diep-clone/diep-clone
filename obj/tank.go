@@ -49,6 +49,9 @@ func NewBasic() *Object {
 		"type":       "Basic",
 		"x":          lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
 		"y":          lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
+		"level":      45,
+		"exp":        23536,
+		"stats":      [8]int{0, 0, 0, 7, 7, 7, 5, 7},
 		"maxStats":   [8]int{7, 7, 7, 7, 7, 7, 7, 7},
 		"isShowName": true,
 	}, TankTick, DefaultCollision, DefaultKillEvent, nil)
