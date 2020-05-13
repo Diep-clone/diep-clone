@@ -53,6 +53,7 @@ type Object struct {
 	IsDead       bool `json:"isDead"`
 	IsCollision  bool `json:"isCollision"`
 	IsShot       bool `json:"isShot"`
+	IsTargeted   bool `json:"isTargeted"`
 	IsShowHealth bool `json:"isShowHealth"`
 	IsShowName   bool `json:"isShowName"`
 	IsBack       bool
@@ -238,6 +239,7 @@ func NewObject(value map[string]interface{}, t func(*Object), c func(*Object, *O
 		"isBorder":     true,
 		"isOwnCol":     true,
 		"isDead":       false,
+		"isTargeted":   true,
 		"isCollision":  true,
 		"isShowHealth": true,
 		"isShowName":   false,

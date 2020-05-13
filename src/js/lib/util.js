@@ -124,12 +124,14 @@ export const getPolygonRadius = function (p) {
 
 export const getObjectPoint = function (type) {
     switch (type) {
+        case "Trap":
+            return -3;
         case "Triangle":
         case "Drone":
             return 3;
         case "Square":
         case "NecroSquare":
-        case "Necromanser":
+        case "Necromancer":
         case "Factory":
             return 4;
         case "Pentagon":

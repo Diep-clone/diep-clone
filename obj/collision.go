@@ -154,7 +154,7 @@ func NearObject(o *Object, ran, dir, rdir float64) *Object {
 	var nearObj *Object = nil
 
 	for _, obj := range objList {
-		if math.Abs(dir-math.Atan2(o.Y-obj.Y, o.X-obj.X)) < rdir && lib.Distance(o.X, o.Y, obj.X, obj.Y) < ran && o != obj && o.Owner != obj && o.Team != obj.Team && !obj.IsDead {
+		if math.Abs(dir-math.Atan2(o.Y-obj.Y, o.X-obj.X)) < rdir && lib.Distance(o.X, o.Y, obj.X, obj.Y) < ran && o != obj && o.Owner != obj && o.Team != obj.Team && !obj.IsDead && obj.IsTargeted {
 			if nearObj == nil || lib.Distance(o.X, o.Y, obj.X, obj.Y) < lib.Distance(o.X, o.Y, nearObj.X, nearObj.Y) {
 				nearObj = obj
 			}

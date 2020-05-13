@@ -46,6 +46,9 @@ func (obj *Object) Shot(objIndex int) {
 	}
 	for i := 0; i < len(obj.Guns); i++ {
 		g := &obj.Guns[i]
+		if g.Owner == nil {
+			return
+		}
 		if g.AutoShot || obj.Controller != nil && obj.Controller.Ml {
 			g.ShotTime += 1000. / 60.
 			var GunOwner = obj
@@ -72,6 +75,7 @@ func (obj *Object) Shot(objIndex int) {
 					"stance":       g.Stance,
 					"deadtime":     1000 * g.LifeTime,
 					"isShowHealth": false,
+					"isTargeted":   false,
 					"isBorder":     g.IsBorder,
 				}, func(o *Object) {
 					if g.Limit == -1 {
@@ -91,8 +95,8 @@ func (obj *Object) Shot(objIndex int) {
 				}
 				bullet.Guns = g.Guns
 				bullet.Owner = GunOwner
-				g.Owner.Dx -= math.Cos(g.Owner.Dir+g.Dir) * 0.1 * g.Bound
-				g.Owner.Dy -= math.Sin(g.Owner.Dir+g.Dir) * 0.1 * g.Bound
+				obj.Dx -= math.Cos(obj.Dir+g.Dir) * 0.1 * g.Bound
+				obj.Dy -= math.Sin(obj.Dir+g.Dir) * 0.1 * g.Bound
 				g.DelayTime = (0.6 - 0.04*float64(GunOwner.Stats[6])) / g.Reload * 1000
 				g.IsShot = true
 				Objects[objIndex] = &bullet
@@ -116,7 +120,7 @@ func NewGun(own *Object, value map[string]interface{}, t func(*Object), c func(*
 		"health":    1,
 		"radius":    1,
 		"bound":     1,
-		"stance":    1,
+		"stance":    0.1,
 		"lifetime":  3,
 		"isborder":  true,
 		"isai":      false,
@@ -148,6 +152,8 @@ func NewGun(own *Object, value map[string]interface{}, t func(*Object), c func(*
 			t = DefaultBulletTick
 		case "Drone":
 			t = DefaultDroneTick
+		case "Trap":
+			t = DefaultTrapTick
 		}
 	}
 	s.Tick = t

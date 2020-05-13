@@ -93,6 +93,7 @@ func moveloop(ticker time.Ticker) {
 
 		for _, u := range obj.Users {
 			u.PlayerSet()
+			u.CameraSet()
 		}
 
 		obj.Qt = *obj.NewQuadtree(-lib.GameSetting.MapSize.X-lib.Grid*4, -lib.GameSetting.MapSize.Y-lib.Grid*4, lib.GameSetting.MapSize.X*2+lib.Grid*8, lib.GameSetting.MapSize.Y*2+lib.Grid*8)
@@ -163,8 +164,6 @@ func sendUpdates(ticker time.Ticker) {
 		t := time.Now()
 
 		for _, u := range obj.Users {
-			u.CameraSet()
-
 			var sendData []byte = make([]byte, 32)
 
 			binary.BigEndian.PutUint64(sendData[1:9], math.Float64bits(u.Camera.Pos.X))

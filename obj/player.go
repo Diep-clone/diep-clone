@@ -80,10 +80,10 @@ func (p *Player) SetMousePoint(x float64, y float64) {
 //
 func (p *Player) CameraSet() {
 	if obj := p.ControlObject; obj != nil {
-		p.Camera = Camera{
-			Pos: Pos{X: lib.Floor(obj.X, 2), Y: lib.Floor(obj.Y, 2)},
-			Z:   16. / 9. * math.Pow(0.995, float64(obj.Level)-1) / float64(obj.Sight),
+		if !obj.IsBack {
+			p.Camera.Pos = Pos{X: obj.X, Y: obj.Y}
 		}
+		p.Camera.Z = 16. / 9. * math.Pow(0.995, float64(obj.Level)-1) / float64(obj.Sight)
 	}
 }
 
@@ -196,11 +196,25 @@ func Event(p *Player, message []byte) {
 			test = test[size:]
 		}
 		log.Println(name)
-		if p.StartTime%2 == 1 {
-			p.ControlObject = NewTank("Twin")
-		} else {
-			p.ControlObject = NewTank("Triplet")
+		t := p.StartTime%100 + 1
+		var s string
+		switch {
+		case t < 40:
+			s = "Twin"
+		case t < 60:
+			s = "Triplet"
+		case t < 70:
+			s = "Basic"
+		case t < 80:
+			s = "TriTrapper"
+		case t < 90:
+			s = "Predator"
+		case t < 99:
+			s = "Overlord"
+		default:
+			s = "Necromancer"
 		}
+		p.ControlObject = NewTank(s)
 		p.ControlObject.Team = strconv.Itoa(p.ID)
 		p.ControlObject.Name = name
 		p.ControlObject.SetController(p)

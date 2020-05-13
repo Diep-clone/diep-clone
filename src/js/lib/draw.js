@@ -13,13 +13,17 @@ export const drawPolygon = function (ctx, x, y, z, r, dir, p) {
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
 
-    r *= getPolygonRadius(p);
+    r *= getPolygonRadius(Math.abs(p));
 
     ctx.beginPath();
     let t = (p % 2)? 0: Math.PI/p;
-    ctx.moveTo((x + Math.cos(t+dir) * r) * z,(y + Math.sin(t+dir) * r) * z);
-    for (;t >= -Math.PI * 2; t -= Math.PI*2/p) {
-        ctx.lineTo((x + Math.cos(t+dir) * r) * z,(y + Math.sin(t+dir) * r) * z);
+    for (;t >= -Math.PI * 2; t -= Math.PI*2/Math.abs(p)) {
+        if (p < 0) {
+            ctx.lineTo((x + Math.cos(t+dir-Math.PI/p) * r * 0.5) * z,(y + Math.sin(t+dir-Math.PI/p) * r * 0.5) * z);
+            ctx.lineTo((x + Math.cos(t+dir) * r * 1.5) * z,(y + Math.sin(t+dir) * r * 1.5) * z);
+        } else {
+            ctx.lineTo((x + Math.cos(t+dir) * r) * z,(y + Math.sin(t+dir) * r) * z);
+        }
     }
     ctx.fill();
     ctx.stroke();

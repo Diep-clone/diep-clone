@@ -107,7 +107,7 @@ export const Obj = function(id) {
 
     this.SetCanvasSize = function (camera) {
         var {z, t, c, r, dir, o} = this.DrawSet(camera);
-        let rr = r * getPolygonRadius(getObjectPoint(t));
+        let rr = r * getPolygonRadius(Math.abs(getObjectPoint(t)));
         var size = {x: rr * z * 2, y: rr * z * 2,};
         var pos = {x: rr * z, y: rr * z,};
         this.guns.forEach((g) => g.SetCanvasSize(camera, size, pos, rr, dir));

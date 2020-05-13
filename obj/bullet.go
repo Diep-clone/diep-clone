@@ -5,6 +5,19 @@ import (
 	"math"
 )
 
+func DefaultTrapTick(obj *Object) {
+	if lib.Now()-obj.SpawnTime > 3000 {
+		obj.IsOwnCol = false
+	} else {
+		obj.IsOwnCol = true
+	}
+	obj.DeadTime -= 1000. / 60.
+	if obj.DeadTime <= 0 {
+		obj.DeadTime = -1
+		obj.H = 0
+	}
+}
+
 func DefaultBulletTick(obj *Object) {
 	obj.IsOwnCol = false
 	obj.Dx += math.Cos(obj.Dir) * obj.Speed
@@ -57,7 +70,7 @@ func DefaultDroneTick(obj *Object) {
 			obj.Dy += math.Sin(obj.Dir) * obj.Speed
 		}
 	} else if obj.Target != nil {
-		if (obj.Target.IsDead || obj.Owner == obj.Target || obj.Target.Team == obj.Team) && targetdis < 550 {
+		if (obj.Target.IsDead || obj.Owner == obj.Target || obj.Target.Team == obj.Team || !obj.Target.IsTargeted) && targetdis < 550 {
 			obj.Target = target
 		} else if dis > 550 || targetdis >= 550 {
 			obj.Target = nil

@@ -92,59 +92,97 @@ func NewTank(t string) *Object {
 			"health": 0.7,
 			"bound":  0.5,
 		}, nil, nil, nil, nil)}
+	case "Overlord":
+		obj.Stats = [8]int{0, 0, 0, 7, 7, 7, 5, 7}
+		obj.Sight = 1.11
+		var dir float64 = -math.Pi / 2
+		obj.Guns = []Gun{}
+		for i := 0; i < 4; i++ {
+			obj.Guns = append(obj.Guns, *NewGun(obj, map[string]interface{}{
+				"type":     "Drone",
+				"speed":    0.6,
+				"damage":   0.7,
+				"health":   2,
+				"bound":    0.4,
+				"reload":   0.167,
+				"autoshot": true,
+				"sy":       1.6,
+				"dir":      dir,
+				"limit":    2,
+			}, nil, nil, nil, nil))
+			dir += math.Pi / 2
+		}
+	case "Necromancer":
+		obj.Stats = [8]int{0, 0, 0, 7, 7, 7, 5, 7}
+		obj.Sight = 1.11
+		obj.KillEvent = NecroKillEvent
+		obj.Guns = []Gun{*NewGun(nil, map[string]interface{}{
+			"limit": 0,
+		}, nil, nil, nil, nil)}
+	case "Predator":
+		obj.Sight = 1.176
+		obj.Guns = []Gun{*NewGun(obj, map[string]interface{}{
+			"speed":  1.25,
+			"damage": 0.75,
+			"radius": 0.7,
+			"rdir":   math.Pi / 120,
+			"bound":  0.03,
+			"reload": 0.4,
+			"sy":     2.23,
+		}, nil, nil, nil, nil), *NewGun(obj, map[string]interface{}{
+			"speed":    1.25,
+			"damage":   0.75,
+			"radius":   0.95,
+			"rdir":     math.Pi / 120,
+			"bound":    0.03,
+			"waittime": 0.25,
+			"reload":   0.4,
+			"sy":       2.23,
+		}, nil, nil, nil, nil), *NewGun(obj, map[string]interface{}{
+			"speed":    1.25,
+			"damage":   0.75,
+			"radius":   1.25,
+			"rdir":     math.Pi / 120,
+			"bound":    0.03,
+			"waittime": 0.5,
+			"reload":   0.4,
+			"sy":       2.23,
+		}, nil, nil, nil, nil)}
+		obj.Tick = func(o *Object) {
+			TankTick(o)
+			if o.Controller != nil {
+				if o.Controller.Mr && !o.IsBack {
+					o.Controller.Camera.Pos = Pos{
+						X: o.X + math.Cos(o.Dir)*400,
+						Y: o.Y + math.Sin(o.Dir)*400,
+					}
+					o.IsBack = true
+				}
+				if !o.Controller.Mr && o.IsBack {
+					o.IsBack = false
+				}
+			}
+		}
+	case "TriTrapper":
+		obj.Sight = 1.11
+		var dir float64 = -math.Pi / 3 * 2
+		obj.Guns = []Gun{}
+		for i := 0; i < 3; i++ {
+			obj.Guns = append(obj.Guns, *NewGun(obj, map[string]interface{}{
+				"type":     "Trap",
+				"health":   2,
+				"reload":   0.667,
+				"radius":   0.8,
+				"dir":      dir,
+				"lifetime": 10,
+				"sy":       1.2,
+			}, nil, nil, nil, nil))
+			dir += math.Pi / 3 * 2
+		}
+
 	default:
 	}
 
-	return obj
-}
-
-func NewOverload() *Object {
-	var obj *Object = NewObject(map[string]interface{}{
-		"type":       "Overload",
-		"x":          lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
-		"y":          lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
-		"level":      45,
-		"exp":        23536,
-		"stats":      [8]int{0, 0, 0, 7, 7, 7, 5, 7},
-		"maxStats":   [8]int{7, 7, 7, 7, 7, 7, 7, 7},
-		"sight":      1.11,
-		"isShowName": true,
-	}, TankTick, DefaultCollision, DefaultKillEvent, nil)
-	var dir float64 = -math.Pi / 2
-	obj.Guns = []Gun{}
-	for i := 0; i < 4; i++ {
-		obj.Guns = append(obj.Guns, *NewGun(obj, map[string]interface{}{
-			"type":     "Drone",
-			"speed":    0.6,
-			"damage":   0.7,
-			"health":   2,
-			"bound":    0.4,
-			"reload":   0.167,
-			"autoshot": true,
-			"sy":       1.6,
-			"dir":      dir,
-			"limit":    2,
-		}, nil, nil, nil, nil))
-		dir += math.Pi / 2
-	}
-	return obj
-}
-
-func NewNecro() *Object {
-	var obj *Object = NewObject(map[string]interface{}{
-		"type":       "Necromanser",
-		"x":          lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
-		"y":          lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
-		"level":      45,
-		"exp":        23536,
-		"stats":      [8]int{0, 0, 0, 7, 7, 7, 5, 7},
-		"maxStats":   [8]int{7, 7, 7, 7, 7, 7, 7, 7},
-		"sight":      1.11,
-		"isShowName": true,
-	}, TankTick, DefaultCollision, NecroKillEvent, nil)
-	obj.Guns = []Gun{*NewGun(nil, map[string]interface{}{
-		"limit": 0,
-	}, nil, nil, nil, nil)}
 	return obj
 }
 
