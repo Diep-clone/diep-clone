@@ -204,8 +204,6 @@ export default class System {
                         return;
                     }
                     this.camera.z = this.camera.uiz * view.getFloat64(17);
-
-                    console.log(view.getFloat64(17));
     
                     this.camera.x = view.getFloat64(1) - this.cv.width / 2 / this.camera.z;
                     this.camera.y = view.getFloat64(9) - this.cv.height / 2 / this.camera.z;

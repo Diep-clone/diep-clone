@@ -60,6 +60,10 @@ func NewPlayer(c *websocket.Conn) *Player {
 	p := Player{}
 	p.ID = playerID
 	playerID++
+	p.Camera = Camera{
+		Pos: Pos{X: 0, Y: 0},
+		Z:   1,
+	}
 	p.Conn = c
 	p.StartTime = lib.Now()
 	p.IsCanDir = true
