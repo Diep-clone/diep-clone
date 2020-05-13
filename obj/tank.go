@@ -44,18 +44,57 @@ func (o *Object) ChangeTank(c *Object) {
 	o.DeadEvent = c.DeadEvent
 }
 
-func NewBasic() *Object {
+func NewTank(t string) *Object {
 	var obj *Object = NewObject(map[string]interface{}{
-		"type":       "Basic",
+		"type":       t,
 		"x":          lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
 		"y":          lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
 		"level":      45,
 		"exp":        23536,
-		"stats":      [8]int{0, 0, 0, 7, 7, 7, 5, 7},
+		"stats":      [8]int{0, 0, 0, 5, 7, 7, 7, 7},
 		"maxStats":   [8]int{7, 7, 7, 7, 7, 7, 7, 7},
 		"isShowName": true,
 	}, TankTick, DefaultCollision, DefaultKillEvent, nil)
-	obj.Guns = []Gun{*NewGun(obj, map[string]interface{}{}, nil, nil, nil, nil)}
+
+	switch t {
+	case "Basic":
+		obj.Guns = []Gun{*NewGun(obj, map[string]interface{}{}, nil, nil, nil, nil)}
+	case "Twin":
+		obj.Guns = []Gun{*NewGun(obj, map[string]interface{}{
+			"damage": 0.65,
+			"bound":  0.75,
+			"sx":     0.5,
+			"sy":     1.88,
+		}, nil, nil, nil, nil), *NewGun(obj, map[string]interface{}{
+			"damage":   0.65,
+			"bound":    0.75,
+			"waittime": 0.5,
+			"sx":       -0.5,
+			"sy":       1.88,
+		}, nil, nil, nil, nil)}
+	case "Triplet":
+		obj.Guns = []Gun{*NewGun(obj, map[string]interface{}{
+			"damage":   0.6,
+			"health":   0.7,
+			"bound":    0.5,
+			"waittime": 0.5,
+			"sx":       0.5,
+			"sy":       1.6,
+		}, nil, nil, nil, nil), *NewGun(obj, map[string]interface{}{
+			"damage":   0.6,
+			"health":   0.7,
+			"bound":    0.5,
+			"waittime": 0.5,
+			"sx":       -0.5,
+			"sy":       1.6,
+		}, nil, nil, nil, nil), *NewGun(obj, map[string]interface{}{
+			"damage": 0.6,
+			"health": 0.7,
+			"bound":  0.5,
+		}, nil, nil, nil, nil)}
+	default:
+	}
+
 	return obj
 }
 

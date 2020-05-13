@@ -196,14 +196,11 @@ func Event(p *Player, message []byte) {
 			test = test[size:]
 		}
 		log.Println(name)
-		p.ControlObject = NewBasic()
-		/*
-			if p.StartTime%2 == 1 {
-				p.ControlObject = NewNecro()
-			} else {
-				p.ControlObject = NewOverload()
-			}
-		*/
+		if p.StartTime%2 == 1 {
+			p.ControlObject = NewTank("Twin")
+		} else {
+			p.ControlObject = NewTank("Triplet")
+		}
 		p.ControlObject.Team = strconv.Itoa(p.ID)
 		p.ControlObject.Name = name
 		p.ControlObject.SetController(p)

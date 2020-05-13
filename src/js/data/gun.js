@@ -6,7 +6,7 @@ export const Gun = function (paths, dir, color, isFront) {
 
     this.paths = paths;
     this.dir = dir;
-    this.color = color;
+    this.color = color || 1;
     this.isFront = isFront || false;
     this.shotTime = [];
     this.back = 0;
@@ -22,7 +22,6 @@ export const Gun = function (paths, dir, color, isFront) {
                 this.shotTime.splice(i, 1);
             }
         };
-        //this.back = 
     }
 
     this.SetCanvasSize = function (camera, size, pos, r, dir) {
