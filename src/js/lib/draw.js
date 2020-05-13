@@ -19,8 +19,8 @@ export const drawPolygon = function (ctx, x, y, z, r, dir, p) {
     let t = (p % 2)? 0: Math.PI/p;
     for (;t >= -Math.PI * 2; t -= Math.PI*2/Math.abs(p)) {
         if (p < 0) {
-            ctx.lineTo((x + Math.cos(t+dir-Math.PI/p) * r * 0.5) * z,(y + Math.sin(t+dir-Math.PI/p) * r * 0.5) * z);
-            ctx.lineTo((x + Math.cos(t+dir) * r * 1.5) * z,(y + Math.sin(t+dir) * r * 1.5) * z);
+            ctx.lineTo((x + Math.cos(t+dir-Math.PI/p) * r * 0.4) * z,(y + Math.sin(t+dir-Math.PI/p) * r * 0.4) * z);
+            ctx.lineTo((x + Math.cos(t+dir) * r) * z,(y + Math.sin(t+dir) * r) * z);
         } else {
             ctx.lineTo((x + Math.cos(t+dir) * r) * z,(y + Math.sin(t+dir) * r) * z);
         }
