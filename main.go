@@ -148,7 +148,7 @@ func moveloop(ticker time.Ticker) {
 
 		if count == 0 {
 			log.WithField("time", time.Since(t)).Info("moveloop")
-			count = 60
+			count = 600
 		}
 		count--
 
@@ -207,7 +207,7 @@ func sendUpdates(ticker time.Ticker) {
 
 		if count2 == 0 {
 			log.WithField("time", time.Since(t)).Info("sendUpdates")
-			count2 = 30
+			count2 = 300
 		}
 		count2--
 

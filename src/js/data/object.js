@@ -172,22 +172,24 @@ export const Obj = function(id) {
 
         const {x, y, z, r, o} = this.DrawSet(camera);
         
-        if (this.name){
-            if (this.score){
+        if (this.score) {
+            if (this.name) {
                 this.cv.width = getTextWidth(this.name, "bold " + 0.8 * r * z + "px Ubuntu") + 5 * z;
                 this.cv.height = 5 * 0.8 * r * z;
                 this.ctx.imageSmoothingEnabled = false;
                 drawText(this.ctx, this.cv.width / 2 / z, this.cv.height / 2 / z, z, 1, new RGB("#FFFFFF"), this.name, 0.8 * r);
                 ctx.globalAlpha = o;
                 ctx.drawImage(this.cv, x * z - this.cv.width / 2, (y - r * 1.8) * z - this.cv.height / 2);
+            }
 
-                this.cv.width = getTextWidth(this.score, "bold " + 0.6 * r * z + "px Ubuntu") + 5 * z;
-                this.cv.height = 5 * 0.4 * r * z;
-                this.ctx.imageSmoothingEnabled = false;
-                drawText(this.ctx, this.cv.width / 2 / z, this.cv.height / 2 / z, z, 1, new RGB("#FFFFFF"), this.score, 0.6 * r);
-                ctx.globalAlpha = o;
-                ctx.drawImage(this.cv, x * z - this.cv.width / 2, (y - r * 1.2) * z - this.cv.height / 2);
-            } else {
+            this.cv.width = getTextWidth(this.score, "bold " + 0.6 * r * z + "px Ubuntu") + 5 * z;
+            this.cv.height = 5 * 0.4 * r * z;
+            this.ctx.imageSmoothingEnabled = false;
+            drawText(this.ctx, this.cv.width / 2 / z, this.cv.height / 2 / z, z, 1, new RGB("#FFFFFF"), this.score, 0.6 * r);
+            ctx.globalAlpha = o;
+            ctx.drawImage(this.cv, x * z - this.cv.width / 2, (y - r * 1.2) * z - this.cv.height / 2);
+        } else {
+            if (this.name) {
                 this.cv.width = getTextWidth(this.name, "bold " + 0.8 * r * z + "px Ubuntu") + 5 * z;
                 this.cv.height = 5 * 0.8 * r * z;
                 this.ctx.imageSmoothingEnabled = false;

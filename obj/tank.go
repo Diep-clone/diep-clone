@@ -122,33 +122,10 @@ func NewAuto5() *Object {
 	}, TankTick, DefaultCollision, DefaultKillEvent, nil)
 	var dir float64 = -math.Pi * 4 / 5
 	for i := 0; i < 5; i++ {
+
 		dir += math.Pi * 2 / 5
 	}
 	return obj
-}
-
-func NewAutoGun(dx, dy, r float64) *Object {
-	var obj *Object = NewObject(map[string]interface{}{
-		"type":  "AutoGun",
-		"dx":    dx,
-		"dy":    dy,
-		"r":     r,
-		"sight": math.Pi / 2,
-	}, AutoGunTick, nil, nil, nil)
-	return obj
-}
-
-func AutoGunTick(o *Object) {
-	o.X = o.Owner.X
-	o.Y = o.Owner.Y
-
-	var imX, imY = o.Dx, o.Dy
-	var dis, dir = lib.Distance(0, 0, imX, imY), math.Atan2(imY, imX) + 0.02
-
-	o.Dx = math.Cos(dir) * dis
-	o.Dy = math.Sin(dir) * dis
-
-	o.Dir = dir
 }
 
 func NecroKillEvent(a *Object, b *Object) {

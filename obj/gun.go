@@ -41,18 +41,18 @@ type Gun struct {
 }
 
 func (obj *Object) Shot(objIndex int) {
-	if obj.Guns == nil || obj == nil || obj.Controller == nil {
+	if obj.Guns == nil {
 		return
 	}
 	for i := 0; i < len(obj.Guns); i++ {
 		g := &obj.Guns[i]
-		if g.AutoShot || obj.Controller.Ml {
+		if g.AutoShot || obj.Controller != nil && obj.Controller.Ml {
 			g.ShotTime += 1000. / 60.
 			var GunOwner = obj
 			for GunOwner.Owner != nil {
 				GunOwner = GunOwner.Owner
 			}
-			obj.IsShot = obj.Controller.Ml
+			obj.IsShot = obj.Controller != nil && obj.Controller.Ml
 			if g.DelayTime <= 0 && g.WaitTime < g.ShotTime/((0.6-0.04*float64(GunOwner.Stats[6]))/g.Reload*1000) && g.Limit != 0 {
 				dir := obj.Dir + g.Dir + lib.RandomRange(-g.Rdir, g.Rdir)
 				var bullet Object = *NewObject(map[string]interface{}{
