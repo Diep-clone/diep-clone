@@ -14,7 +14,7 @@ export const Obj = function(id) {
 
     this.x;
     this.y;
-    this.r;
+    this.r = 1;
     this.dir;
     this.h;
     this.mh;
