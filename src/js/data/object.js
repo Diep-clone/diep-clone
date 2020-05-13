@@ -41,7 +41,7 @@ export const Obj = function(id) {
             }
         }
 
-        this.guns.forEach((g) => g.Animate());
+        this.guns.forEach((g) => g.Animate(tick));
     }
 
     this.ObjSet = function (data) {
@@ -76,7 +76,9 @@ export const Obj = function(id) {
             this.guns = (gunList[data.type] == undefined)?[]:gunList[data.type];
         }
         for (let i = 0; i < this.guns.length && i < data.guns.length; i++) {
-            this.guns[i].shotTime = data.guns[i];
+            if (data.guns[i]) {
+                this.guns[i].Shot();
+            }
         }
         this.type = data.type;
         this.color = colorType(data.type,data.team);

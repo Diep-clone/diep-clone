@@ -164,9 +164,11 @@ func (o Object) ObjBinaryData() []byte {
 	binary.BigEndian.PutUint64(data[52:60], math.Float64bits(lib.Floor(o.Opacity, 2)))
 	binary.BigEndian.PutUint32(data[60:64], uint32(o.Exp))
 	data = append(data, byte(len(o.Guns)))
-	for _, g := range o.Guns {
-		if g.ShotTimeUnix+200-lib.Now() > 0 {
-			data = append(data, byte(uint8(g.ShotTimeUnix+200-lib.Now())))
+	for i := 0; i < len(o.Guns); i++ {
+		g := &o.Guns[i]
+		if g.IsShot {
+			data = append(data, byte(1))
+			g.IsShot = false
 		} else {
 			data = append(data, byte(0))
 		}

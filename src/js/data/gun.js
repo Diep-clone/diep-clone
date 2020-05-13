@@ -8,11 +8,21 @@ export const Gun = function (paths, dir, color, isFront) {
     this.dir = dir;
     this.color = color;
     this.isFront = isFront || false;
-    this.shotTime = 0;
+    this.shotTime = [];
     this.back = 0;
 
     this.Animate = function (tick) {
-        this.back = 1 / 8000 * this.shotTime * this.shotTime - 1 / 40 * this.shotTime;
+        this.back = 0;
+        for (let i = 0; i < this.shotTime.length;){
+            let s = this.shotTime[i] += tick;
+            if (s < 220) {
+                this.back += 3 / 24200 * s * s - 3 / 110 * s;
+                i++;
+            } else {
+                this.shotTime.splice(i, 1);
+            }
+        };
+        //this.back = 
     }
 
     this.SetCanvasSize = function (camera, size, pos, r, dir) {
@@ -76,6 +86,6 @@ export const Gun = function (paths, dir, color, isFront) {
     }
 
     this.Shot = function (){
-        
+        this.shotTime.push(0);
     }
 }

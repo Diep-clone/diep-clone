@@ -26,18 +26,18 @@ type Gun struct {
 	KillEvent func(*Object, *Object)
 	DeadEvent func(*Object, *Object)
 
-	Sx           float64 `json:"sx"`
-	Sy           float64 `json:"sy"`
-	Dir          float64 `json:"dir"`
-	Rdir         float64 `json:"rdir"`
-	GunBound     float64 `json:"gunbound"`
-	Reload       float64 `json:"reload"`    // default delay
-	DelayTime    float64 `json:"delaytime"` // when shot
-	WaitTime     float64 `json:"waittime"`  // first wait time
-	ShotTime     float64 `json:"shottime"`  // click time to delay
-	ShotTimeUnix int64
-	Limit        int  `json:"limit"`
-	AutoShot     bool `json:"autoshot"`
+	Sx        float64 `json:"sx"`
+	Sy        float64 `json:"sy"`
+	Dir       float64 `json:"dir"`
+	Rdir      float64 `json:"rdir"`
+	GunBound  float64 `json:"gunbound"`
+	Reload    float64 `json:"reload"`    // default delay
+	DelayTime float64 `json:"delaytime"` // when shot
+	WaitTime  float64 `json:"waittime"`  // first wait time
+	ShotTime  float64 `json:"shottime"`  // click time to delay
+	IsShot    bool
+	Limit     int  `json:"limit"`
+	AutoShot  bool `json:"autoshot"`
 }
 
 func (obj *Object) Shot(objIndex int) {
@@ -94,7 +94,7 @@ func (obj *Object) Shot(objIndex int) {
 				g.Owner.Dx -= math.Cos(g.Owner.Dir+g.Dir) * 0.1 * g.Bound
 				g.Owner.Dy -= math.Sin(g.Owner.Dir+g.Dir) * 0.1 * g.Bound
 				g.DelayTime = (0.6 - 0.04*float64(GunOwner.Stats[6])) / g.Reload * 1000
-				g.ShotTimeUnix = lib.Now()
+				g.IsShot = true
 				Objects[objIndex] = &bullet
 				objIndex = len(Objects)
 				Objects = append(Objects, obj)
