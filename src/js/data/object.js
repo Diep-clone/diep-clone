@@ -187,7 +187,7 @@ export const Obj = function(id) {
             this.ctx.imageSmoothingEnabled = false;
             drawText(this.ctx, this.cv.width / 2 / z, this.cv.height / 2 / z, z, 1, new RGB("#FFFFFF"), this.score, 0.6 * r);
             ctx.globalAlpha = o;
-            console.log(this.cv.width, this.cv.height);
+            console.log(z, r);
             ctx.drawImage(this.cv, x * z - this.cv.width / 2, (y - r * 1.2) * z - this.cv.height / 2);
         } else {
             if (this.name) {
