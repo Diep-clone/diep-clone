@@ -2,6 +2,20 @@ import { RGB, getPolygonRadius, getObjectPoint, getTextWidth } from '../lib/util
 import { colorList, colorType, gunList } from '../data/index';
 import { drawC, drawObj, drawText } from '../lib/draw';
 
+function deepClone(obj) {
+    if(obj === null || typeof obj !== 'object') {
+        return obj;
+    }
+    
+    const result = Array.isArray(obj) ? [] : {};
+    
+    for(let key of Object.keys(obj)) {
+        result[key] = deepClone(obj[key])
+    }
+    
+    return result;
+}
+
 export const Obj = function(id) {
     'use strict';
 
@@ -53,9 +67,9 @@ export const Obj = function(id) {
                 let a = -((Math.cos(data.dir)*Math.cos(this.dir)) + (Math.sin(data.dir)*Math.sin(this.dir))-1) * Math.PI / 2;
 
                 if (ccw > 0) {
-                    this.dir -= a / 2;
+                    this.dir -= a * 0.8;
                 } else if (ccw < 0) {
-                    this.dir += a / 2;
+                    this.dir += a * 0.8;
                 }
             } else {
                 this.dir = data.dir;
@@ -73,7 +87,10 @@ export const Obj = function(id) {
 
         this.name = data.name;
         if (this.type !== data.type) {
-            this.guns = (gunList[data.type] == undefined)?[]:gunList[data.type];
+            this.guns = [];
+            if (gunList[data.type] != undefined) {
+                this.guns = deepClone(gunList[data.type]);
+            }
         }
         for (let i = 0; i < this.guns.length && i < data.guns.length; i++) {
             if (data.guns[i]) {

@@ -17,7 +17,8 @@ export const Gun = function (paths, dir, color, isMoveDir, isFront, isStatic) {
     this.Animate = function (tick) {
         this.back = 0;
         for (let i = 0; i < this.shotTime.length;){
-            let s = this.shotTime[i] += tick;
+            this.shotTime[i] += tick;
+            let s = this.shotTime[i];
             if (s < 220) {
                 this.back += 3 / 24200 * s * s - 3 / 110 * s;
                 i++;

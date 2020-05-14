@@ -265,8 +265,8 @@ export default class System {
                         let gunLen = view.getUint8(i);
                         i++;
                         obj.guns = [];
-                        for (let j = 0; gunLen > 0; i++,j++,gunLen--) {
-                            obj.guns[j] = view.getUint8(i);
+                        for (; gunLen > 0; i++,gunLen--) {
+                            obj.guns.push(view.getUint8(i));
                         }
 
                         obj.hitTime = view.getUint8(i);
