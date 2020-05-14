@@ -1,13 +1,16 @@
 import { colorList } from '../data/index';
 import { drawC } from '../lib/draw';
 
-export const Gun = function (paths, dir, color, isFront) {
+export const Gun = function (paths, dir, color, isMoveDir, isFront, isStatic) {
     'use strict';
 
     this.paths = paths;
-    this.dir = dir;
-    this.color = color || 1;
+    this.dir = dir || 0;
+    this.color = color;
+    if (this.color == undefined) this.color = 1;
+    this.isMoveDir = isMoveDir || 0;
     this.isFront = isFront || false;
+    this.isStatic = isStatic || false;
     this.shotTime = [];
     this.back = 0;
 
@@ -21,15 +24,23 @@ export const Gun = function (paths, dir, color, isFront) {
             } else {
                 this.shotTime.splice(i, 1);
             }
-        };
+        }
+        if (this.isMoveDir) {
+            this.dir += this.isMoveDir * tick / 20
+        }
     }
 
     this.SetCanvasSize = function (camera, size, pos, r, dir) {
+        if (this.isMoveDir) {
+            dir = 0;
+        }
+        const {z, ddir, b} = this.DrawSet(camera, r);
+
         this.paths.forEach((p) => {
-            const x = Math.floor(Math.cos(dir - Math.PI/2 + this.dir) * p[0] * camera.z * r
-            + Math.cos(dir + this.dir) * (p[1] * camera.z * r + this.back) + pos.x);
-            const y = Math.floor(Math.sin(dir - Math.PI/2 + this.dir) * p[0] * camera.z * r
-            + Math.sin(dir + this.dir) * (p[1] * camera.z * r + this.back) + pos.y);
+            const x = Math.floor(Math.cos(dir - Math.PI/2 + ddir) * p[0] * z * ((this.isStatic)?1:r)
+            + Math.cos(dir + ddir) * (p[1] * z * r + b) + pos.x);
+            const y = Math.floor(Math.sin(dir - Math.PI/2 + ddir) * p[0] * z * ((this.isStatic)?1:r)
+            + Math.sin(dir + ddir) * (p[1] * z * r + b) + pos.y);
             
             if (x < 0) {
                 size.x -= x;
@@ -47,12 +58,14 @@ export const Gun = function (paths, dir, color, isFront) {
         });
     }
 
-    this.DrawSet = function (camera, hitTime) { 
-        let c = colorList[this.color];
-        if (this.hitTime > 60) {
-            c.getLightRGB(1 - (hitTime - 60) / 40);
-        } else if (this.hitTime > 0) {
-            c.getRedRGB(1 - hitTime / 60);
+    this.DrawSet = function (camera, c, hitTime) {
+        if (this.color != -1) {
+            c = colorList[this.color];
+            if (this.hitTime > 60) {
+                c.getLightRGB(1 - (hitTime - 60) / 70);
+            } else if (this.hitTime > 0) {
+                c.getRedRGB(1 - hitTime / 60);
+            }
         }
         return {
             z: camera.z,
@@ -62,8 +75,12 @@ export const Gun = function (paths, dir, color, isFront) {
         }
     }
 
-    this.Draw = function (ctx, camera, x, y, r, dir, hitTime) {
-        const {z, ddir, b, c} = this.DrawSet(camera, hitTime);
+    this.Draw = function (ctx, camera, x, y, r, cc, dir, hitTime) {
+        if (isMoveDir) {
+            dir = 0;
+        }
+
+        const {z, ddir, b, c} = this.DrawSet(camera, cc, hitTime);
 
         ctx.save();
         drawC(ctx,c,c.getDarkRGB());
@@ -73,8 +90,8 @@ export const Gun = function (paths, dir, color, isFront) {
         let first = true;
         ctx.beginPath();
         this.paths.forEach((p) => {
-            let xx = (x + Math.cos(dir - Math.PI/2 + ddir) * p[0] * r + Math.cos(dir + ddir) * (p[1] * r + b)) * z;
-            let yy = (y + Math.sin(dir - Math.PI/2 + ddir) * p[0] * r + Math.sin(dir + ddir) * (p[1] * r + b)) * z;
+            let xx = (x + Math.cos(dir - Math.PI/2 + ddir) * p[0] * ((this.isStatic)?1:r) + Math.cos(dir + ddir) * (p[1] * r + b)) * z;
+            let yy = (y + Math.sin(dir - Math.PI/2 + ddir) * p[0] * ((this.isStatic)?1:r) + Math.sin(dir + ddir) * (p[1] * r + b)) * z;
             first?ctx.moveTo(xx,yy):ctx.lineTo(xx,yy);
             first = false;
         });

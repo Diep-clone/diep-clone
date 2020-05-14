@@ -44,10 +44,14 @@ func (obj *Object) Shot(objIndex int) {
 	if obj.Guns == nil {
 		return
 	}
+	obj.IsShot = false
 	for i := 0; i < len(obj.Guns); i++ {
 		g := &obj.Guns[i]
 		if g.Owner == nil {
-			return
+			continue
+		}
+		if obj.Controller != nil && obj.Controller.Ml {
+			obj.IsShot = true
 		}
 		if g.AutoShot || obj.Controller != nil && obj.Controller.Ml {
 			g.ShotTime += 1000. / 60.
@@ -55,7 +59,6 @@ func (obj *Object) Shot(objIndex int) {
 			for GunOwner.Owner != nil {
 				GunOwner = GunOwner.Owner
 			}
-			obj.IsShot = obj.Controller != nil && obj.Controller.Ml
 			if g.DelayTime <= 0 && g.WaitTime < g.ShotTime/((0.6-0.04*float64(GunOwner.Stats[6]))/g.Reload*1000) && g.Limit != 0 {
 				dir := obj.Dir + g.Dir + lib.RandomRange(-g.Rdir, g.Rdir)
 				var bullet Object = *NewObject(map[string]interface{}{
@@ -93,10 +96,11 @@ func (obj *Object) Shot(objIndex int) {
 				if g.Limit != -1 {
 					g.Limit--
 				}
-				bullet.Guns = g.Guns
+				bullet.Guns = make([]Gun, len(g.Guns))
+				copy(bullet.Guns, g.Guns) // because it is Slice!
 				bullet.Owner = GunOwner
-				obj.Dx -= math.Cos(obj.Dir+g.Dir) * 0.1 * g.Bound
-				obj.Dy -= math.Sin(obj.Dir+g.Dir) * 0.1 * g.Bound
+				obj.Dx -= math.Cos(obj.Dir+g.Dir) * 0.1 * g.GunBound
+				obj.Dy -= math.Sin(obj.Dir+g.Dir) * 0.1 * g.GunBound
 				g.DelayTime = (0.6 - 0.04*float64(GunOwner.Stats[6])) / g.Reload * 1000
 				g.IsShot = true
 				Objects[objIndex] = &bullet
@@ -112,7 +116,7 @@ func (obj *Object) Shot(objIndex int) {
 }
 
 // New Gun1!!!!!!!!!!11!!!
-func NewGun(own *Object, value map[string]interface{}, t func(*Object), c func(*Object, *Object), k func(*Object, *Object), d func(*Object, *Object)) *Gun {
+func NewGun(own *Object, value map[string]interface{}, t func(*Object), c func(*Object, *Object), k func(*Object, *Object), d func(*Object, *Object)) Gun {
 	m := map[string]interface{}{
 		"type":      "Bullet",
 		"speed":     1,
@@ -172,5 +176,5 @@ func NewGun(own *Object, value map[string]interface{}, t func(*Object), c func(*
 	}
 	s.KillEvent = k
 	s.DeadEvent = d
-	return &s
+	return s
 }

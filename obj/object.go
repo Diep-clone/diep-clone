@@ -89,9 +89,11 @@ func (obj *Object) ObjectTick(objIndex int) {
 		}
 	}
 
-	if obj.H <= 0 && !obj.IsDead {
+	if obj.H <= 0 {
 		obj.IsDead = true
 		obj.H = 0
+	}
+	if obj.IsDead {
 		return
 	}
 
@@ -156,8 +158,8 @@ func (o Object) ObjBinaryData() []byte {
 		o.H = 1
 	}
 	binary.BigEndian.PutUint32(data[0:4], uint32(o.ID))
-	binary.BigEndian.PutUint64(data[4:12], math.Float64bits(lib.Floor(o.X, 2)))
-	binary.BigEndian.PutUint64(data[12:20], math.Float64bits(lib.Floor(o.Y, 2)))
+	binary.BigEndian.PutUint64(data[4:12], math.Float64bits(o.X))
+	binary.BigEndian.PutUint64(data[12:20], math.Float64bits(o.Y))
 	binary.BigEndian.PutUint64(data[20:28], math.Float64bits(lib.Floor(o.R, 1)))
 	binary.BigEndian.PutUint64(data[28:36], math.Float64bits(lib.Floor(o.Dir, 2)))
 	binary.BigEndian.PutUint64(data[36:44], math.Float64bits(lib.Floor(o.Mh, 1)))

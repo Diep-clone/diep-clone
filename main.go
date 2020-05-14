@@ -111,8 +111,7 @@ func moveloop(ticker time.Ticker) {
 			o.ObjectTick(i)
 		}
 
-		for i, o := range obj.Objects {
-
+		for _, o := range obj.Objects {
 			if !o.IsDead {
 				var objList []*obj.Object = obj.Qt.Retrieve(obj.Area{
 					X: o.X - o.R,
@@ -130,7 +129,10 @@ func moveloop(ticker time.Ticker) {
 					}
 				}
 			}
+		}
 
+		for i := 0; i < len(obj.Objects); i++ {
+			var o *obj.Object = obj.Objects[i]
 			if o.IsDead {
 				if o.DeadTime == -1 {
 					o.DeadTime = 300

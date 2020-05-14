@@ -136,7 +136,7 @@ export const Obj = function(id) {
             var s = this.DrawSet(camera);
             this.guns.forEach((g) => {
                 if (!g.isFront) {
-                    g.Draw(ctxx, camera, x / z, y / z, r, dir, this.hitTime);
+                    g.Draw(ctxx, camera, x / z, y / z, r, c, dir, this.hitTime);
                 }
             });
             drawObj(ctxx,
@@ -145,7 +145,7 @@ export const Obj = function(id) {
             z, r, dir, t, 1, c);
             this.guns.forEach((g) => {
                 if (g.isFront) {
-                    g.Draw(ctxx, camera, x / z, y / z, r, dir, this.hitTime);
+                    g.Draw(ctxx, camera, x / z, y / z, r, c, dir, this.hitTime);
                 }
             });
             ctx.save();
@@ -157,13 +157,13 @@ export const Obj = function(id) {
             var {x, y, z, t, c, r, dir, o} = this.DrawSet(camera);
             this.guns.forEach((g) => {
                 if (!g.isFront) {
-                    g.Draw(ctx, camera, x, y, r, dir, this.hitTime);
+                    g.Draw(ctx, camera, x, y, r, c, dir, this.hitTime);
                 }
             });
             drawObj(ctx, x, y, z, r, dir, t, o, c);
             this.guns.forEach((g) => {
                 if (g.isFront) {
-                    g.Draw(ctx, camera, x, y, r, dir, this.hitTime);
+                    g.Draw(ctx, camera, x, y, r, c, dir, this.hitTime);
                 }
             });
         }
