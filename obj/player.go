@@ -196,24 +196,26 @@ func Event(p *Player, message []byte) {
 			test = test[size:]
 		}
 		log.Println(name)
-		t := p.StartTime%100 + 1
-		var s string
-		switch {
-		case t < 40:
-			s = "Twin"
-		case t < 60:
-			s = "Triplet"
-		case t < 70:
-			s = "Basic"
-		case t < 80:
-			s = "TriTrapper"
-		case t < 90:
-			s = "Predator"
-		case t < 99:
-			s = "Overlord"
-		default:
-			s = "Necromancer"
-		}
+		//t := p.StartTime%100 + 1
+		var s string = "TriTrapper"
+		/*
+			switch {
+			case t < 40:
+				s = "Twin"
+			case t < 60:
+				s = "Triplet"
+			case t < 70:
+				s = "Basic"
+			case t < 80:
+				s = "TriTrapper"
+			case t < 90:
+				s = "Predator"
+			case t < 99:
+				s = "Overlord"
+			default:
+				s = "Necromancer"
+			}
+		*/
 		p.ControlObject = NewTank(s)
 		p.ControlObject.Team = strconv.Itoa(p.ID)
 		p.ControlObject.Name = name

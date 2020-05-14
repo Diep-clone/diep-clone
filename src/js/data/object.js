@@ -153,7 +153,7 @@ export const Obj = function(id) {
             ctx.imageSmoothingEnabled = false;
             ctx.drawImage(this.cv,Math.floor(s.x * z - x),Math.floor(s.y * z - y));
             ctx.restore();
-        } else {
+        } else if (this.opacity > 0) {
             var {x, y, z, t, c, r, dir, o} = this.DrawSet(camera);
             this.guns.forEach((g) => {
                 if (!g.isFront) {
