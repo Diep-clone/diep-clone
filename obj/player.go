@@ -130,7 +130,7 @@ func (p *Player) ReadPump() {
 	}()
 
 	for {
-		_, message, err := p.Conn.ReadMessage()
+		_, message, err := p.Conn.ReadMessage() // 오류 발생 부분
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.WithFields(log.Fields{
@@ -148,12 +148,14 @@ func (p *Player) ReadPump() {
 
 // Event Catch Message
 func Event(p *Player, message []byte) {
+	ObjMutex.Lock()
+	defer ObjMutex.Unlock()
 
 	var socketType uint8 = uint8(message[0])
 
 	switch socketType {
 	case 0:
-		if _, ok := Users[p.ID]; ok {
+		if _, ok := Users[p.ID]; ok { // 오류 발생 부분
 			log.WithField("id", p.ID).Warn("Prevent Login")
 			return
 		}
