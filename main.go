@@ -98,10 +98,12 @@ func moveloop(ticker time.Ticker) {
 
 		obj.Qt = *obj.NewQuadtree(-lib.GameSetting.MapSize.X-lib.Grid*4, -lib.GameSetting.MapSize.Y-lib.Grid*4, lib.GameSetting.MapSize.X*2+lib.Grid*8, lib.GameSetting.MapSize.Y*2+lib.Grid*8)
 
-		for _, o := range obj.Objects {
-			obj.Qt.Insert(o)
-			o.IsCollision = false
-		}
+		/*
+			for _, o := range obj.Objects {
+				obj.Qt.Insert(o)
+				o.IsCollision = false
+			}
+		*/
 
 		for i, o := range obj.Objects {
 			if o.Tick != nil {
@@ -110,26 +112,27 @@ func moveloop(ticker time.Ticker) {
 
 			o.ObjectTick(i)
 		}
+		/*
+			for _, o := range obj.Objects {
+				if !o.IsDead {
+					var objList []*obj.Object = obj.Qt.Retrieve(obj.Area{
+						X: o.X - o.R,
+						Y: o.Y - o.R,
+						W: o.R * 2,
+						H: o.R * 2,
+					})
 
-		for _, o := range obj.Objects {
-			if !o.IsDead {
-				var objList []*obj.Object = obj.Qt.Retrieve(obj.Area{
-					X: o.X - o.R,
-					Y: o.Y - o.R,
-					W: o.R * 2,
-					H: o.R * 2,
-				})
-
-				for _, obj2 := range objList {
-					if o != obj2 && !obj2.IsDead && !(o.IsCollision && obj2.IsCollision) && (obj2.Owner != o.Owner || obj2.IsOwnCol && o.IsOwnCol) && o != obj2.Owner && obj2 != o.Owner {
-						if math.Sqrt((o.X-obj2.X)*(o.X-obj2.X)+(o.Y-obj2.Y)*(o.Y-obj2.Y)) < o.R+obj2.R {
-							o.Collision(o, obj2)
-							obj2.Collision(obj2, o)
+					for _, obj2 := range objList {
+						if o != obj2 && !obj2.IsDead && !(o.IsCollision && obj2.IsCollision) && (obj2.Owner != o.Owner || obj2.IsOwnCol && o.IsOwnCol) && o != obj2.Owner && obj2 != o.Owner {
+							if math.Sqrt((o.X-obj2.X)*(o.X-obj2.X)+(o.Y-obj2.Y)*(o.Y-obj2.Y)) < o.R+obj2.R {
+								o.Collision(o, obj2)
+								obj2.Collision(obj2, o)
+							}
 						}
 					}
 				}
 			}
-		}
+		*/
 
 		for i := 0; i < len(obj.Objects); i++ {
 			var o *obj.Object = obj.Objects[i]
@@ -151,7 +154,8 @@ func moveloop(ticker time.Ticker) {
 
 		if count == 0 {
 			log.WithField("time", time.Since(t)).Info("moveloop")
-			count = 600
+			log.Println(len(obj.Objects))
+			count = 60
 		}
 		count--
 
@@ -200,7 +204,7 @@ func sendUpdates(ticker time.Ticker) {
 			if u.Conn != nil {
 				err := u.Send(sendData)
 				if err != nil {
-					log.Println("Send Error")
+					log.Println("Send Error to sendUpdates")
 					continue
 				}
 			}
@@ -208,7 +212,7 @@ func sendUpdates(ticker time.Ticker) {
 
 		if count2 == 0 {
 			log.WithField("time", time.Since(t)).Info("sendUpdates")
-			count2 = 300
+			count2 = 30
 		}
 		count2--
 
@@ -254,7 +258,7 @@ func scoreBoard(ticker time.Ticker) {
 			if u.Conn != nil {
 				err := u.Send(sendData)
 				if err != nil {
-					log.Println("send Error")
+					log.Println("send Error to scoreboard")
 					continue
 				}
 			}
