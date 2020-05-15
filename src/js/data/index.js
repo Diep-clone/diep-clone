@@ -235,8 +235,11 @@ export const gunList = {
     "TrapperDominator": [
 
     ],
-    "BattleShip": [
-
+    "Battleship": [
+        new Gun([[0.9,0],[0.68,1.5],[0.1,1.5],[-0.16,0]],Math.PI / 2),
+        new Gun([[-0.9,0],[-0.68,1.5],[-0.1,1.5],[0.16,0]],Math.PI / 2),
+        new Gun([[0.9,0],[0.68,1.5],[0.1,1.5],[-0.16,0]],-Math.PI / 2),
+        new Gun([[-0.9,0],[-0.68,1.5],[-0.1,1.5],[0.16,0]],-Math.PI / 2),
     ],
     "Annihilator": [
 

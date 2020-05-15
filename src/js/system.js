@@ -361,6 +361,7 @@ export default class System {
 
     loop() {
         const tick = Date.now() - this.lastTime;
+        console.log(Math.floor(1000 / tick));
         this.lastTime = Date.now();
 
         if (this.cv.width <= this.cv.height/9*16) {

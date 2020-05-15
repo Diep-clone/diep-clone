@@ -279,6 +279,8 @@ func NewTank(t string) *Object {
 			}, nil, nil, nil, nil))
 			dir += math.Pi / 3 * 2
 		}
+	case "Battleship":
+		obj.Sight = 1.11
 	case "Spike":
 		obj.Sight = 1.11
 		obj.Stats = [8]int{3, 10, 10, 0, 0, 0, 0, 10}
@@ -289,7 +291,7 @@ func NewTank(t string) *Object {
 		}
 	case "Skimmer":
 		obj.Sight = 1.11
-		obj.Stats = [8]int{7, 7, 7, 0, 0, 0, 7, 7}
+		obj.Stats = [8]int{0, 0, 0, 5, 7, 7, 7, 7}
 		var gun Gun = NewGun(obj, map[string]interface{}{
 			"type":     "SkimmerBullet",
 			"speed":    0.6,
