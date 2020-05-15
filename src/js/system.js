@@ -55,6 +55,7 @@ export default class System {
 
         this.lastTime = Date.now();
         this.isControlRotate = true;
+        this.pingList = [];
 
         this.camera = {
             x: 0,
@@ -174,6 +175,16 @@ export default class System {
         };
 
         this.loop();
+
+        setInterval(() => {
+            this.pingList.push(Date.now());
+            let buffer = new ArrayBuffer(1);
+            let view = new DataView(buffer);
+
+            view.setUint8(0, 3);
+
+            socket.send(buffer);
+        }, 100);
     }
 
     connect() {
@@ -331,8 +342,13 @@ export default class System {
                     this.gameSetting.isConnecting = false;
                     return;
                 }
-                case 3: {
+                case 3: { // scoreboard
                     
+                    return;
+                }
+                case 4: { // ping
+                    console.log(Date.now() - this.pingList[0]);
+                    this.pingList.shift();
                     return;
                 }
                 default: {
@@ -361,7 +377,7 @@ export default class System {
 
     loop() {
         const tick = Date.now() - this.lastTime;
-        console.log(Math.floor(1000 / tick));
+        //console.log(Math.floor(1000 / tick)); // print fps value
         this.lastTime = Date.now();
 
         if (this.cv.width <= this.cv.height/9*16) {

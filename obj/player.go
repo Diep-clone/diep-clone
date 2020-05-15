@@ -148,8 +148,6 @@ func (p *Player) ReadPump() {
 
 // Event Catch Message
 func Event(p *Player, message []byte) {
-	p.Mu.Lock()
-	defer p.Mu.Unlock()
 
 	var socketType uint8 = uint8(message[0])
 
@@ -225,6 +223,8 @@ func Event(p *Player, message []byte) {
 		p.ControlObject.Name = name
 		p.ControlObject.SetController(p)
 		Objects = append(Objects, p.ControlObject)
+	case 3:
+		p.Send([]byte{4})
 	default:
 		log.WithFields(log.Fields{
 			"id": p.ID,
