@@ -238,6 +238,9 @@ func Event(p *Player, message []byte) {
 
 // UnRegister == close
 func (p *Player) UnRegister() {
+	ObjMutex.Lock()
+	defer ObjMutex.Unlock()
+
 	if _, ok := Users[p.ID]; !ok {
 		log.WithField("id", p.ID).Warn("Prevent Disconnect")
 		return
