@@ -8,7 +8,10 @@ import (
 // MaxObj is Object Max length
 var MaxObj = 4
 
-var Qt Quadtree
+// MaxLevel
+var MaxLevel = 10
+
+var Qt Quadtree = NewQuadtree(-lib.GameSetting.MapSize.X-lib.Grid*4, -lib.GameSetting.MapSize.Y-lib.Grid*4, lib.GameSetting.MapSize.X*2+lib.Grid*8, lib.GameSetting.MapSize.Y*2+lib.Grid*8)
 
 // Quadtree is
 type Quadtree struct {
@@ -22,7 +25,7 @@ type Quadtree struct {
 }
 
 // NewQuadtree is
-func NewQuadtree(x, y, w, h float64) *Quadtree {
+func NewQuadtree(x, y, w, h float64) Quadtree {
 	var q Quadtree = Quadtree{
 		x:       x,
 		y:       y,
@@ -32,13 +35,13 @@ func NewQuadtree(x, y, w, h float64) *Quadtree {
 		objects: []*Object{},
 		nodes:   nil,
 	}
-	return &q
+	return q
 }
 
 // split is
 func (q *Quadtree) split() {
-	xx := [4]float64{0, 1, 0, 1}
-	yy := [4]float64{0, 0, 1, 1}
+	var xx [4]float64 = [4]float64{0, 1, 0, 1}
+	var yy [4]float64 = [4]float64{0, 0, 1, 1}
 	q.nodes = make([]Quadtree, 4)
 	for i := 0; i < 4; i++ {
 		q.nodes[i] = Quadtree{
@@ -55,8 +58,8 @@ func (q *Quadtree) split() {
 
 // getIndex is
 func (q Quadtree) getIndex(area Area) int {
-	x := q.x + q.w/2
-	y := q.y + q.h/2
+	var x float64 = q.x + q.w/2
+	var y float64 = q.y + q.h/2
 
 	if area.X <= x && area.X+area.W >= x || area.Y <= y && area.Y+area.H >= y {
 		return -1
@@ -99,7 +102,7 @@ func (q *Quadtree) Insert(obj *Object) {
 
 	q.objects = append(q.objects, obj)
 
-	if len(q.objects) > MaxObj {
+	if len(q.objects) > MaxObj && q.level < MaxLevel {
 		if q.nodes == nil {
 			q.split()
 		}
@@ -113,8 +116,7 @@ func (q *Quadtree) Insert(obj *Object) {
 			})
 			if index != -1 {
 				q.nodes[index].Insert(q.objects[i])
-				q.objects[i] = q.objects[len(q.objects)-1]
-				q.objects = q.objects[:len(q.objects)-1]
+				q.objects = append(q.objects[:i], q.objects[i+1:]...)
 			} else {
 				i++
 			}
@@ -129,14 +131,10 @@ func (q Quadtree) Retrieve(area Area) []*Object {
 
 	if q.nodes != nil {
 		if index != -1 {
-			for _, obj := range q.nodes[index].Retrieve(area) {
-				returnObjects = append(returnObjects, obj)
-			}
+			returnObjects = append(returnObjects, q.nodes[index].Retrieve(area)...)
 		} else {
 			for i := 0; i < 4; i++ {
-				for _, obj := range q.nodes[i].Retrieve(area) {
-					returnObjects = append(returnObjects, obj)
-				}
+				returnObjects = append(returnObjects, q.nodes[i].Retrieve(area)...)
 			}
 		}
 	}

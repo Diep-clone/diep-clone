@@ -19,8 +19,12 @@ func AddShape() {
 			"dir":    lib.RandomRange(-math.Pi, math.Pi),
 			"stance": 0.1,
 			"exp":    10,
-		}, nil, DefaultCollision, DefaultKillEvent, func(o *Object, killer *Object) {
+		}, DefaultShapeTick, DefaultCollision, DefaultKillEvent, func(o *Object, killer *Object) {
 			ShapeCount++
 		}))
 	}
+}
+
+func DefaultShapeTick(o *Object) {
+	o.Dir += 0.005
 }

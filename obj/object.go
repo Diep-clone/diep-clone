@@ -111,6 +111,8 @@ func (obj *Object) ObjectTick(objIndex int) {
 	}
 
 	obj.Lh = obj.H
+
+	obj.IsCollision = false
 }
 
 //
@@ -157,6 +159,10 @@ func (o Object) ObjBinaryData() []byte {
 		o.Mh = 1
 		o.H = 1
 	}
+	if !o.IsShowName {
+		o.Name = ""
+		o.Exp = 0
+	}
 	binary.BigEndian.PutUint32(data[0:4], uint32(o.ID))
 	binary.BigEndian.PutUint64(data[4:12], math.Float64bits(o.X))
 	binary.BigEndian.PutUint64(data[12:20], math.Float64bits(o.Y))
@@ -190,9 +196,6 @@ func (o Object) ObjBinaryData() []byte {
 	data = append(data, []byte(o.Team)...)
 	data = append(data, byte(len(o.Type)))
 	data = append(data, []byte(o.Type)...)
-	if !o.IsShowName {
-		o.Name = ""
-	}
 	data = append(data, byte(len(o.Name)))
 	data = append(data, []byte(o.Name)...)
 

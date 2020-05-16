@@ -96,14 +96,27 @@ func moveloop(ticker time.Ticker) {
 			u.CameraSet()
 		}
 
-		obj.Qt = *obj.NewQuadtree(-lib.GameSetting.MapSize.X-lib.Grid*4, -lib.GameSetting.MapSize.Y-lib.Grid*4, lib.GameSetting.MapSize.X*2+lib.Grid*8, lib.GameSetting.MapSize.Y*2+lib.Grid*8)
+		obj.Qt.Clear()
 
-		/*
-			for _, o := range obj.Objects {
+		for _, o := range obj.Objects {
+			if !o.IsDead {
 				obj.Qt.Insert(o)
-				o.IsCollision = false
+
+				for _, obj2 := range obj.Qt.Retrieve(obj.Area{
+					X: o.X - o.R,
+					Y: o.Y - o.R,
+					W: o.R * 2,
+					H: o.R * 2,
+				}) {
+					if o != obj2 && !obj2.IsDead && !(o.IsCollision && obj2.IsCollision) && (obj2.Owner != o.Owner || obj2.IsOwnCol && o.IsOwnCol) && o != obj2.Owner && obj2 != o.Owner {
+						if math.Sqrt((o.X-obj2.X)*(o.X-obj2.X)+(o.Y-obj2.Y)*(o.Y-obj2.Y)) < o.R+obj2.R {
+							o.Collision(o, obj2)
+							obj2.Collision(obj2, o)
+						}
+					}
+				}
 			}
-		*/
+		}
 
 		for i, o := range obj.Objects {
 			if o.Tick != nil {
@@ -112,27 +125,6 @@ func moveloop(ticker time.Ticker) {
 
 			o.ObjectTick(i)
 		}
-		/*
-			for _, o := range obj.Objects {
-				if !o.IsDead {
-					var objList []*obj.Object = obj.Qt.Retrieve(obj.Area{
-						X: o.X - o.R,
-						Y: o.Y - o.R,
-						W: o.R * 2,
-						H: o.R * 2,
-					})
-
-					for _, obj2 := range objList {
-						if o != obj2 && !obj2.IsDead && !(o.IsCollision && obj2.IsCollision) && (obj2.Owner != o.Owner || obj2.IsOwnCol && o.IsOwnCol) && o != obj2.Owner && obj2 != o.Owner {
-							if math.Sqrt((o.X-obj2.X)*(o.X-obj2.X)+(o.Y-obj2.Y)*(o.Y-obj2.Y)) < o.R+obj2.R {
-								o.Collision(o, obj2)
-								obj2.Collision(obj2, o)
-							}
-						}
-					}
-				}
-			}
-		*/
 
 		for i := 0; i < len(obj.Objects); i++ {
 			var o *obj.Object = obj.Objects[i]
