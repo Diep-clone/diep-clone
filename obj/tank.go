@@ -281,6 +281,25 @@ func NewTank(t string) *Object {
 		}
 	case "Battleship":
 		obj.Sight = 1.11
+		obj.Stats = [8]int{0, 0, 0, 7, 7, 7, 7, 5}
+		var r []float64 = []float64{math.Pi / 2, -math.Pi / 2}
+		var posx []float64 = []float64{0.25, -0.25}
+		for i := 0; i < 2; i++ {
+			for j := 0; j < 2; j++ {
+				obj.Guns = append(obj.Guns, NewGun(obj, map[string]interface{}{
+					"type":     "Drone",
+					"damage":   0.15,
+					"radius":   0.5,
+					"dir":      r[i],
+					"bound":    3.4,
+					"lifetime": 4,
+					"isai":     (j == 1),
+					"sx":       posx[j],
+					"sy":       1.5,
+				},
+					BattleshipDroneAi, nil, nil, nil))
+			}
+		}
 	case "Spike":
 		obj.Sight = 1.11
 		obj.Stats = [8]int{3, 10, 10, 0, 0, 0, 0, 10}

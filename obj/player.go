@@ -197,7 +197,7 @@ func Event(p *Player, message []byte) {
 		}
 		log.Println(name)
 		var list []string = []string{
-			"Basic",
+			//"Basic",
 			//"Twin",
 			//"Triplet",
 			//"TripleShot",
@@ -213,6 +213,7 @@ func Event(p *Player, message []byte) {
 			//"Predator",
 			//"Trapper",
 			//"TriTrapper",
+			"Battleship",
 			//"Spike",
 			//"Skimmer",
 			//"Rocketeer",

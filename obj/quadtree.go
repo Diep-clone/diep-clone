@@ -40,13 +40,13 @@ func NewQuadtree(x, y, w, h float64) Quadtree {
 
 // split is
 func (q *Quadtree) split() {
-	var xx [4]float64 = [4]float64{0, 1, 0, 1}
-	var yy [4]float64 = [4]float64{0, 0, 1, 1}
+	var xx [4]int = [4]int{0, 1, 0, 1}
+	var yy [4]int = [4]int{0, 0, 1, 1}
 	q.nodes = make([]Quadtree, 4)
 	for i := 0; i < 4; i++ {
 		q.nodes[i] = Quadtree{
-			x:       q.x + xx[i]*q.w/2,
-			y:       q.y + yy[i]*q.h/2,
+			x:       q.x + float64(xx[i])*q.w/2,
+			y:       q.y + float64(yy[i])*q.h/2,
 			w:       q.w / 2,
 			h:       q.h / 2,
 			level:   q.level + 1,
