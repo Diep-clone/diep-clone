@@ -127,7 +127,7 @@ func BattleshipDroneAi(obj *Object) {
 			return
 		}
 	}
-	var target *Object = NearObject(obj, 600, 0, math.Pi)
+	var target *Object = NearObject(obj, 1000, 0, math.Pi)
 
 	if obj.Target != nil {
 		if obj.Target.IsDead || obj.Owner == obj.Target || obj.Target.Team == obj.Team || !obj.Target.IsTargeted {

@@ -296,8 +296,8 @@ func NewTank(t string) *Object {
 					"isai":     (j == 1),
 					"sx":       posx[j],
 					"sy":       1.5,
-				},
-					BattleshipDroneAi, nil, nil, nil))
+					"isborder": false,
+				}, BattleshipDroneAi, nil, nil, nil))
 			}
 		}
 	case "Spike":
