@@ -1,4 +1,4 @@
-import * as data from './data';
+import * as data from './data/console';
 
 import { Obj } from './data/object';
 import { drawBackground, drawText } from './lib/draw';
@@ -7,38 +7,38 @@ let socket;
 
 export default class System {
     constructor() {
-        this.connect();
+        this.connect(); // connect
 
-        this.img = new Image();
+        this.img = new Image(); // main background
         this.img.src = 'background.png';
 
-        this.cv = document.getElementById("canvas");
-        this.ctx = this.cv.getContext("2d");
+        this.cv = document.getElementById("canvas"); // canvas
+        this.ctx = this.cv.getContext("2d"); // ctx
 
-        this.textinputcontainer = document.getElementById("textInputContainer");
+        this.textinputcontainer = document.getElementById("textInputContainer"); // name input
         this.textinput = document.getElementById("textInput");
 
-        this.textinputanime = 1;
+        this.textinputanime = 1; // name input animation (down)
         this.connectinga = 1;
         this.panela = 0.4;
 
         this.textinput.style.paddingLeft = "5px";
         this.textinput.style.paddingRight = "5px";
 
-        this.objectList = [];
+        this.objectList = []; // object List
 
-        this.scoreboard = [];
+        this.scoreboard = []; // scoreboard
 
-        this.gameSetting = {
+        this.gameSetting = { // Game's data
             "gamemode": "sandbox",
             "isConnecting": true,
             "isNaming": false,
             "isGaming": false,
         };
 
-        this.playerSetting = {
-            "obj": null,
-            "id": 0,
+        this.playerSetting = { // my Tank's data
+            "obj": null, // object
+            "id": 0, // object's id
             "team": "",
             "level": 0,
             "stat": 0,
@@ -46,7 +46,7 @@ export default class System {
             "maxstats": [0,0,0,0,0,0,0,0],
         };
 
-        this.input = {
+        this.input = { // input data
             "moveVector": {x:0,y:0},
             "mousePos": {x:0,y:0},
             "e":0,
@@ -54,20 +54,20 @@ export default class System {
         }
 
         this.lastTime = Date.now();
-        this.isControlRotate = true;
+        this.isControlRotate = true; // it is possible to control own tank's rotate?
         this.pingList = [];
 
-        this.camera = {
+        this.camera = { // camera data
             x: 0,
             y: 0,
             z: 2,
-            uiz: 1,
+            uiz: 1, // ui scale (affected by screen size)
         }
 
-        this.area = [];
+        this.area = []; // area list
 
-        this.keys = {};
-        this.sameKeys = {
+        this.keys = {}; //
+        this.sameKeys = { // 
             65:37,
             87:38,
             68:39,
@@ -81,9 +81,9 @@ export default class System {
             get_convar:function(key){},
             keyDown: function() {
                 if (this.gameSetting.isNaming) {
-                    if (arguments[0] === 13) {
-                        this.gameSetting.isGaming = true;
-                        this.textinputcontainer.style.display = "none";
+                    if (arguments[0] === 13) { //
+                        this.gameSetting.isGaming = true; // game start
+                        this.textinputcontainer.style.display = "none"; // hide name input
                         this.textinputcontainer.style.top = "-" + this.textinputcontainer.style.top;
                         
                         let buffer = new ArrayBuffer(31);
@@ -98,14 +98,14 @@ export default class System {
 
                         socket.send(buffer);
                         
-                        window['setTyping'](false);
-                        localStorage['name'] = this.textinput.value;
+                        window['setTyping'](false); // 
+                        localStorage['name'] = this.textinput.value; // save the name to localStorage
                         this.gameSetting.isNaming = false;
                         return;
                     } else {
                         return;
                     }
-                } else if (this.gameSetting.isConnecting) return;
+                } else if (this.gameSetting.isConnecting) return; // When naming or connecting, ignore all key pressing
 
                 if (this.sameKeys[arguments[0]]) arguments[0]=this.sameKeys[arguments[0]];
                 if (this.keys[arguments[0]]) return;
@@ -134,7 +134,7 @@ export default class System {
                 }
             }.bind(this),
             keyUp:function() {
-                if (this.gameSetting.isNaming) {
+                if (this.gameSetting.isNaming) { // When naming or connecting, ignore all key pressing
                     return;
                 } else if (this.gameSetting.isConnecting) return;
 
@@ -159,7 +159,7 @@ export default class System {
                 }
             }.bind(this),
             mouse:function() {
-                this.input.mousePos = {x:arguments[0], y:arguments[1]};
+                this.input.mousePos = {x:arguments[0], y:arguments[1]}; // mouse pos
             }.bind(this),
             prevent_right_click: function() {
                 return true;
@@ -174,10 +174,10 @@ export default class System {
             },
         };
 
-        this.loop();
+        this.loop(); // start loop
 
         setInterval(() => {
-            this.pingList.push(Date.now());
+            this.pingList.push(Date.now()); // piong
             let buffer = new ArrayBuffer(1);
             let view = new DataView(buffer);
 
@@ -187,7 +187,7 @@ export default class System {
         }, 100);
     }
 
-    connect() {
+    connect() { // connect to websocket
         socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`);
 
         socket.binaryType = 'arraybuffer';
@@ -210,7 +210,7 @@ export default class System {
             let view = new DataView(msg.data);
 
             switch (view.getUint8(0)){
-                case 0: {
+                case 0: { // get Camera value, objectList value
                     if (!this.gameSetting.isGaming) {
                         return;
                     }
@@ -328,13 +328,13 @@ export default class System {
 
                     return;
                 }
-                case 1: {
+                case 1: { // get Area list
                     for (let i = 1, j = 0; i < msg.data.byteLength; i+=4) {
                         this.area[j++] = view.getInt32(i);
                     }
                     return;
                 }
-                case 2: {
+                case 2: { // correct Connecting and start Naming
                     this.gameSetting.isNaming = true;
                     window['setTyping'](true);
                     this.textinput.value = localStorage['name'] || '';
@@ -357,7 +357,7 @@ export default class System {
             }
         };
         
-        socket.onclose = event => {
+        socket.onclose = event => { // reconnecting
             this.gameSetting.isConnecting = true;
             this.gameSetting.isNaming = false;
             this.gameSetting.isGaming = false;
@@ -380,15 +380,15 @@ export default class System {
         //console.log(Math.floor(1000 / tick)); // print fps value
         this.lastTime = Date.now();
 
-        if (this.cv.width <= this.cv.height/9*16) {
+        if (this.cv.width <= this.cv.height/9*16) { //
             this.camera.uiz = this.cv.height / 900;
         } else {
             this.camera.uiz = this.cv.width / 1600;
         }
 
-        this.ctx.clearRect(0,0,this.cv.width,this.cv.height);
+        this.ctx.clearRect(0,0,this.cv.width,this.cv.height); // clear canvas
 
-        if (this.gameSetting.isConnecting) {
+        if (this.gameSetting.isConnecting) { // connecting text
             this.textinputanime = 1;
             this.connectinga = Math.min(this.connectinga + 0.01 * tick,1);
         }
@@ -396,13 +396,13 @@ export default class System {
         if (this.gameSetting.isGaming) {
             drawBackground(this.ctx, this.camera.x, this.camera.y, this.camera.z, this.cv.width, this.cv.height, this.area);
 
-            let buffer = new ArrayBuffer(14);
+            let buffer = new ArrayBuffer(14); // send input data
             let view = new DataView(buffer);
             view.setUint8(0, 1);
             if (this.input.moveVector.x === 0 && this.input.moveVector.y === 0) {
                 view.setFloat32(1, 9.);
             } else {
-                view.setFloat32(1, Math.atan2(this.input.moveVector.y,this.input.moveVector.x));
+                view.setFloat32(1, Math.atan2(this.input.moveVector.y,this.input.moveVector.x)); // move rotate
             }
 
             let x, y;
@@ -417,12 +417,12 @@ export default class System {
                 this.playerSetting.obj.dir = Math.atan2(y - this.playerSetting.obj.y, x - this.playerSetting.obj.x);
             }
 
-            view.setFloat32(5, x);
+            view.setFloat32(5, x); // mouse pos
             view.setFloat32(9, y);
             view.setUint8(13,
-                ((this.keys[1] || this.keys[32] || this.input.e) || 0)
-                + ((this.keys[3] || this.keys[16]) || 0) * 2
-                + (this.keys[79] || 0) * 4
+                ((this.keys[1] || this.keys[32] || this.input.e) || 0) // is Shot?
+                + ((this.keys[3] || this.keys[16]) || 0) * 2 // is Right Click?
+                + (this.keys[79] || 0) * 4 // is Suicide? (o key)
             );
 
             socket.send(buffer);
@@ -451,8 +451,8 @@ export default class System {
                 this.img.height * this.camera.uiz / 2.4);
         }
 
-        if (this.gameSetting.isNaming || this.gameSetting.isConnecting) {
-            this.panela = Math.min(this.panela + 0.05, 0.4); // draw Black Alpha Panel
+        if (this.gameSetting.isNaming || this.gameSetting.isConnecting) { // draw Black Alpha Panel
+            this.panela = Math.min(this.panela + 0.05, 0.4); 
 
             this.ctx.save();
             this.ctx.globalAlpha = this.panela;
@@ -467,7 +467,7 @@ export default class System {
             drawText(this.ctx,this.cv.width / 2 / this.camera.uiz, this.cv.height / 2 / this.camera.uiz, this.camera.uiz, this.connectinga, new RGB("#FFFFFF"), "Connecting...", 60);
         }
 
-        if (this.gameSetting.isNaming) {
+        if (this.gameSetting.isNaming) { // draw Name input
             if (this.textinput.value) this.textinput.value = calByte.cutByteLength(this.textinput.value,15);
 
             let x = Math.floor(this.cv.width / 2 - 167 * this.camera.uiz),
