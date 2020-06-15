@@ -1,4 +1,4 @@
-import { backgroundColor, minimapBackgroundColor, minimapBorderColor } from '../data/index'
+import { backgroundColor, minimapBackgroundColor, minimapBorderColor } from '../data/console'
 import { RGB, getPolygonRadius, getObjectPoint } from './util';
 
 export const drawCircle = function (ctx, x, y, z, r) {

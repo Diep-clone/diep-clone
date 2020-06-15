@@ -1,8 +1,6 @@
 package main
 
 import (
-	//"database/sql"
-
 	"encoding/binary"
 	"math"
 	"math/rand"
@@ -17,7 +15,6 @@ import (
 
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
-	//sq "github.com/mattn/go-sqlite3"
 )
 
 var setting lib.Setting = lib.ReadSetting()
@@ -44,12 +41,6 @@ func serverWs(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	/*database, _ := sql.Open("sqlite3","./bogo.db")
-	statement, _ := database.Prepare("CREATE TABLE IF NOT EXISTS people (id TEXT, nickname TEXT, password TEXT")
-	statement.Exec()
-	statement, _ = database.Prepare("INSERT INTO people (nickname) VALUES (?)")
-	statement.Exec("")
-	*/
 	rand.Seed(time.Now().UnixNano())
 
 	port := "80"
@@ -83,7 +74,7 @@ func main() {
 var count = 0
 var count2 = 0
 
-func moveloop(ticker time.Ticker) {
+func moveloop(ticker time.Ticker) { // manages the motion of all objects.
 	for range ticker.C {
 		obj.ObjMutex.Lock()
 
@@ -109,7 +100,7 @@ func moveloop(ticker time.Ticker) {
 					H: o.R * 2,
 				}) {
 					if o != obj2 && !obj2.IsDead && !(o.IsCollision && obj2.IsCollision) && (obj2.Owner != o.Owner || obj2.IsOwnCol && o.IsOwnCol) && o != obj2.Owner && obj2 != o.Owner {
-						if math.Sqrt((o.X-obj2.X)*(o.X-obj2.X)+(o.Y-obj2.Y)*(o.Y-obj2.Y)) < o.R+obj2.R {
+						if (o.X-obj2.X)*(o.X-obj2.X)+(o.Y-obj2.Y)*(o.Y-obj2.Y) < (o.R+obj2.R)*(o.R+obj2.R) {
 							o.Collision(o, obj2)
 							obj2.Collision(obj2, o)
 						}
@@ -147,7 +138,7 @@ func moveloop(ticker time.Ticker) {
 		if count == 0 {
 			log.WithField("time", time.Since(t)).Info("moveloop")
 			log.Println(len(obj.Objects))
-			count = 600
+			count = 60
 		}
 		count--
 

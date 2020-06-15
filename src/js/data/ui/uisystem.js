@@ -11,7 +11,7 @@ export default class UISystem {
         this.uicv.height = h;
 
         this.uiList.forEach(obj => {
-            
+            obj.draw(this.uictx, w, h, z);
         });
 
         ctx.save();

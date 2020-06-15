@@ -1,5 +1,5 @@
-import { RGB, getPolygonRadius, getObjectPoint, getTextWidth } from '../lib/util';
-import { colorList, colorType, gunList } from '../data/index';
+import { RGB, getPolygonRadius, getObjectPoint, getTextWidth, colorType, gunList } from '../lib/util';
+import { colorList } from './console';
 import { drawC, drawObj, drawText } from '../lib/draw';
 
 function deepClone(obj) {

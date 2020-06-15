@@ -1,4 +1,4 @@
-import { colorList } from '../data/index';
+import { colorList } from './console';
 import { drawC } from '../lib/draw';
 
 export const Gun = function (paths, dir, color, isMoveDir, isFront, isStatic) {
