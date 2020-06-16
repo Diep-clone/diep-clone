@@ -5,8 +5,11 @@
 
 This repo is Diep.io's Clone Version.
 
-The original diep.io source code is encrypted. 
-so we are writing it all new.
+The goal of this project is to copy the web game diep.io as same as possible.
+Currently, this project is stopped practically due to the vacancy of lead programmer.
+If you want to be the maintainer of this project although this might be poor because it is my first github project, please contact:
+
+ybs1164@naver.com
 
 ## 📚 Project Stack
 ### Front end (JS)
