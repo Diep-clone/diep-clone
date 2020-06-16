@@ -1,6 +1,6 @@
 import { RGB } from '../lib/util';
 
-export const statColor = [
+export let statColor = [
     new RGB(230,176,138),
     new RGB(228,102,233),
     new RGB(148,102,234),
@@ -11,7 +11,7 @@ export const statColor = [
     new RGB(103,233,233)
 ];
 
-export const colorList = [
+export let colorList = [
     new RGB("#555555"), // smasher's bases color 0
     new RGB("#999999"), // Barrles's color 1
     new RGB("#00B1DE"), // FFA your's color 2
@@ -33,7 +33,7 @@ export const colorList = [
     new RGB("#C0C0C0"), // Fallen 17
 ];
 
-export const backgroundColor = new RGB("#CDCDCD");
-export const minimapBackgroundColor = new RGB("#CDCDCD");
-export const minimapBorderColor = new RGB("#555555");
-export const uiopacity = 0.7;
+export let backgroundColor = new RGB("#CDCDCD");
+export let minimapBackgroundColor = new RGB("#CDCDCD");
+export let minimapBorderColor = new RGB("#555555");
+export let uiOpacity = 0.7;

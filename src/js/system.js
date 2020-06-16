@@ -66,8 +66,8 @@ export default class System {
 
         this.area = []; // area list
 
-        this.keys = {}; //
-        this.sameKeys = { // 
+        this.keys = {}; // list of the keys currently pressed
+        this.sameKeys = { // considered as the same key
             65:37,
             87:38,
             68:39,
