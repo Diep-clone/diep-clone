@@ -2,9 +2,11 @@ import '../styles/index.css';
 
 import System from './system';
 
-window.system = new System();
+// start file
 
-(function(){
+window.system = new System(); // create system
+
+(function(){ // diep.io 's c.js file
     var scale = window.localStorage['no_retina'] ? 1.0 : window.devicePixelRatio;
     var canvas = document.getElementById('canvas');
     var typing = false;

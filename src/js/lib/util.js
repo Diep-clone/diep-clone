@@ -1,31 +1,19 @@
 import { Gun } from '../data/gun.js';
 
 export const RGB = function(r, g, b) {
+    /*
+
+    */
     this.r;
     this.g;
     this.b;
-    if (b!==undefined) {
-        this.r = r;
-        this.g = g;
-        this.b = b;
-    } else if (r[0] === "#") {
-        let f = function (x) {
-            if (x<="9" && x>="0") return x.charCodeAt(0) - 48;
-            else if (x<="Z" && x>="A") return x.charCodeAt(0) - 65 + 10;
-            else if (x<="z" && x>="a") return x.charCodeAt(0) - 97 + 10;
-            return 0;
-        }
-        this.b = f(r[5])*16 + f(r[6]);
-        this.g = f(r[3])*16 + f(r[4]);
-        this.r = f(r[1])*16 + f(r[2]);
-    }
 
     this.setRGB = (r, g, b) => {
         if (b){
             this.r = r;
             this.g = g;
             this.b = b;
-        } else if (r[0] === "#") {
+        } else if (r[0] === "#") { // hex to RGB
             let f = function (x) {
                 if (x <= "9" && x >= "0") return x - "0";
                 else if (x <= "Z" && x >= "A") return x - "A" + 11;
@@ -37,6 +25,8 @@ export const RGB = function(r, g, b) {
             this.r = f(r[1])*16 + f(r[2]);
         }
     }
+
+    this.setRGB(r, g, b);
     
     this.getRGB = () => {return `rgb(${Math.round(this.r)}, ${Math.round(this.g)}, ${Math.round(this.b)})`;}
 
@@ -65,7 +55,7 @@ export const RGB = function(r, g, b) {
     }
 }
 
-export const calByte = {
+export const calByte = { // string's byte calculation functions
     getByteLength : function(s) {
 		if (s == null || s.length == 0) {
 			return 0;
@@ -77,7 +67,7 @@ export const calByte = {
 		}
 
 		return size;
-	},	
+	},
 	cutByteLength : function(s, len) {
 		if (s == null || s.length == 0) {
 			return 0;
@@ -118,8 +108,8 @@ export const calByte = {
 }; // https://zzznara2.tistory.com/458
 
 export const getPolygonRadius = function (p) {
-    if (p === 0) return 1;
-    return Math.sqrt(Math.PI / (Math.sin(Math.PI / p) * Math.cos(Math.PI / p) * p));
+    if (p === 0) return 1; // circle
+    return Math.sqrt(Math.PI / (Math.sin(Math.PI / p) * Math.cos(Math.PI / p) * p)); // polygon
     //return 2 / (1+Math.cos(Math.PI/p));
 }
 
@@ -189,7 +179,7 @@ export const colorType = function(type, team){
     }
 }
 
-export const gunList = {
+export const gunList = { // Returns the width of a given text typed.
     "Basic":[
         new Gun([[0.42,0],[0.42,1.88],[-0.42,1.88],[-0.42, 0]]),
     ],
@@ -385,7 +375,7 @@ export const gunList = {
     ],
 }
 
-function spikeGun() {
+function spikeGun() { // spike's guns
     let list = [];
     let dir = -Math.PI / 12 * 11;
     for (let i=0;i<24;i++){

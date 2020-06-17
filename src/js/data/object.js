@@ -19,6 +19,11 @@ function deepClone(obj) {
 export const Obj = function(id) {
     'use strict';
 
+    /*
+        이 객체는 무조건 system 의 objectList 에 포함되어 있습니다.
+        게임 내에서 충돌감지가 적용되는 모든 것들은 이 객체에 포함됩니다.
+    */
+
     this.id = id;
 
     this.name;
@@ -28,24 +33,26 @@ export const Obj = function(id) {
 
     this.x;
     this.y;
-    this.r;
+    this.r; // radius
     this.dir;
-    this.h;
-    this.mh;
+    this.h; // health
+    this.mh; // max health
     this.opacity;
     this.score;
     this.isDead;
 
-    this.isEnable = true;
-    this.isDelete = false;
-
     this.cv = document.createElement("canvas");
     this.ctx = this.cv.getContext("2d");
+
+    /*
+        오브젝트에 총구가 존재할 때, 불투명하지 않다면 오브젝트를 이미지로 처리합니다.
+        (이 방법이 아닌 것 같다면, 다이피오에서 확인해보세요. 이 방법이 맞다고 단언할 수 있습니다.)
+    */
 
     this.hitTime = 0;
 
     this.Animate = function (tick) {
-        if (this.isDead) {
+        if (this.isDead) { // death effect
             this.opacity = Math.max(this.opacity - 0.1 * tick * 0.05, 0);
             this.r += this.r * 0.03 * tick * 0.05;
 
@@ -55,13 +62,19 @@ export const Obj = function(id) {
             }
         }
 
-        this.guns.forEach((g) => g.Animate(tick));
+        this.guns.forEach((g) => g.Animate(tick)); // gun animation (when their shot bullet)
     }
 
-    this.ObjSet = function (data) {
+    this.ObjSet = function (data) { // obj value setting
         this.x = data.x;
         this.y = data.y;
         if (system.playerSetting.id !== this.id) {
+            /*
+                만약 자신이 직접 조종하는 탱크라면, 클라이언트에서 직접 방향값을 정해줍니다.
+                그렇지 않다면 방향값을 보다 부드럽게 만들어줍니다.
+                다이피오에서는 직접 조종하는 탱크의 위치도 클라이언트에서 약간 처리해주는 것 같은데,
+                아직 그 부분은 구현되지 못했습니다.
+            */
             if (this.dir) {
                 let ccw = Math.cos(data.dir)*Math.sin(this.dir)-Math.sin(data.dir)*Math.cos(this.dir);
                 let a = -((Math.cos(data.dir)*Math.cos(this.dir)) + (Math.sin(data.dir)*Math.sin(this.dir))-1) * Math.PI / 2;
@@ -89,7 +102,7 @@ export const Obj = function(id) {
         if (this.type !== data.type) {
             this.guns = [];
             if (gunList[data.type] != undefined) {
-                this.guns = deepClone(gunList[data.type]);
+                this.guns = deepClone(gunList[data.type]); // clone gun object
             }
         }
         for (let i = 0; i < this.guns.length && i < data.guns.length; i++) {
@@ -99,13 +112,11 @@ export const Obj = function(id) {
         }
         this.type = data.type;
         this.color = colorType(data.type,data.team);
-
-        this.isEnable = true;
     };
 
-    this.DrawSet = function (camera) {
-        let c = colorList[this.color];
-        if (this.hitTime > 60) {
+    this.DrawSet = function (camera) { // 그릴 때 중복되는 값들을 간결하게 보내줍니다.
+        let c = colorList[this.color]; // get color value
+        if (this.hitTime > 60) { // hit effect
             c = c.getLightRGB((this.hitTime - 60) / 70);
         } else if (this.hitTime > 0) {
             c = c.getRedRGB(this.hitTime / 60);
@@ -122,7 +133,7 @@ export const Obj = function(id) {
         };
     }
 
-    this.SetCanvasSize = function (camera) {
+    this.SetCanvasSize = function (camera) { // 오브젝트를 이미지로 처리할 때의 중복되는 값들을 간결하게 보내줍니다.
         var {z, t, c, r, dir, o} = this.DrawSet(camera);
         let rr = r * getPolygonRadius(Math.abs(getObjectPoint(t)));
         var size = {x: rr * z * 2, y: rr * z * 2,};
@@ -147,7 +158,7 @@ export const Obj = function(id) {
         }
     }
 
-    this.Draw = function (ctx,camera) {
+    this.Draw = function (ctx, camera) {
         if (this.guns.length > 0 && this.opacity < 1){
             var {ctxx, x, y, z, t, c, r, dir, o} = this.SetCanvasSize(camera);
             var s = this.DrawSet(camera);
@@ -162,7 +173,7 @@ export const Obj = function(id) {
             z, r, dir, t, 1, c);
             this.guns.forEach((g) => {
                 if (g.isFront) {
-                    g.Draw(ctxx, camera, x / z, y / z, r, c, dir, this.hitTime);
+                    g.Draw(ctxx, camera, x / z, y / z, r, c, dir, this.hitTime); // draw front gun
                 }
             });
             ctx.save();
@@ -180,13 +191,22 @@ export const Obj = function(id) {
             drawObj(ctx, x, y, z, r, dir, t, o, c);
             this.guns.forEach((g) => {
                 if (g.isFront) {
-                    g.Draw(ctx, camera, x, y, r, c, dir, this.hitTime);
+                    g.Draw(ctx, camera, x, y, r, c, dir, this.hitTime); // draw front gun
                 }
             });
         }
     }
 
     this.DrawName = function (ctx, camera) {
+        /*
+            오브젝트의 이름과 점수를 그려주는 함수입니다.
+            아직 이 함수는 완벽하지 않습니다.
+            총 3가지가 불완전한데요,
+            하나는 레이어,
+            하나는 그리는 방식,
+            나머지 하나는 샌드박스 모드에서 치트를 사용할 때 이름의 색이 노란색으로 바뀌는 것입니다.
+        */
+
         ctx.save();
 
         const {x, y, z, r, o} = this.DrawSet(camera);
@@ -225,6 +245,15 @@ export const Obj = function(id) {
     this.hpBarO = 0; // hp bar Opacity
 
     this.DrawHPBar = function(ctx, camera) {
+        /*
+            오브젝트의 체력바를 그려주는 함수입니다.
+            아직 이 함수는 완벽하지 않습니다.
+            총 3가지가 불완전한데요,
+            하나는 레이어,
+            하나는 체력 바의 애니메이션,
+            나머지 하나는 오브젝트의 크기나 종류에 따른 체력 바의 길이입니다.
+        */
+
         let healthPercent = this.h/this.mh;
 
         this.hpBarP -= (this.hpBarP - healthPercent) / 4;

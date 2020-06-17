@@ -1,6 +1,10 @@
 import { backgroundColor, minimapBackgroundColor, minimapBorderColor } from '../data/console'
 import { RGB, getPolygonRadius, getObjectPoint } from './util';
 
+/* 
+    전체적인 그래픽을 담당하고 있는 파일입니다.
+*/
+
 export const drawCircle = function (ctx, x, y, z, r) {
     ctx.beginPath();
     ctx.arc(x * z, y * z,r * z, 0, Math.PI * 2);
@@ -18,7 +22,7 @@ export const drawPolygon = function (ctx, x, y, z, r, dir, p) {
     ctx.beginPath();
     let t = (p % 2)? 0: Math.PI/p;
     for (;t >= -Math.PI * 2; t -= Math.PI*2/Math.abs(p)) {
-        if (p < 0) {
+        if (p < 0) { // draw Trap object
             ctx.lineTo((x + Math.cos(t+dir-Math.PI/p) * r * 0.4) * z,(y + Math.sin(t+dir-Math.PI/p) * r * 0.4) * z);
             ctx.lineTo((x + Math.cos(t+dir) * r) * z,(y + Math.sin(t+dir) * r) * z);
         } else {
@@ -30,7 +34,7 @@ export const drawPolygon = function (ctx, x, y, z, r, dir, p) {
     ctx.closePath();
 }
 
-export const drawC = function (ctx, color, color2) {
+export const drawC = function (ctx, color, color2) { // set draw Color 1. one color 2. fill / stroke color
     ctx.fillStyle = color.getRGB();
     ctx.strokeStyle = (color2)?color2.getRGB():color.getRGB();
 }
@@ -72,7 +76,14 @@ export const drawText = function (ctx, x, y, z, o, c, text, size, dir) {
     ctx.restore();
 }
 
-export const drawMiniMap = function (ctx, x, y, z, w, h, area, pos, dir) {
+export const drawBar = function (ctx, x, y, r, l, z, o, p) {
+    ctx.save();
+    
+
+    ctx.restore();
+}
+
+export const drawMiniMap = function (ctx, x, y, z, w, h, area, pos, dir) { // not work
     ctx.save();
 
     ctx.lineCap = "round";
