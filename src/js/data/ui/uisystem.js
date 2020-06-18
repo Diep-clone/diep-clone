@@ -1,4 +1,4 @@
-import { uiOpacity } from './console';
+import { uiOpacity } from '../console';
 
 export default class UISystem {
     constructor() {
@@ -9,6 +9,10 @@ export default class UISystem {
 
         this.w = 1000;
         this.h = 1000;
+    }
+
+    addUI(ui) {
+        this.uiList.push(ui);
     }
 
     draw(ctx, w, h, z) {

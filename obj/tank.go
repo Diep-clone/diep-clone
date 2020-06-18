@@ -403,25 +403,6 @@ func NewTank(t string) *Object {
 	return obj
 }
 
-func NewAuto5() *Object {
-	var obj *Object = NewObject(map[string]interface{}{
-		"type":       "Auto5",
-		"x":          lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
-		"y":          lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
-		"level":      45,
-		"exp":        23536,
-		"stats":      [8]int{0, 0, 0, 7, 7, 7, 5, 7},
-		"maxStats":   [8]int{7, 7, 7, 7, 7, 7, 7, 7},
-		"isShowName": true,
-	}, TankTick, DefaultCollision, DefaultKillEvent, nil)
-	var dir float64 = -math.Pi * 4 / 5
-	for i := 0; i < 5; i++ {
-
-		dir += math.Pi * 2 / 5
-	}
-	return obj
-}
-
 func Invisible(o *Object, t float64) {
 	if o.IsShot || o.Controller == nil || o.Controller.IsMove {
 		o.Opacity = math.Min(o.Opacity+0.1, 1)

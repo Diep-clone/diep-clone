@@ -138,7 +138,7 @@ func moveloop(ticker time.Ticker) { // manages the motion of all objects.
 		if count == 0 {
 			log.WithField("time", time.Since(t)).Info("moveloop")
 			log.Println(len(obj.Objects))
-			count = 60
+			count = 600
 		}
 		count--
 

@@ -9,19 +9,19 @@ export const RGB = function(r, g, b) {
     this.b;
 
     this.setRGB = (r, g, b) => {
-        if (b){
+        if (b !== undefined){
             this.r = r;
             this.g = g;
             this.b = b;
         } else if (r[0] === "#") { // hex to RGB
             let f = function (x) {
-                if (x <= "9" && x >= "0") return x - "0";
-                else if (x <= "Z" && x >= "A") return x - "A" + 11;
-                else if (x <= "z" && x >= "a") return x - "a" + 11;
+                if (x <= "9" && x >= "0") return x.charCodeAt(0) - 48;
+                else if (x <= "Z" && x >= "A") return x.charCodeAt(0) - 65 + 10;
+                else if (x <= "z" && x >= "a") return x.charCodeAt(0) - 97 + 10;
                 return 0;
             }
-            this.b = f(r[6])*16 + f(r[5]);
-            this.g = f(r[4])*16 + f(r[3]);
+            this.b = f(r[5])*16 + f(r[6]);
+            this.g = f(r[3])*16 + f(r[4]);
             this.r = f(r[1])*16 + f(r[2]);
         }
     }
@@ -371,7 +371,7 @@ export const gunList = { // Returns the width of a given text typed.
         new Gun([[7,0],[7,1.4],[-7,1.4],[-7,0]], Math.PI, -1, 0, false, true)
     ],
     "RocketeerBullet": [
-        new Gun([[6,0],[10,1.5],[-10,1.5],[-6,0]],Math.PI, -1, 0, false, true)
+        new Gun([[6,0],[10,1.5],[-10,1.5],[-6,0]], Math.PI, -1, 0, false, true)
     ],
 }
 

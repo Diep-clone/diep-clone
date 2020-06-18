@@ -41,6 +41,7 @@ export const drawC = function (ctx, color, color2) { // set draw Color 1. one co
 
 export const drawObj = function (ctx, x, y, z, r, dir, t, o, c) {
     ctx.save();
+
     ctx.globalAlpha = o;
     let im = getObjectPoint(t);
     if (im == 0) {
@@ -52,6 +53,7 @@ export const drawObj = function (ctx, x, y, z, r, dir, t, o, c) {
         drawC(ctx, c, c.getDarkRGB());
         drawPolygon(ctx, x, y, z, r, dir, im);
     }
+    
     ctx.restore();
 }
 
@@ -76,9 +78,30 @@ export const drawText = function (ctx, x, y, z, o, c, text, size, dir) {
     ctx.restore();
 }
 
-export const drawBar = function (ctx, x, y, r, l, z, o, p) {
+export const drawBar = function (ctx, x, y, r, l, z, o, p, c) {
     ctx.save();
+
+    ctx.globalAlpha = o;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = r * z;
     
+    ctx.beginPath();
+    ctx.moveTo(x * z, y * z);
+    ctx.lineTo((x + l) * z, y * z);
+    ctx.closePath();
+    drawC(ctx, new RGB("#444444"));
+    ctx.stroke();
+
+    if (p) {
+        ctx.lineWidth = (r - 1.5) * z;
+        ctx.beginPath();
+        ctx.moveTo(x * z, y * z);
+        ctx.lineTo((x + l * p) * z, y * z);
+        ctx.closePath();
+        drawC(ctx, c);
+        ctx.stroke();
+    }
 
     ctx.restore();
 }
@@ -104,6 +127,7 @@ export const drawMiniMap = function (ctx, x, y, z, w, h, area, pos, dir) { // no
 
 export const drawBackground = function (ctx, x, y, z, w, h, area) {
     ctx.save();
+
     drawC(ctx, backgroundColor.getDarkRGB());
     ctx.fillRect(0,0,w,h);
     drawC(ctx, backgroundColor);
@@ -127,5 +151,6 @@ export const drawBackground = function (ctx, x, y, z, w, h, area) {
     ctx.globalAlpha = 0.1;
     ctx.lineWidth = 0.2;
     ctx.stroke();
+
     ctx.restore();
 }

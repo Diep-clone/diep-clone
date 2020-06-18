@@ -1,6 +1,6 @@
 import { RGB, getPolygonRadius, getObjectPoint, getTextWidth, colorType, gunList } from '../lib/util';
 import { colorList } from './console';
-import { drawC, drawObj, drawText } from '../lib/draw';
+import { drawObj, drawText, drawBar } from '../lib/draw';
 
 function deepClone(obj) {
     if(obj === null || typeof obj !== 'object') {
@@ -267,30 +267,7 @@ export const Obj = function(id) {
         if (this.hpBarO > 0) {
             const {x, y, z, r, o} = this.DrawSet(camera);
 
-            ctx.save();
-            ctx.globalAlpha = o * this.hpBarO;
-            ctx.lineCap = "round";
-            ctx.lineJoin = "round";
-            ctx.lineWidth = 4.1 * z;
-
-            ctx.beginPath();
-            ctx.moveTo((x + r) * z, (y + r * 5 / 3) * z);
-            ctx.lineTo((x - r) * z, (y + r * 5 / 3) * z);
-            ctx.closePath();
-            drawC(ctx, new RGB("#444444"));
-            ctx.stroke();
-        
-            if (this.hpBarP > 0){
-                ctx.lineWidth = 2.6 * z;
-                ctx.beginPath();
-                ctx.moveTo((x - r) * z, (y + r * 5 / 3) * z);
-                ctx.lineTo((x - r + this.hpBarP * r * 2) * z, (y + r * 5 / 3) * z);
-                ctx.closePath();
-                drawC(ctx, new RGB("#86e27f"));
-                ctx.stroke();
-            }
-
-            ctx.restore();
+            drawBar(ctx, x - r, y + r * 5 / 3, 4.1, r * 2, z, o * this.hpBarO, this.hpBarP, new RGB("#86e27f"));
         }
     }
 }

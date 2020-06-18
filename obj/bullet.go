@@ -11,6 +11,17 @@ func DefaultTrapTick(obj *Object) {
 	} else {
 		obj.IsOwnCol = true
 	}
+
+	if obj.IsShowName == false {
+		var GunOwner = obj.Owner
+		for GunOwner.Owner != nil {
+			GunOwner = GunOwner.Owner
+		}
+		obj.Dx += obj.Dx * 0.1 * float64(GunOwner.Stats[3])
+		obj.Dy += obj.Dy * 0.1 * float64(GunOwner.Stats[3])
+		obj.IsShowName = true
+	}
+
 	if !obj.IsDead {
 		obj.DeadTime -= 1000. / 60.
 		if obj.DeadTime <= 0 {

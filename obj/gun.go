@@ -68,8 +68,8 @@ func (obj *Object) Shot(objIndex int) {
 					"y":            obj.Y + math.Sin(obj.Dir+g.Dir-math.Pi/2)*g.Sx*obj.R + math.Sin(obj.Dir+g.Dir)*g.Sy*obj.R,
 					"dir":          dir,
 					"speed":        (0.056 + 0.02*float64(GunOwner.Stats[3])) * g.Speed,
-					"dx":           math.Cos(dir) * (4 /*+ 0.4*float64(GunOwner.Stats[3])*/) * g.Speed,
-					"dy":           math.Sin(dir) * (4 /*+ 0.4*float64(GunOwner.Stats[3])*/) * g.Speed,
+					"dx":           math.Cos(dir) * 4 * g.Speed,
+					"dy":           math.Sin(dir) * 4 * g.Speed,
 					"mh":           (8 + 6*float64(GunOwner.Stats[4])) * g.Health,
 					"h":            (8 + 6*float64(GunOwner.Stats[4])) * g.Health,
 					"damage":       (7 + 3*float64(GunOwner.Stats[5])) * g.Damage,
@@ -115,7 +115,7 @@ func (obj *Object) Shot(objIndex int) {
 	return
 }
 
-// New Gun1!!!!!!!!!!11!!!
+// New Gun
 func NewGun(own *Object, value map[string]interface{}, t func(*Object), c func(*Object, *Object), k func(*Object, *Object), d func(*Object, *Object)) Gun {
 	m := map[string]interface{}{
 		"type":      "Bullet",

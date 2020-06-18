@@ -1,9 +1,15 @@
 import * as data from './data/console';
 
 import { Obj } from './data/object';
+import UISystem from './data/ui/uisystem';
 import { drawBackground, drawText } from './lib/draw';
 import { RGB, calByte } from './lib/util';
 let socket;
+
+/*
+    전체 게임 시스템을 담당하고 있습니다.
+    코드가 전체적으로 더럽습니다. 정돈이 필요한 파일입니다.
+*/
 
 export default class System {
     constructor() {
@@ -14,6 +20,8 @@ export default class System {
 
         this.cv = document.getElementById("canvas"); // canvas
         this.ctx = this.cv.getContext("2d"); // ctx
+
+        this.gameui = new UISystem();
 
         this.textinputcontainer = document.getElementById("textInputContainer"); // name input
         this.textinput = document.getElementById("textInput");
@@ -394,6 +402,8 @@ export default class System {
         }
         
         if (this.gameSetting.isGaming) {
+            console.log(data.colorList);
+
             drawBackground(this.ctx, this.camera.x, this.camera.y, this.camera.z, this.cv.width, this.cv.height, this.area);
 
             let buffer = new ArrayBuffer(14); // send input data
@@ -442,6 +452,8 @@ export default class System {
             this.objectList.forEach((o) => {
                 o.DrawHPBar(this.ctx, this.camera);
             });
+
+            this.gameui.draw(this.ctx, this.cv.width, this.cv.height, this.camera.uiz);
 
         } else {
             this.ctx.drawImage(this.img, // draw Background image
