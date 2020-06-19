@@ -139,10 +139,10 @@ export const Obj = function(id) {
         var size = {x: rr * z * 2, y: rr * z * 2,};
         var pos = {x: rr * z, y: rr * z,};
         this.guns.forEach((g) => g.SetCanvasSize(camera, size, pos, rr, dir));
-        this.cv.width = size.x + 4 * camera.z;
-        this.cv.height = size.y + 4 * camera.z;
-        pos.x += 2 * camera.z;
-        pos.y += 2 * camera.z;
+        this.cv.width = size.x + 4 * camera.z + 4;
+        this.cv.height = size.y + 4 * camera.z + 4;
+        pos.x += 2 * camera.z + 2;
+        pos.y += 2 * camera.z + 2;
         this.ctx.lineWidth = 2 * camera.z;
         this.ctx.imageSmoothingEnabled = false;
         return {
@@ -162,24 +162,23 @@ export const Obj = function(id) {
         if (this.guns.length > 0 && this.opacity < 1){
             var {ctxx, x, y, z, t, c, r, dir, o} = this.SetCanvasSize(camera);
             var s = this.DrawSet(camera);
+            var lx = x / z + (s.x * z - x) - Math.floor(s.x * z - x);
+            var ly = y / z + (s.y * z - y) - Math.floor(s.y * z - y);
             this.guns.forEach((g) => {
                 if (!g.isFront) {
-                    g.Draw(ctxx, camera, x / z, y / z, r, c, dir, this.hitTime);
+                    g.Draw(ctxx, camera, lx, ly, r, c, dir, this.hitTime);
                 }
             });
-            drawObj(ctxx,
-                x / z + (s.x * z - x) - Math.floor(s.x * z - x),
-                y / z + (s.y * z - y) - Math.floor(s.y * z - y),
-            z, r, dir, t, 1, c);
+            drawObj(ctxx, lx, ly, z, r, dir, t, 1, c);
             this.guns.forEach((g) => {
                 if (g.isFront) {
-                    g.Draw(ctxx, camera, x / z, y / z, r, c, dir, this.hitTime); // draw front gun
+                    g.Draw(ctxx, camera, lx, ly, r, c, dir, this.hitTime); // draw front gun
                 }
             });
             ctx.save();
             ctx.globalAlpha = o;
             ctx.imageSmoothingEnabled = false;
-            ctx.drawImage(this.cv,Math.floor(s.x * z - x),Math.floor(s.y * z - y));
+            ctx.drawImage(this.cv, Math.floor(s.x * z - x), Math.floor(s.y * z - y));
             ctx.restore();
         } else if (this.opacity > 0) {
             var {x, y, z, t, c, r, dir, o} = this.DrawSet(camera);

@@ -89,6 +89,7 @@ export const Gun = function (paths, dir, color, isMoveDir, isFront, isStatic) {
         const {z, ddir, b, c} = this.DrawSet(camera, cc, hitTime);
 
         ctx.save();
+
         drawC(ctx,c,c.getDarkRGB());
         ctx.lineWidth = 2 * z;
         ctx.lineCap = "round";
@@ -104,6 +105,7 @@ export const Gun = function (paths, dir, color, isMoveDir, isFront, isStatic) {
         ctx.fill();
         ctx.stroke();
         ctx.closePath();
+
         ctx.restore();
     }
 

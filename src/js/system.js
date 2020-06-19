@@ -8,7 +8,7 @@ let socket;
 
 /*
     전체 게임 시스템을 담당하고 있습니다.
-    코드가 전체적으로 더럽습니다. 정돈이 필요한 파일입니다.
+    overall codes are like spaghetti.. 정돈이 필요한 파일입니다.
 */
 
 export default class System {
