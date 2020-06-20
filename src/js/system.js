@@ -2,6 +2,7 @@ import * as data from './data/console';
 
 import { Obj } from './data/object';
 import UISystem from './data/ui/uisystem';
+import * as ui from './data/ui/ui';
 import { drawBackground, drawText } from './lib/draw';
 import { RGB, calByte } from './lib/util';
 let socket;
@@ -22,6 +23,7 @@ export default class System {
         this.ctx = this.cv.getContext("2d"); // ctx
 
         this.gameui = new UISystem();
+        this.gameui.addUI(new ui.Text(0, -100, 0, 100, "mid", "down", new RGB("#000000")).setText("Test",20));
 
         this.textinputcontainer = document.getElementById("textInputContainer"); // name input
         this.textinput = document.getElementById("textInput");
@@ -355,7 +357,7 @@ export default class System {
                     return;
                 }
                 case 4: { // ping
-                    console.log(Date.now() - this.pingList[0]);
+                    //console.log(Date.now() - this.pingList[0]);
                     this.pingList.shift();
                     return;
                 }
@@ -402,8 +404,6 @@ export default class System {
         }
         
         if (this.gameSetting.isGaming) {
-            console.log(data.colorList);
-
             drawBackground(this.ctx, this.camera.x, this.camera.y, this.camera.z, this.cv.width, this.cv.height, this.area);
 
             let buffer = new ArrayBuffer(14); // send input data

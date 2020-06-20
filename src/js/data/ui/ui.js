@@ -1,4 +1,5 @@
 import { drawBar, drawText } from "../../lib/draw";
+import { RGB } from '../../lib/util';
 
 export default class DefaultUI {
     constructor(x, y, w, h, mx, my, c) {
@@ -14,39 +15,40 @@ export default class DefaultUI {
 
     addChild(obj) {
         this.childs.push(obj);
+        return this;
     }
 
     setPosition(x, y, w, h) {
         let pos = {
-            x: 0,
-            y: 0,
+            sx: 0,
+            sy: 0,
         }
 
         switch (this.mx) { 
             case "mid":
-                pos.x = x + w / 2 - this.w / 2;
+                pos.sx = x + w / 2 - this.w / 2;
                 break;
             case "right":
-                pos.x = x + w - this.w;
+                pos.sx = x + w - this.w;
                 break;
             default:
-                pos.x = x;
+                pos.sx = x;
                 break;
         }
-        pos.x += this.x;
+        pos.sx += this.x;
 
         switch (this.my) {   
             case "mid":
-                pos.y = y + h / 2 - this.h / 2;
+                pos.sy = y + h / 2 - this.h / 2;
                 break;
             case "down":
-                pos.y = y + h - this.h;
+                pos.sy = y + h - this.h;
                 break;
             default:
-                pos.y = y;
+                pos.sy = y;
                 break;
         }
-        pos.y += this.y;
+        pos.sy += this.y;
 
         return pos;
     }
@@ -54,7 +56,7 @@ export default class DefaultUI {
     draw(ctx, x, y, w, h, z) {
         let {sx, sy} = this.setPosition(x, y, w, h);
 
-        drawThis(ctx, sx, sy, z);
+        this.drawThis(ctx, sx, sy, z);
 
         this.childs.forEach((o) => {
             o.draw(ctx, sx, sy, this.w, this.h, z);
@@ -65,6 +67,7 @@ export default class DefaultUI {
 export class Bar extends DefaultUI {
     setPer(p) {
         this.per = p;
+        return this;
     }
 
     drawThis(ctx, sx, sy, z) {
@@ -77,10 +80,11 @@ export class Text extends DefaultUI {
         this.text = t;
         this.size = s;
         this.dir = d;
+        return this;
     }
 
     drawThis(ctx, sx, sy, z) {
-        drawText(ctx, sx + w / 2, sy + h / 2, z, 1, new RGB("#000000"), this.text, this.size, this.dir);
+        drawText(ctx, sx + this.w / 2, sy + this.h / 2, z, 1, new RGB("#000000"), this.text, this.size, this.dir);
     }
 }
 
@@ -89,10 +93,12 @@ export class List extends DefaultUI {
         list.forEach((o) => {
             this.addChild(o);
         });
+        return this;
     }
 
     setPadding(p) {
         this.padding = p;
+        return this;
     }
 
     draw(ctx, x, y, w, h, z) {

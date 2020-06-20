@@ -161,7 +161,7 @@ func NewGun(own *Object, value map[string]interface{}, t func(*Object), c func(*
 		}
 	}
 	s.Tick = t
-	if s.Type == "Bullet" {
+	if s.Type == "Bullet" || s.Type == "Trap" {
 		s.IsBorder = false
 	}
 	if s.Type == "Drone" && value["lifetime"] == nil {

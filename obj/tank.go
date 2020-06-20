@@ -403,6 +403,10 @@ func NewTank(t string) *Object {
 	return obj
 }
 
+func AutoGun() {
+
+}
+
 func Invisible(o *Object, t float64) {
 	if o.IsShot || o.Controller == nil || o.Controller.IsMove {
 		o.Opacity = math.Min(o.Opacity+0.1, 1)
