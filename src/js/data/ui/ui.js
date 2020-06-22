@@ -18,7 +18,7 @@ export default class DefaultUI {
         return this;
     }
 
-    setPosition(x, y, w, h) {
+    setPosition(x, y, w, h, z) {
         let pos = {
             sx: 0,
             sy: 0,
@@ -35,7 +35,7 @@ export default class DefaultUI {
                 pos.sx = x;
                 break;
         }
-        pos.sx += this.x;
+        pos.sx += this.x * z;
 
         switch (this.my) {   
             case "mid":
@@ -48,13 +48,13 @@ export default class DefaultUI {
                 pos.sy = y;
                 break;
         }
-        pos.sy += this.y;
+        pos.sy += this.y * z;
 
         return pos;
     }
 
     draw(ctx, x, y, w, h, z) {
-        let {sx, sy} = this.setPosition(x, y, w, h);
+        let {sx, sy} = this.setPosition(x, y, w, h, z);
 
         this.drawThis(ctx, sx, sy, z);
 
@@ -71,7 +71,8 @@ export class Bar extends DefaultUI {
     }
 
     drawThis(ctx, sx, sy, z) {
-        drawBar(ctx, sx, sy - this.h / 2, this.h / 2, this.w, z, 1, this.per, this.color);
+        console.log(sx, sy);
+        drawBar(ctx, sx / z, (sy - this.h / 2) / z, this.h / 2, this.w, z, 1, this.per, this.color);
     }
 }
 
@@ -84,7 +85,7 @@ export class Text extends DefaultUI {
     }
 
     drawThis(ctx, sx, sy, z) {
-        drawText(ctx, sx + this.w / 2, sy + this.h / 2, z, 1, new RGB("#000000"), this.text, this.size, this.dir);
+        drawText(ctx, (sx + this.w / 2) / z, (sy + this.h / 2) / z, z, 1, new RGB("#ffffff"), this.text, this.size, this.dir);
     }
 }
 
@@ -102,11 +103,11 @@ export class List extends DefaultUI {
     }
 
     draw(ctx, x, y, w, h, z) {
-        let {sx, sy} = this.setPosition(x, y, w, h);
+        let {sx, sy} = this.setPosition(x, y, w, h, z);
 
         this.childs.forEach((o) => {
             o.draw(ctx, sx, sy, this.w, this.h, z);
-            sx += o.h + this.padding;
+            sy += o.h + this.padding || 0;
         });
     }
 }

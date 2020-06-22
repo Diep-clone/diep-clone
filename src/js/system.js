@@ -22,8 +22,15 @@ export default class System {
         this.cv = document.getElementById("canvas"); // canvas
         this.ctx = this.cv.getContext("2d"); // ctx
 
-        this.gameui = new UISystem();
-        this.gameui.addUI(new ui.Text(0, -100, 0, 100, "mid", "down", new RGB("#000000")).setText("Test",20));
+        this.gameui = new UISystem(); // set gameUI
+
+        let scoreboardui = [];
+        for (let i = 0; i < 10; i ++) {
+            scoreboardui.push(new ui.Bar(0, 0, 100, 20, "left", "up", new RGB("#00F46C")).setPer(1));
+        }
+
+        this.gameui.addUI(new ui.Text(0, 0, 0, 50, "mid", "down", new RGB("#000000")).setText("Test",20));
+        this.gameui.addUI(new ui.List(0, 0, 100, 500, "right", "up").setList(scoreboardui));
 
         this.textinputcontainer = document.getElementById("textInputContainer"); // name input
         this.textinput = document.getElementById("textInput");
