@@ -5,7 +5,7 @@
   "maxShape": 1000,
   "chatting": false,
   "mapSize": {
-    "x": 1000,
-    "y": 1000
+    "x": 1500,
+    "y": 1500
   }
 }

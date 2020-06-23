@@ -23,14 +23,14 @@ export default class System {
         this.ctx = this.cv.getContext("2d"); // ctx
 
         this.gameui = new UISystem(); // set gameUI
-
+/*
         let scoreboardui = [];
         for (let i = 0; i < 10; i ++) {
-            scoreboardui.push(new ui.Bar(0, 0, 100, 20, "left", "up", new RGB("#00F46C")).setPer(1));
+            scoreboardui.push(new ui.Bar(0, 0, 150, 14, "left", "up", new RGB("#00F46C")).setPer(1));
         }
-
+*/
         this.gameui.addUI(new ui.Text(0, 0, 0, 50, "mid", "down", new RGB("#000000")).setText("Test",20));
-        this.gameui.addUI(new ui.List(0, 0, 100, 500, "right", "up").setList(scoreboardui));
+        //this.gameui.addUI(new ui.List(0, 0, 150, 500, "right", "up").setList(scoreboardui).setPadding(3));
 
         this.textinputcontainer = document.getElementById("textInputContainer"); // name input
         this.textinput = document.getElementById("textInput");
