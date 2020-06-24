@@ -20,5 +20,19 @@ ybs1164@naver.com
 - gorilla/websocket
 - sirupsen/logrus
 
+Before introducing this project,
+these are the nicknames of the "researchers" who gave their attention to this project and have researched various needed information about diep.io.
+Without them, this project would not have progressed.
+I would like to express my gratitude to the following researchers:
+
+[K] YouTube
+피로⚛Firo_SF
+항해사
+케빈
+
+Plus, I would like to thank 레인우드, who made the foundation for this project.
+
+Then let's start introducing the project.
+
 ---
 Copyright © 2019-2020

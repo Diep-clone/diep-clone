@@ -26,10 +26,10 @@ export default class DefaultUI {
 
         switch (this.mx) { 
             case "mid":
-                pos.sx = x + w / 2 - this.w / 2;
+                pos.sx = x + w / 2 - this.w / 2 * z;
                 break;
             case "right":
-                pos.sx = x + w - this.w;
+                pos.sx = x + w - this.w * z;
                 break;
             default:
                 pos.sx = x;
@@ -39,7 +39,7 @@ export default class DefaultUI {
 
         switch (this.my) {   
             case "mid":
-                pos.sy = y + h / 2 - this.h / 2;
+                pos.sy = y + h / 2 - this.h / 2 * z;
                 break;
             case "down":
                 pos.sy = y + h - this.h * z;
@@ -71,7 +71,8 @@ export class Bar extends DefaultUI {
     }
 
     drawThis(ctx, sx, sy, z) {
-        drawBar(ctx, sx / z, (sy + this.h / 2) / z, this.h / 2, this.w, z, 1, this.per, this.color);
+        z *= 3;
+        drawBar(ctx, sx / z, sy / z + this.h / 2, this.h / 6, this.w / 3, z, 1, this.per, this.color);
     }
 }
 
@@ -106,7 +107,7 @@ export class List extends DefaultUI {
 
         this.childs.forEach((o) => {
             o.draw(ctx, sx, sy, this.w, this.h, z);
-            sy += o.h + (this.padding || 0);
+            sy += (o.h + (this.padding || 0)) * z;
         });
     }
 }

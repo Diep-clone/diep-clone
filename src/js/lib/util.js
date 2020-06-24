@@ -2,7 +2,7 @@ import { Gun } from '../data/gun.js';
 
 export const RGB = function(r, g, b) {
     /*
-
+        store the color information as RGB code
     */
     this.r;
     this.g;

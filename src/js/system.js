@@ -23,14 +23,14 @@ export default class System {
         this.ctx = this.cv.getContext("2d"); // ctx
 
         this.gameui = new UISystem(); // set gameUI
-/*
+
         let scoreboardui = [];
         for (let i = 0; i < 10; i ++) {
-            scoreboardui.push(new ui.Bar(0, 0, 150, 14, "left", "up", new RGB("#00F46C")).setPer(1));
+            scoreboardui.push(new ui.Bar(0, 0, 166, 35, "left", "up", new RGB("#00F46C")).setPer(1));
         }
-*/
+
         this.gameui.addUI(new ui.Text(0, 0, 0, 50, "mid", "down", new RGB("#000000")).setText("Test",20));
-        //this.gameui.addUI(new ui.List(0, 0, 150, 500, "right", "up").setList(scoreboardui).setPadding(3));
+        this.gameui.addUI(new ui.List(-25, 2, 166, 500, "right", "up").setList(scoreboardui).setPadding(-15));
 
         this.textinputcontainer = document.getElementById("textInputContainer"); // name input
         this.textinput = document.getElementById("textInput");
@@ -98,7 +98,7 @@ export default class System {
             get_convar:function(key){},
             keyDown: function() {
                 if (this.gameSetting.isNaming) {
-                    if (arguments[0] === 13) { //
+                    if (arguments[0] === 13) { // At naming username, the name is sent as type of '0' if enter key is pressed (only 30byte)
                         this.gameSetting.isGaming = true; // game start
                         this.textinputcontainer.style.display = "none"; // hide name input
                         this.textinputcontainer.style.top = "-" + this.textinputcontainer.style.top;
