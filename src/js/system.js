@@ -24,13 +24,14 @@ export default class System {
 
         this.gameui = new UISystem(); // set gameUI
 
-        let scoreboardui = [];
+
+        this.scoreboardui = [];
         for (let i = 0; i < 10; i ++) {
-            scoreboardui.push(new ui.Bar(0, 0, 166, 35, "left", "up", new RGB("#00F46C")).setPer(1));
+            this.scoreboardui.push(new ui.Bar(0, 0, 166, 35, "left", "up", new RGB("#00F46C")).setPer(1).addChild(new ui.Text(0, 0, 0, 28, "mid", "down", new RGB("#000000"))));
         }
 
-        this.gameui.addUI(new ui.Text(0, 0, 0, 50, "mid", "down", new RGB("#000000")).setText("Test",20));
-        this.gameui.addUI(new ui.List(-25, 2, 166, 500, "right", "up").setList(scoreboardui).setPadding(-15));
+        this.gameui.addUI(new ui.Text(0, 0, 0, 50, "mid", "down", new RGB("#000000")).setText("Test", 20));
+        this.gameui.addUI(new ui.List(-25, 2, 166, 500, "right", "up").setList(this.scoreboardui).setPadding(-15));
 
         this.textinputcontainer = document.getElementById("textInputContainer"); // name input
         this.textinput = document.getElementById("textInput");
@@ -307,7 +308,6 @@ export default class System {
                         i++;
 
                         let u = new Uint8Array(msg.data.slice(i,i+len))
-                        
                         obj.team = String.fromCharCode.apply(null, u);
                         i+=len;
 
@@ -317,6 +317,7 @@ export default class System {
                         u = new Uint8Array(msg.data.slice(i,i+len));
                         obj.type = new TextDecoder().decode(u);
                         i += len;
+
                         len = view.getUint8(i);
                         i++;
 
@@ -360,6 +361,44 @@ export default class System {
                     return;
                 }
                 case 3: { // scoreboard
+                    let i = 1;
+                    let j = 0;
+
+                    let maxScore = view.getUint32(i);
+
+                    while (i < msg.data.byteLength) {
+                        
+                        let score = view.getUint32(i);
+                        this.scoreboardui[j].setEnable(true);
+                        this.scoreboardui[j].setPer(score / maxScore);
+                        i+=4;
+
+                        let len = view.getUint8(i);
+                        i++;
+
+                        let u = new Uint8Array(msg.data.slice(i,i+len))
+                        //let team = String.fromCharCode.apply(null, u);
+                        i+=len;
+
+                        len = view.getUint8(i);
+                        i++;
+
+                        u = new Uint8Array(msg.data.slice(i,i+len));
+                        let type = new TextDecoder().decode(u);
+                        if (!type) this.scoreboardui[j].setEnable(false);
+                        i += len;
+                        
+                        len = view.getUint8(i);
+                        i++;
+
+                        u = new Uint8Array(msg.data.slice(i,i+len));
+                        let name = new TextDecoder().decode(u);
+                        i += len;
+
+                        this.scoreboardui[j].childs[0].setText(name + "-" + score, 13);
+
+                        j++;
+                    }
                     
                     return;
                 }

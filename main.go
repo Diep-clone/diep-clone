@@ -220,7 +220,7 @@ func scoreBoard(ticker time.Ticker) {
 			}
 		}
 
-		var sendData []byte = make([]byte, 5)
+		var sendData []byte = make([]byte, 1)
 
 		sendData[0] = 3
 

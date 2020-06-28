@@ -80,9 +80,9 @@ export const Obj = function(id) {
                 let a = -((Math.cos(data.dir)*Math.cos(this.dir)) + (Math.sin(data.dir)*Math.sin(this.dir))-1) * Math.PI / 2;
 
                 if (ccw > 0) {
-                    this.dir -= a * 0.8;
+                    this.dir -= a * 0.5;
                 } else if (ccw < 0) {
-                    this.dir += a * 0.8;
+                    this.dir += a * 0.5;
                 }
             } else {
                 this.dir = data.dir;

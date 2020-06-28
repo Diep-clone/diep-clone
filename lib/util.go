@@ -23,14 +23,17 @@ type Score struct {
 }
 
 // Scoreboard is
-type Scoreboard [11]Score
+type Scoreboard [10]Score
 
 // Scoreboard Push
 func (sc *Scoreboard) Push(value Score) {
-	var index = 0
-	for ; value.Score < sc[index+1].Score && index < 9; index++ {
+	var index int = 0
+	for ; value.Score < sc[index].Score && index < 9; index++ {
 	}
-	for j := 9; j >= index; j-- {
+	if index == 9 {
+		return
+	}
+	for j := 8; j >= index; j-- {
 		sc[j+1] = sc[j]
 	}
 	sc[index] = value

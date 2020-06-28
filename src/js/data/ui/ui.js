@@ -11,11 +11,16 @@ export default class DefaultUI {
         this.my = my || "mid"; // "up" "mid" "down"
         this.color = c;
         this.childs = [];
+        this.isEnable = true;
     }
 
     addChild(obj) {
         this.childs.push(obj);
         return this;
+    }
+
+    setEnable(isEnable) {
+        this.isEnable = isEnable;
     }
 
     setPosition(x, y, w, h, z) {
@@ -54,12 +59,14 @@ export default class DefaultUI {
     }
 
     draw(ctx, x, y, w, h, z) {
+        if (!this.isEnable) return;
+
         let {sx, sy} = this.setPosition(x, y, w, h, z);
 
         this.drawThis(ctx, sx, sy, z);
 
         this.childs.forEach((o) => {
-            o.draw(ctx, sx, sy, this.w, this.h, z);
+            o.draw(ctx, sx, sy, this.w * z, this.h * z, z);
         });
     }
 }
@@ -71,8 +78,8 @@ export class Bar extends DefaultUI {
     }
 
     drawThis(ctx, sx, sy, z) {
-        z *= 3;
-        drawBar(ctx, sx / z, sy / z + this.h / 2, this.h / 6, this.w / 3, z, 1, this.per, this.color);
+        if (!this.isEnable) return;
+        drawBar(ctx, sx / (z * 3), sy / (z * 3) + this.h / 6, this.h / 6, this.w / 3, z * 3, 1, this.per, this.color);
     }
 }
 
@@ -85,7 +92,8 @@ export class Text extends DefaultUI {
     }
 
     drawThis(ctx, sx, sy, z) {
-        drawText(ctx, sx / z, sy / z, z, 1, new RGB("#ffffff"), this.text, this.size, this.dir);
+        if (!this.isEnable) return;
+        drawText(ctx, sx / z, sy / z + this.h / 2, z, 1, new RGB("#ffffff"), this.text, this.size, this.dir);
     }
 }
 
@@ -103,6 +111,8 @@ export class List extends DefaultUI {
     }
 
     draw(ctx, x, y, w, h, z) {
+        if (!this.isEnable) return;
+        
         let {sx, sy} = this.setPosition(x, y, w, h, z);
 
         this.childs.forEach((o) => {
