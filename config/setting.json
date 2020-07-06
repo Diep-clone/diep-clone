@@ -4,6 +4,7 @@
   "maxPlayer": 50,
   "maxShape": 1000,
   "chatting": false,
+  "getExp": 1,
   "mapSize": {
     "x": 1500,
     "y": 1500

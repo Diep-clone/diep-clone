@@ -39,6 +39,7 @@ export const Obj = function(id) {
     this.mh; // max health
     this.opacity;
     this.score;
+    this.subobjs = [];
     this.isDead;
 
     this.cv = document.createElement("canvas");
@@ -52,17 +53,12 @@ export const Obj = function(id) {
     this.hitTime = 0;
 
     this.Animate = function (tick) {
-        if (this.isDead) { // death effect
-            this.opacity = Math.max(this.opacity - 0.1 * tick * 0.05, 0);
-            this.r += this.r * 0.03 * tick * 0.05;
-
-            if (this.opacity == 0) {
-                this.isDelete = true;
-                return;
-            }
-        }
-
         this.guns.forEach((g) => g.Animate(tick)); // gun animation (when their shot bullet)
+        this.subobjs.forEach((o) => {
+            if (o != null) {
+                o.Animate(tick)
+            }
+        }); // sub objects animation
     }
 
     this.ObjSet = function (data) { // obj value setting
@@ -80,21 +76,19 @@ export const Obj = function(id) {
                 let a = -((Math.cos(data.dir)*Math.cos(this.dir)) + (Math.sin(data.dir)*Math.sin(this.dir))-1) * Math.PI / 2;
 
                 if (ccw > 0) {
-                    this.dir -= a * 0.5;
+                    this.dir -= Math.min(a, 0.3);
                 } else if (ccw < 0) {
-                    this.dir += a * 0.5;
+                    this.dir += Math.min(a, 0.3);
                 }
             } else {
                 this.dir = data.dir;
             }
         }
-        if (!this.isDead) {
-            this.r = data.r;
-            this.h = data.h;
-            this.mh = data.mh;
-            this.opacity = data.opacity;
-            this.score = data.score;
-        }
+        this.r = data.r;
+        this.h = data.h;
+        this.mh = data.mh;
+        this.opacity = data.opacity;
+        this.score = data.score;
         this.isDead = data.isDead;
         this.hitTime = data.hitTime;
 
@@ -110,6 +104,25 @@ export const Obj = function(id) {
                 this.guns[i].Shot();
             }
         }
+
+        if (this.subobjs.length > 0) {
+            for (let i = 0; i < this.subobjs.length && i < data.subobjs.length; i++) {
+                if (data.subobjs[i] == null) continue;
+                data.subobjs[i].isDead = this.isDead;
+                this.subobjs[i].ObjSet(data.subobjs[i]);
+            }
+        } else {
+            data.subobjs.forEach((d) => {
+                if (d == null) {
+                    this.subobjs.push(null);
+                } else {
+                    let obi = new Obj(d.id);
+                    obi.ObjSet(d);
+                    this.subobjs.push(obi);
+                }
+            });
+        }
+
         this.type = data.type;
         this.color = colorType(data.type,data.team);
     };
@@ -134,11 +147,55 @@ export const Obj = function(id) {
     }
 
     this.SetCanvasSize = function (camera) { // 오브젝트를 이미지로 처리할 때의 중복되는 값들을 간결하게 보내줍니다.
-        var {z, t, c, r, dir, o} = this.DrawSet(camera);
+        var {x, y, z, t, r, dir} = this.DrawSet(camera);
         let rr = r * getPolygonRadius(Math.abs(getObjectPoint(t)));
         var size = {x: rr * z * 2, y: rr * z * 2,};
         var pos = {x: rr * z, y: rr * z,};
         this.guns.forEach((g) => g.SetCanvasSize(camera, size, pos, rr, dir));
+        let setSubobjCanvas = function (objs) {
+            objs.forEach((o) => {
+                if (o != null) {
+                    let {px, py, w, h} = o.SetCanvasSize(camera);
+                    let ax = -(x + camera.x - o.x) * z + pos.x + 2 * camera.z + 2;
+                    let ay = -(y + camera.y - o.y) * z + pos.y + 2 * camera.z + 2;
+                    let x1 = Math.floor(ax - px);
+                    let x2 = Math.floor(ax - px + w);
+                    let y1 = Math.floor(ay - py);
+                    let y2 = Math.floor(ay - py + h);
+        
+                    if (x1 < 0) {
+                        size.x -= x1;
+                        pos.x -= x1;
+                    } else if (x1 > size.x) {
+                        size.x = x1;
+                    }
+        
+                    if (y1 < 0) {
+                        size.y -= y1;
+                        pos.y -= y1;
+                    } else if (y1 > size.y) {
+                        size.y = y1;
+                    }
+        
+                    if (x2 < 0) {
+                        size.x -= x2;
+                        pos.x -= x2;
+                    } else if (x2 > size.x) {
+                        size.x = x2;
+                    }
+        
+                    if (y2 < 0) {
+                        size.y -= y2;
+                        pos.y -= y2;
+                    } else if (y2 > size.y) {
+                        size.y = y2;
+                    }
+
+                    setSubobjCanvas(o.subobjs);
+                }
+            });
+        };
+        setSubobjCanvas(this.subobjs);
         this.cv.width = size.x + 4 * camera.z + 4;
         this.cv.height = size.y + 4 * camera.z + 4;
         pos.x += 2 * camera.z + 2;
@@ -147,52 +204,64 @@ export const Obj = function(id) {
         this.ctx.imageSmoothingEnabled = false;
         return {
             ctxx: this.ctx,
-            x: pos.x,
-            y: pos.y,
-            z: z,
-            t: t,
-            c: c,
-            r: r,
-            dir: dir,
-            o: o,
+            px: pos.x,
+            py: pos.y,
+            w: size.x,
+            h: size.y,
         }
     }
 
     this.Draw = function (ctx, camera) {
-        if (this.guns.length > 0 && this.opacity < 1){
-            var {ctxx, x, y, z, t, c, r, dir, o} = this.SetCanvasSize(camera);
-            var s = this.DrawSet(camera);
-            var lx = x / z + (s.x * z - x) - Math.floor(s.x * z - x);
-            var ly = y / z + (s.y * z - y) - Math.floor(s.y * z - y);
-            this.guns.forEach((g) => {
-                if (!g.isFront) {
-                    g.Draw(ctxx, camera, lx, ly, r, c, dir, this.hitTime);
+        if ((this.guns.length > 0 || this.subobjs.length > 0) && this.opacity < 1){
+            var {ctxx, px, py} = this.SetCanvasSize(camera);
+
+            let {x, y, z, o} = this.DrawSet(camera);
+            let lx = (x * z - px) - Math.floor(x * z - px) - x;
+            let ly = (y * z - py) - Math.floor(y * z - py) - y;
+
+            let drawObjb = function (obj) {
+                let {x, y, z, t, c, r, dir} = obj.DrawSet(camera);
+                let i = 0;
+                for (; i < obj.subobjs.length; i++) {
+                    if (obj.subobjs[i] === null) {
+                        break;
+                    }
+                    drawObjb(obj.subobjs[i]);
                 }
-            });
-            drawObj(ctxx, lx, ly, z, r, dir, t, 1, c);
-            this.guns.forEach((g) => {
-                if (g.isFront) {
-                    g.Draw(ctxx, camera, lx, ly, r, c, dir, this.hitTime); // draw front gun
+                obj.guns.forEach((g) => {
+                    g.Draw(ctxx, camera, px / z + lx + x, py / z + ly + y, r, c, dir, obj.hitTime);
+                });
+                drawObj(ctxx, px / z + lx + x, py / z + ly + y, z, r, dir, t, 1, c);
+                for (i++; i < obj.subobjs.length; i++) {
+                    drawObjb(obj.subobjs[i]);
                 }
-            });
+            }
+            drawObjb(this);
+
             ctx.save();
             ctx.globalAlpha = o;
             ctx.imageSmoothingEnabled = false;
-            ctx.drawImage(this.cv, Math.floor(s.x * z - x), Math.floor(s.y * z - y));
+            ctx.drawImage(this.cv, Math.floor(x * z - px), Math.floor(y * z - py));
             ctx.restore();
         } else if (this.opacity > 0) {
-            var {x, y, z, t, c, r, dir, o} = this.DrawSet(camera);
-            this.guns.forEach((g) => {
-                if (!g.isFront) {
-                    g.Draw(ctx, camera, x, y, r, c, dir, this.hitTime);
+            let drawObjb = function(obj) {
+                var {x, y, z, t, c, r, dir, o} = obj.DrawSet(camera);
+                let i = 0;
+                for (; i < obj.subobjs.length; i++) {
+                    if (obj.subobjs[i] === null) {
+                        break;
+                    }
+                    drawObjb(obj.subobjs[i]);
                 }
-            });
-            drawObj(ctx, x, y, z, r, dir, t, o, c);
-            this.guns.forEach((g) => {
-                if (g.isFront) {
-                    g.Draw(ctx, camera, x, y, r, c, dir, this.hitTime); // draw front gun
+                obj.guns.forEach((g) => {
+                    g.Draw(ctx, camera, x, y, r, c, dir, obj.hitTime);
+                });
+                drawObj(ctx, x, y, z, r, dir, t, o, c);
+                for (i++; i < obj.subobjs.length; i++) {
+                    drawObjb(obj.subobjs[i]);
                 }
-            });
+            }
+            drawObjb(this);
         }
     }
 

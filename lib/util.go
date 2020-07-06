@@ -71,6 +71,10 @@ func Ccw(p1, p2, p3 Pos) int {
 	}
 }
 
+func DirDis(d1, d2 float64) float64 {
+	return math.Pi - math.Abs(math.Abs(d1-d2)-math.Pi)
+}
+
 func Now() int64 {
 	return time.Now().UnixNano() / 1000000
 }

@@ -144,7 +144,7 @@ export const getTextWidth = function(text, font) {
 
 
 export const colorType = function(type, team){
-    switch (team){            
+    switch (team){
         case "shape":
             switch (type){
                 case "Square":
@@ -180,6 +180,9 @@ export const colorType = function(type, team){
 }
 
 export const gunList = { // Returns the width of a given text typed.
+    "AutoGun":[
+        new Gun([[0.6,0],[0.6,2],[-0.6,2],[-0.6, 0]]),
+    ],
     "Basic":[
         new Gun([[0.42,0],[0.42,1.88],[-0.42,1.88],[-0.42, 0]]),
     ],
@@ -329,7 +332,7 @@ export const gunList = { // Returns the width of a given text typed.
 
     ],
     "AutoTrapper": [
-
+        new Gun([[0.42,0],[0.42,1.193],[0.73,1.578],[-0.73,1.578],[-0.42,1.193],[0.42,1.193],[-0.42,1.193],[-0.42,0]])
     ],
     "BasicDominator": [
 
@@ -367,11 +370,11 @@ export const gunList = { // Returns the width of a given text typed.
         new Gun([[0.92,0],[0.52,1.59],[-0.52,1.59],[-0.92, 0]])
     ],
     "SkimmerBullet": [
-        new Gun([[7,0],[7,1.4],[-7,1.4],[-7,0]], 0, -1, 0, false, true),
-        new Gun([[7,0],[7,1.4],[-7,1.4],[-7,0]], Math.PI, -1, 0, false, true)
+        new Gun([[7,0],[7,1.4],[-7,1.4],[-7,0]], 0, -1, 0, true),
+        new Gun([[7,0],[7,1.4],[-7,1.4],[-7,0]], Math.PI, -1, 0, true)
     ],
     "RocketeerBullet": [
-        new Gun([[6,0],[10,1.5],[-10,1.5],[-6,0]], Math.PI, -1, 0, false, true)
+        new Gun([[6,0],[10,1.5],[-10,1.5],[-6,0]], Math.PI, -1, 0, true)
     ],
 }
 

@@ -1,7 +1,7 @@
 import { colorList } from './console';
 import { drawC } from '../lib/draw';
 
-export const Gun = function (paths, dir, color, isMoveDir, isFront, isStatic) {
+export const Gun = function (paths, dir, color, isMoveDir, isStatic) {
     'use strict';
 
     /*
@@ -14,7 +14,6 @@ export const Gun = function (paths, dir, color, isMoveDir, isFront, isStatic) {
     this.color = color;
     if (this.color == undefined) this.color = 1; // default gun color
     this.isMoveDir = isMoveDir || 0; // is Cannot Control Gun? (and Turn like bolt?) (using Smasher or Spike)
-    this.isFront = isFront || false; // 오브젝트의 몸체보다 레이어가 위쪽에 위치했는가?
     this.isStatic = isStatic || false; // 총구가 가로로 늘어나지 않는가? (using Skimmer or Rocketeer 's Gun)
     this.shotTime = []; // using gun's animation
     this.back = 0;

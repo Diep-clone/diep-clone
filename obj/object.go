@@ -21,6 +21,7 @@ type Object struct {
 	Type       string  `json:"type"`
 	Team       string  `json:"team"`
 	Name       string  `json:"name"`
+	Index      int
 
 	X       float64 `json:"x"`
 	Y       float64 `json:"y"`
@@ -58,16 +59,17 @@ type Object struct {
 	IsShowName   bool `json:"isShowName"`
 	IsBack       bool
 
-	HitObject *Object
-	Target    *Object
-	Tick      func(*Object)
-	Collision func(*Object, *Object)
-	KillEvent func(*Object, *Object)
-	DeadEvent func(*Object, *Object)
+	SubObjects []*Object
+	HitObject  *Object
+	Target     *Object
+	Tick       func(*Object)
+	Collision  func(*Object, *Object)
+	KillEvent  func(*Object, *Object)
+	DeadEvent  func(*Object, *Object)
 }
 
 //
-func (obj *Object) ObjectTick(objIndex int) {
+func (obj *Object) ObjectTick() {
 	obj.X += obj.Dx //* lib.GameSetting.GameSpeed // 좌표값에 속도 적용
 	obj.Y += obj.Dy //* lib.GameSetting.GameSpeed
 
@@ -89,15 +91,27 @@ func (obj *Object) ObjectTick(objIndex int) {
 		}
 	}
 
-	if obj.H <= 0 {
+	if obj.H <= 0 && obj.Mh != 0 {
 		obj.IsDead = true
 		obj.H = 0
 	}
+	for _, o := range obj.SubObjects {
+		if o == nil {
+			continue
+		}
+		o.Index = -1
+		if o.Tick != nil {
+			o.Tick(o)
+		}
+
+		o.ObjectTick()
+	}
+
 	if obj.IsDead {
 		return
 	}
 
-	obj.Shot(objIndex)
+	obj.Shot(obj.Index)
 
 	if obj.Controller != nil && lib.Now()-int64(30000.*lib.GameSetting.GameSpeed) > obj.HitTime {
 		obj.H += obj.Mh / 60 / 10 * lib.GameSetting.GameSpeed
@@ -180,6 +194,14 @@ func (o Object) ObjBinaryData() []byte {
 			g.IsShot = false
 		} else {
 			data = append(data, byte(0))
+		}
+	}
+	data = append(data, byte(len(o.SubObjects)))
+	for _, obj := range o.SubObjects {
+		if obj == nil {
+			data = append(data, make([]byte, 4)...)
+		} else {
+			data = append(data, obj.ObjBinaryData()...)
 		}
 	}
 	if o.HitTime+100-lib.Now() > 0 {

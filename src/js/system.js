@@ -262,68 +262,86 @@ export default class System {
                     while (i < msg.data.byteLength) {
                         let isObjEnable = false;
 
-                        let obj = {};
+                        let f = function() {
+                            let obj = {};
 
-                        obj.id = view.getUint32(i);
-                        i+=4;
+                            obj.id = view.getUint32(i);
+                            i+=4;
 
-                        obj.x = view.getFloat64(i);
-                        i+=8;
+                            obj.x = view.getFloat64(i);
+                            i+=8;
 
-                        obj.y = view.getFloat64(i);
-                        i+=8;
+                            obj.y = view.getFloat64(i);
+                            i+=8;
 
-                        obj.r = view.getFloat64(i);
-                        i+=8;
+                            obj.r = view.getFloat64(i);
+                            i+=8;
 
-                        obj.dir = view.getFloat64(i);
-                        i+=8;
+                            obj.dir = view.getFloat64(i);
+                            i+=8;
 
-                        obj.mh = view.getFloat64(i);
-                        i+=8;
+                            obj.mh = view.getFloat64(i);
+                            i+=8;
 
-                        obj.h = view.getFloat64(i);
-                        i+=8;
+                            obj.h = view.getFloat64(i);
+                            i+=8;
 
-                        obj.opacity = view.getFloat64(i);
-                        i+=8;
+                            obj.opacity = view.getFloat64(i);
+                            i+=8;
 
-                        obj.score = view.getUint32(i);
-                        i+=4;
+                            obj.score = view.getUint32(i);
+                            i+=4;
 
-                        let gunLen = view.getUint8(i);
-                        i++;
-                        obj.guns = [];
-                        for (; gunLen > 0; i++,gunLen--) {
-                            obj.guns.push(view.getUint8(i));
+                            let gunLen = view.getUint8(i);
+                            i++;
+                            obj.guns = [];
+                            for (; gunLen > 0; i++,gunLen--) {
+                                obj.guns.push(view.getUint8(i));
+                            }
+
+                            let subLen = view.getUint8(i);
+                            i++;
+                            obj.subobjs = [];
+                            for (; subLen > 0; subLen--) {
+                                if (view.getUint32(i) == 0) {
+                                    obj.subobjs.push(null);
+                                    i += 4;
+                                } else {
+                                    obj.subobjs.push(f());
+                                }
+                            }
+
+                            obj.hitTime = view.getUint8(i);
+                            i++;
+
+                            obj.isDead = view.getUint8(i);
+                            i++;
+
+                            let len = view.getUint8(i);
+                            i++;
+
+                            let u = new Uint8Array(msg.data.slice(i,i+len))
+                            obj.team = String.fromCharCode.apply(null, u);
+                            i+=len;
+
+                            len = view.getUint8(i);
+                            i++;
+
+                            u = new Uint8Array(msg.data.slice(i,i+len));
+                            obj.type = new TextDecoder().decode(u);
+                            i += len;
+
+                            len = view.getUint8(i);
+                            i++;
+
+                            u = new Uint8Array(msg.data.slice(i,i+len));
+                            obj.name = new TextDecoder().decode(u);
+                            i += len;
+
+                            return obj;
                         }
-
-                        obj.hitTime = view.getUint8(i);
-                        i++;
-
-                        obj.isDead = view.getUint8(i);
-                        i++;
-
-                        let len = view.getUint8(i);
-                        i++;
-
-                        let u = new Uint8Array(msg.data.slice(i,i+len))
-                        obj.team = String.fromCharCode.apply(null, u);
-                        i+=len;
-
-                        len = view.getUint8(i);
-                        i++;
-
-                        u = new Uint8Array(msg.data.slice(i,i+len));
-                        obj.type = new TextDecoder().decode(u);
-                        i += len;
-
-                        len = view.getUint8(i);
-                        i++;
-
-                        u = new Uint8Array(msg.data.slice(i,i+len));
-                        obj.name = new TextDecoder().decode(u);
-                        i += len;
+                        
+                        let obj = f();
 
                         this.objectList.forEach((obi) => {
                             if (obi.id === obj.id){

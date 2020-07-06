@@ -80,16 +80,16 @@ func moveloop(ticker time.Ticker) { // manages the motion of all objects.
 
 		t := time.Now()
 
-		obj.AddShape()
+		obj.AddShape() // 도형 스폰
 
-		for _, u := range obj.Users {
+		for _, u := range obj.Users { // 유저 세팅
 			u.PlayerSet()
 			u.CameraSet()
 		}
 
-		obj.Qt.Clear()
+		obj.Qt.Clear() // 쿼드트리 초기화
 
-		for _, o := range obj.Objects {
+		for _, o := range obj.Objects { // 쿼드트리 충돌처리
 			if !o.IsDead {
 				obj.Qt.Insert(o)
 
@@ -98,11 +98,15 @@ func moveloop(ticker time.Ticker) { // manages the motion of all objects.
 					Y: o.Y - o.R,
 					W: o.R * 2,
 					H: o.R * 2,
-				}) {
+				}) { // 똑같은 오브젝트가 아니고, 죽지 않았으며, 이미 충돌감지가 처리되지 않았고, 주인이 같을 때 반동값을 주는가, 타 오브젝트의 주인이 자신의 오브젝트가 아닌가
 					if o != obj2 && !obj2.IsDead && !(o.IsCollision || obj2.IsCollision) && (obj2.Owner != o.Owner || obj2.IsOwnCol && o.IsOwnCol) && o != obj2.Owner && obj2 != o.Owner {
 						if (o.X-obj2.X)*(o.X-obj2.X)+(o.Y-obj2.Y)*(o.Y-obj2.Y) < (o.R+obj2.R)*(o.R+obj2.R) {
-							o.Collision(o, obj2)
-							obj2.Collision(obj2, o)
+							if o.Collision != nil {
+								o.Collision(o, obj2)
+							}
+							if obj2.Collision != nil {
+								obj2.Collision(obj2, o)
+							}
 						}
 					}
 				}
@@ -110,15 +114,17 @@ func moveloop(ticker time.Ticker) { // manages the motion of all objects.
 		}
 
 		for i, o := range obj.Objects {
+			o.Index = i
 			if o.Tick != nil {
 				o.Tick(o)
 			}
 
-			o.ObjectTick(i)
+			o.ObjectTick()
 		}
 
 		for i := 0; i < len(obj.Objects); i++ {
 			var o *obj.Object = obj.Objects[i]
+			o.Index = i
 			if o.IsDead {
 				if o.DeadTime == -1 {
 					o.DeadTime = 300
@@ -130,6 +136,8 @@ func moveloop(ticker time.Ticker) { // manages the motion of all objects.
 					obj.Objects = append(obj.Objects[:i], obj.Objects[i+1:]...)
 					i--
 				} else {
+					o.Opacity = math.Max(o.Opacity-0.1, 0)
+					o.R += o.R * 0.02
 					o.DeadTime = math.Max(o.DeadTime-1000./60., 0.)
 				}
 			}

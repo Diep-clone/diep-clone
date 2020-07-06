@@ -180,7 +180,7 @@ func Event(p *Player, message []byte) {
 			value /= 2
 			if value%2 == 1 {
 				if obj := u.ControlObject; obj != nil {
-					//obj.H = 0
+					obj.H = 0
 				}
 			}
 		}
@@ -213,6 +213,9 @@ func Event(p *Player, message []byte) {
 			"Predator",
 			"Trapper",
 			"TriTrapper",
+			"Auto5",
+			"Auto3",
+			"AutoTrapper",
 			"Battleship",
 			"Spike",
 			"Skimmer",

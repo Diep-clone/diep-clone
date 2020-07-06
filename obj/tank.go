@@ -7,6 +7,9 @@ import (
 )
 
 func TankTick(obj *Object) {
+	if obj.IsDead {
+		return
+	}
 	obj.R = 12.9 * math.Pow(1.01, float64(obj.Level)-1)
 	obj.Damage = 20 + float64(obj.Stats[2])*4
 	obj.Speed = (0.07 + 0.007*float64(obj.Stats[7])) * math.Pow(0.985, float64(obj.Level)-1)
@@ -265,7 +268,7 @@ func NewTank(t string) *Object {
 		}, nil, nil, nil, nil)}
 	case "TriTrapper":
 		obj.Sight = 1.11
-		var dir float64 = -math.Pi / 3 * 2
+		var dir float64 = -math.Pi / 3. * 2.
 		obj.Guns = []Gun{}
 		for i := 0; i < 3; i++ {
 			obj.Guns = append(obj.Guns, NewGun(obj, map[string]interface{}{
@@ -277,8 +280,53 @@ func NewTank(t string) *Object {
 				"lifetime": 10,
 				"sy":       1.2,
 			}, nil, nil, nil, nil))
-			dir += math.Pi / 3 * 2
+			dir += math.Pi / 3. * 2.
 		}
+	case "Auto5":
+		obj.Sight = 1.11
+		for i := 0.; i < 5.; i++ {
+			obj.SubObjects = append(obj.SubObjects, AutoGun(obj, map[string]interface{}{
+				"speed":  1.2,
+				"damage": 0.4,
+				"radius": 1.2,
+				"bound":  0.333,
+			}, math.Pi*2./5.*i, math.Pi/2.))
+		}
+	case "Auto3":
+		obj.Sight = 1.11
+		for i := 0.; i < 3.; i++ {
+			obj.SubObjects = append(obj.SubObjects, AutoGun(obj, map[string]interface{}{
+				"speed":  1.2,
+				"damage": 0.4,
+				"radius": 1.2,
+				"bound":  0.333,
+			}, math.Pi*2./3.*i, math.Pi/2.))
+		}
+	case "Auto1":
+		obj.Sight = 1.11
+		obj.SubObjects = append(obj.SubObjects, AutoGun(obj, map[string]interface{}{
+			"speed":  1.2,
+			"damage": 0.4,
+			"radius": 1.2,
+			"bound":  0.333,
+		}, 0, math.Pi/2.))
+	case "AutoTrapper":
+		obj.Sight = 1.11
+		obj.Guns = []Gun{NewGun(obj, map[string]interface{}{
+			"type":     "Trap",
+			"health":   2,
+			"reload":   0.667,
+			"radius":   0.8,
+			"lifetime": 24,
+			"sy":       1.2,
+		}, nil, nil, nil, nil)}
+		obj.SubObjects = append(obj.SubObjects, nil)
+		obj.SubObjects = append(obj.SubObjects, AutoGun(obj, map[string]interface{}{
+			"speed":  1.2,
+			"damage": 0.3,
+			"radius": 1.2,
+			"bound":  0.125,
+		}, 0, 0))
 	case "Battleship":
 		obj.Sight = 1.11
 		obj.Stats = [8]int{0, 0, 0, 7, 7, 7, 7, 5}
@@ -403,8 +451,79 @@ func NewTank(t string) *Object {
 	return obj
 }
 
-func AutoGun() {
+func AutoGun(owner *Object, gunValue map[string]interface{}, dir, rdir float64) *Object {
+	var o *Object = NewObject(map[string]interface{}{
+		"team":     "nil",
+		"type":     "AutoGun",
+		"speed":    rdir,
+		"sight":    dir,
+		"mh":       0,
+		"r":        1,
+		"damage":   0,
+		"isBorder": false,
+		"isOwnCol": false,
+	}, func(obj *Object) {
+		obj.R = obj.Owner.R * 0.5
+		obj.Owner.Dx += obj.Dx
+		obj.Owner.Dy += obj.Dy
+		obj.Dx = 0
+		obj.Dy = 0
 
+		if obj.Owner.H == 0 || obj.Owner.IsDead == true {
+			obj.IsDead = true
+		}
+
+		if obj.Speed == 0. {
+			obj.X = obj.Owner.X
+			obj.Y = obj.Owner.Y
+			obj.Dir += 0.005
+
+			var target *Object = NearObject(obj, 400, 0, math.Pi)
+
+			if obj.Target == nil {
+				obj.Target = target
+			} else {
+				if (obj.Target.IsDead || obj.Owner == obj.Target || obj.Target.Team == obj.Team || !obj.Target.IsTargeted) && lib.Distance(obj.Target.X, obj.Target.Y, obj.X, obj.Y) > 500 {
+					obj.Target = target
+				} else {
+					obj.Target = nil
+				}
+			}
+
+		} else {
+			obj.X = obj.Owner.X + math.Cos(obj.Sight)*obj.Owner.R*0.8
+			obj.Y = obj.Owner.Y + math.Sin(obj.Sight)*obj.Owner.R*0.8
+			if obj.Target == nil {
+				obj.Dir = obj.Sight
+			}
+			obj.Sight = obj.Sight + 0.005
+			if obj.Sight > math.Pi*2 {
+				obj.Sight -= math.Pi * 2
+			}
+
+			var target *Object = NearObject(obj, 400, obj.Sight, obj.Speed)
+
+			if obj.Target == nil {
+				obj.Target = target
+			} else {
+				if (obj.Target.IsDead || obj.Owner == obj.Target || obj.Target.Team == obj.Team || !obj.Target.IsTargeted) && lib.Distance(obj.Target.X, obj.Target.Y, obj.X, obj.Y) > 500 {
+					obj.Target = target
+				} else {
+					obj.Target = nil
+				}
+			}
+		}
+
+		if obj.Target != nil {
+			obj.Guns[0].AutoShot = true
+			obj.Dir = math.Atan2(obj.Target.Y-obj.Y, obj.Target.X-obj.X)
+		} else {
+			obj.Guns[0].AutoShot = false
+		}
+	}, nil, DefaultKillEvent, nil)
+	o.Owner = owner
+	o.Guns = []Gun{NewGun(o, gunValue, nil, nil, nil, nil)}
+	return o
 }
 
 func Invisible(o *Object, t float64) {

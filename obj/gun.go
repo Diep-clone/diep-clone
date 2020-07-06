@@ -103,9 +103,15 @@ func (obj *Object) Shot(objIndex int) {
 				obj.Dy -= math.Sin(obj.Dir+g.Dir) * 0.1 * g.GunBound
 				g.DelayTime = (0.6 - 0.04*float64(GunOwner.Stats[6])) / g.Reload * 1000
 				g.IsShot = true
-				Objects[objIndex] = &bullet
-				objIndex = len(Objects)
-				Objects = append(Objects, obj)
+				if objIndex == -1 { // as subObject
+					Objects[GunOwner.Index] = &bullet
+					GunOwner.Index = len(Objects)
+					Objects = append(Objects, GunOwner)
+				} else {
+					Objects[objIndex] = &bullet
+					objIndex = len(Objects)
+					Objects = append(Objects, obj)
+				}
 			}
 		} else {
 			g.ShotTime = 0
