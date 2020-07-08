@@ -282,6 +282,16 @@ func NewTank(t string) *Object {
 			}, nil, nil, nil, nil))
 			dir += math.Pi / 3. * 2.
 		}
+	case "Auto8":
+		obj.Sight = 1.11
+		for i := 0.; i < 8.; i++ {
+			obj.SubObjects = append(obj.SubObjects, AutoGun(obj, map[string]interface{}{
+				"speed":  1.2,
+				"damage": 0.4,
+				"radius": 1.2,
+				"bound":  0.333,
+			}, math.Pi*2./8.*i, math.Pi/2.))
+		}
 	case "Auto5":
 		obj.Sight = 1.11
 		for i := 0.; i < 5.; i++ {
@@ -445,6 +455,88 @@ func NewTank(t string) *Object {
 			NewGun(nil, map[string]interface{}{}, nil, nil, nil, nil),
 			gun,
 		}
+		// and Other tanks was Making by users
+	case "Dropper":
+		obj.Sight = 1.11
+		obj.Stats = [8]int{0, 0, 0, 7, 7, 7, 7, 5}
+		for i := 0.; i < 2; i++ {
+			var gun Gun = NewGun(obj, map[string]interface{}{
+				"type":     "DropperBullet",
+				"speed":    0.6,
+				"damage":   0.7,
+				"health":   2,
+				"reload":   0.167,
+				"autoshot": true,
+				"gunbound": 3,
+				"bound":    0.5,
+				"sy":       1.6,
+				"lifetime": 0,
+				"dir":      math.Pi/2 - i*math.Pi,
+				"limit":    3,
+			}, DefaultDroneTick, nil, nil, nil)
+			gun.Guns = []Gun{NewGun(obj, map[string]interface{}{
+				"type":     "Trap",
+				"speed":    0.01,
+				"health":   2,
+				"radius":   0.8,
+				"reload":   0.667,
+				"waittime": 8,
+				"lifetime": 8,
+				"dir":      math.Pi,
+				"autoshot": true,
+				"sy":       1.2,
+			}, nil, nil, nil, nil)}
+			obj.Guns = append(obj.Guns, gun)
+		}
+		obj.SubObjects = append(obj.SubObjects, nil)
+		var oim = NewObject(map[string]interface{}{
+			"team":     "nil",
+			"type":     "Gun",
+			"mh":       0,
+			"r":        1,
+			"damage":   0,
+			"isBorder": false,
+			"isOwnCol": false,
+		}, func(o *Object) {
+			o.R = o.Owner.R * 0.5
+			o.X = o.Owner.X
+			o.Y = o.Owner.Y
+			if o.Owner.H == 0 || o.Owner.IsDead == true {
+				o.IsDead = true
+			}
+		}, nil, nil, nil)
+		oim.Owner = obj
+		obj.SubObjects = append(obj.SubObjects, oim)
+	case "Follower":
+		obj.Sight = 1.11
+		obj.Stats = [8]int{0, 0, 0, 7, 7, 7, 7, 5}
+		obj.Guns = []Gun{
+			NewGun(obj, map[string]interface{}{
+				"type":     "Square",
+				"speed":    0.6,
+				"damage":   0.7,
+				"health":   2,
+				"radius":   1,
+				"gunbound": 0.4,
+				"bound":    0.2,
+				"reload":   0.667,
+				"lifetime": 0,
+				"sy":       1.2,
+				"isborder": false,
+				"limit":    8,
+			}, func(o *Object) {
+				o.Dir += 0.05
+				if o.IsBack {
+					if o.Controller != nil && o.Controller.Mr {
+						o.Sight = math.Atan2((o.Owner.Y+o.Controller.My)-o.Y, (o.Owner.X+o.Controller.Mx)-o.X)
+					}
+					o.Dx += math.Cos(o.Sight) * o.Speed
+					o.Dy += math.Sin(o.Sight) * o.Speed
+				} else if o.Controller != nil && o.Controller.Mr {
+					o.Sight = math.Atan2((o.Owner.Y+o.Controller.My)-o.Y, (o.Owner.X+o.Controller.Mx)-o.X)
+					o.IsBack = true
+				}
+			}, nil, nil, nil)}
 	default:
 	}
 
@@ -490,6 +582,12 @@ func AutoGun(owner *Object, gunValue map[string]interface{}, dir, rdir float64) 
 				}
 			}
 
+			if obj.Target != nil {
+				obj.Guns[0].AutoShot = true
+				obj.Dir = math.Atan2(obj.Target.Y-obj.Y, obj.Target.X-obj.X)
+			} else {
+				obj.Guns[0].AutoShot = false
+			}
 		} else {
 			obj.X = obj.Owner.X + math.Cos(obj.Sight)*obj.Owner.R*0.8
 			obj.Y = obj.Owner.Y + math.Sin(obj.Sight)*obj.Owner.R*0.8
@@ -503,22 +601,30 @@ func AutoGun(owner *Object, gunValue map[string]interface{}, dir, rdir float64) 
 
 			var target *Object = NearObject(obj, 400, obj.Sight, obj.Speed)
 
-			if obj.Target == nil {
-				obj.Target = target
+			if obj.Owner.Controller != nil && obj.Owner.Controller.Mr && lib.DirDis(obj.Sight, math.Atan2(obj.Y-(obj.Owner.Y+obj.Owner.Controller.My), obj.X-(obj.Owner.X+obj.Owner.Controller.Mx))) < rdir {
+				obj.Guns[0].AutoShot = true
+				obj.Dir = math.Atan2(obj.Y-(obj.Owner.Y+obj.Owner.Controller.My), obj.X-(obj.Owner.X+obj.Owner.Controller.Mx))
+			} else if obj.Owner.Controller != nil && obj.Owner.Controller.Ml && lib.DirDis(obj.Sight, math.Atan2((obj.Owner.Y+obj.Owner.Controller.My)-obj.Y, (obj.Owner.X+obj.Owner.Controller.Mx)-obj.X)) < rdir {
+				obj.Guns[0].AutoShot = true
+				obj.Dir = math.Atan2((obj.Owner.Y+obj.Owner.Controller.My)-obj.Y, (obj.Owner.X+obj.Owner.Controller.Mx)-obj.X)
 			} else {
-				if (obj.Target.IsDead || obj.Owner == obj.Target || obj.Target.Team == obj.Team || !obj.Target.IsTargeted) && lib.Distance(obj.Target.X, obj.Target.Y, obj.X, obj.Y) > 500 {
+				if obj.Target == nil {
 					obj.Target = target
 				} else {
-					obj.Target = nil
+					if (obj.Target.IsDead || obj.Owner == obj.Target || obj.Target.Team == obj.Team || !obj.Target.IsTargeted) && lib.Distance(obj.Target.X, obj.Target.Y, obj.X, obj.Y) > 500 {
+						obj.Target = target
+					} else {
+						obj.Target = nil
+					}
+				}
+
+				if obj.Target != nil {
+					obj.Guns[0].AutoShot = true
+					obj.Dir = math.Atan2(obj.Target.Y-obj.Y, obj.Target.X-obj.X)
+				} else {
+					obj.Guns[0].AutoShot = false
 				}
 			}
-		}
-
-		if obj.Target != nil {
-			obj.Guns[0].AutoShot = true
-			obj.Dir = math.Atan2(obj.Target.Y-obj.Y, obj.Target.X-obj.X)
-		} else {
-			obj.Guns[0].AutoShot = false
 		}
 	}, nil, DefaultKillEvent, nil)
 	o.Owner = owner

@@ -154,13 +154,13 @@ func Event(p *Player, message []byte) {
 	var socketType uint8 = uint8(message[0])
 
 	switch socketType {
-	case 0:
+	case 0: // user set
 		if _, ok := Users[p.ID]; ok { // 오류 발생 부분
 			log.WithField("id", p.ID).Warn("Prevent Login")
 			return
 		}
 		Users[p.ID] = p
-	case 1:
+	case 1: // input value
 		if u, ok := Users[p.ID]; ok {
 			dir := math.Float32frombits(binary.BigEndian.Uint32(message[1:5]))
 			u.IsMove = (dir != 9.)
@@ -184,7 +184,7 @@ func Event(p *Player, message []byte) {
 				}
 			}
 		}
-	case 2:
+	case 2: // spawn tank
 		var test []byte = message[1:16]
 
 		var name string = ""
@@ -197,7 +197,7 @@ func Event(p *Player, message []byte) {
 		}
 		log.Println(name)
 		var list []string = []string{
-			"Basic",
+			/*"Basic",
 			"Twin",
 			"Triplet",
 			"TripleShot",
@@ -212,14 +212,17 @@ func Event(p *Player, message []byte) {
 			"Stalker",
 			"Predator",
 			"Trapper",
-			"TriTrapper",
-			"Auto5",
+			"TriTrapper",*/
+			//"Auto8",
+			/*"Auto5",
 			"Auto3",
 			"AutoTrapper",
 			"Battleship",
 			"Spike",
 			"Skimmer",
-			"Rocketeer",
+			"Rocketeer",*/
+			"Dropper",
+			"Follower",
 		}
 		t := p.StartTime % int64(len(list))
 		var s string = list[t]
@@ -229,7 +232,7 @@ func Event(p *Player, message []byte) {
 		p.ControlObject.Name = name
 		p.ControlObject.SetController(p)
 		Objects = append(Objects, p.ControlObject)
-	case 3:
+	case 3: // ping pong
 		p.Send([]byte{4})
 	default:
 		log.WithFields(log.Fields{

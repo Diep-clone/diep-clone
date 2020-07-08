@@ -119,6 +119,7 @@ export const getObjectPoint = function (type) {
             return -3;
         case "Triangle":
         case "Drone":
+        case "DropperBullet":
             return 3;
         case "Square":
         case "NecroSquare":
@@ -169,6 +170,7 @@ export const colorType = function(type, team){
             }
         default:
             switch (type){
+                case "Gun":
                 case "AutoGun":
                     return 1;
                 case "NecroSquare":
@@ -230,7 +232,8 @@ export const gunList = { // Returns the width of a given text typed.
         new Gun([[0.7,0],[0.7,1.88],[-0.7,1.88],[-0.7, 0]])
     ],
     "Overseer": [
-
+        new Gun([[0.43,0],[0.73,1.4],[-0.73,1.4],[-0.43,0]],Math.PI/2),
+        new Gun([[0.43,0],[0.73,1.4],[-0.73,1.4],[-0.43,0]],-Math.PI/2),
     ],
     "Overlord": [
         new Gun([[0.43,0],[0.73,1.4],[-0.73,1.4],[-0.43,0]]),
@@ -311,10 +314,11 @@ export const gunList = { // Returns the width of a given text typed.
         new Gun([[0.42,0],[0.42,1.193],[0.73,1.578],[-0.73,1.578],[-0.42,1.193],[0.42,1.193],[-0.42,1.193],[-0.42,0]],-Math.PI / 3 * 2)   
     ],
     "Smasher": [
-
+        new Gun(smasherGun(), 0, 0, Math.PI / 80),
     ],
     "Landmine": [
-
+        new Gun(smasherGun(), 0, 0, Math.PI / 80),
+        new Gun(smasherGun(), 0, 0, Math.PI / 160)
     ],
     "AutoGunner": [
 
@@ -353,7 +357,7 @@ export const gunList = { // Returns the width of a given text typed.
 
     ],
     "AutoSmasher": [
-
+        new Gun(smasherGun(), 0, 0, Math.PI / 80),
     ],
     "Spike": [
         new Gun(spikeGun(), 0, 0, Math.PI / 40)
@@ -365,16 +369,52 @@ export const gunList = { // Returns the width of a given text typed.
         new Gun([[0.3,0],[0.59,1.84],[-0.59,1.84],[-0.3, 0]]),
         new Gun([[0.71,0],[0.71,1.59],[-0.71,1.59],[-0.71, 0]])
     ],
-    "Rocketeer": [
-        new Gun([[0.3,0],[0.59,1.84],[-0.59,1.84],[-0.3, 0]]),
-        new Gun([[0.92,0],[0.52,1.59],[-0.52,1.59],[-0.92, 0]])
-    ],
     "SkimmerBullet": [
         new Gun([[7,0],[7,1.4],[-7,1.4],[-7,0]], 0, -1, 0, true),
         new Gun([[7,0],[7,1.4],[-7,1.4],[-7,0]], Math.PI, -1, 0, true)
     ],
+    "Rocketeer": [
+        new Gun([[0.3,0],[0.59,1.84],[-0.59,1.84],[-0.3, 0]]),
+        new Gun([[0.92,0],[0.52,1.59],[-0.52,1.59],[-0.92, 0]])
+    ],
     "RocketeerBullet": [
         new Gun([[6,0],[10,1.5],[-10,1.5],[-6,0]], Math.PI, -1, 0, true)
+    ],
+    "Dispersion": [
+        new Gun([[0.4,0],[0.4,2.2],[-0.4,2.2],[-0.4, 0]]),
+        new Gun([[0.4,0.9],[0,1.8],[-0.4, 0.9]])
+    ],
+    "Diffusion": [
+        new Gun([[0,0],[0.4,0],[0.8,1.88],[-0.8,1.88],[-0.4, 0]]),
+        new Gun([[0.4,0.9],[0,1.5],[-0.4, 0.9]])
+    ],
+    "Deception": [
+
+    ],
+    "Dropper": [
+        new Gun([[0.43,0],[0.73,1.4],[-0.73,1.4],[-0.43,0]],Math.PI/2),
+        new Gun([[0.43,0],[0.73,1.4],[-0.73,1.4],[-0.43,0]],-Math.PI/2),
+    ],
+    "DropperBullet": [
+        new Gun([[4,0],[4,1.193],[6,1.578],[-6,1.578],[-4,1.193],[4,1.193],[-4,1.193],[-4,0]],Math.PI, -1, 0, true)
+    ],
+    "Mechanic": [
+
+    ],
+    "MechanicArmor": [
+
+    ],
+    "Cure": [
+
+    ],
+    "Shielder": [
+
+    ],
+    "Follower" : [
+        new Gun([[0.7,0],[0.7,1.2],[-0.7,1.2],[-0.7, 0]])
+    ],
+    "Lifesteal": [
+
     ],
 }
 
@@ -386,6 +426,17 @@ function spikeGun() { // spike's guns
         dir += Math.PI / 12;
         list.push([Math.cos(dir)*1.3,Math.sin(dir)*1.3]);
         dir += Math.PI / 12;
+    }
+    return list;
+}
+
+function smasherGun() { // smasher's guns
+    let list = [];
+    let dis = 2*Math.sqrt(3)/3;
+    let dir = -Math.PI / 3 * 2;
+    for (let i=0;i<6;i++){
+        list.push([Math.cos(dir)*dis,Math.sin(dir)*dis]);
+        dir += Math.PI / 3;
     }
     return list;
 }

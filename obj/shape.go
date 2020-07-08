@@ -25,6 +25,6 @@ func AddShape() {
 	}
 }
 
-func DefaultShapeTick(o *Object) {
+func DefaultShapeTick(o *Object) { // shape ai
 	o.Dir += 0.005
 }

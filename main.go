@@ -78,8 +78,6 @@ func moveloop(ticker time.Ticker) { // manages the motion of all objects.
 	for range ticker.C {
 		obj.ObjMutex.Lock()
 
-		t := time.Now()
-
 		obj.AddShape() // 도형 스폰
 
 		for _, u := range obj.Users { // 유저 세팅
@@ -136,19 +134,12 @@ func moveloop(ticker time.Ticker) { // manages the motion of all objects.
 					obj.Objects = append(obj.Objects[:i], obj.Objects[i+1:]...)
 					i--
 				} else {
-					o.Opacity = math.Max(o.Opacity-0.1, 0)
+					o.Opacity = math.Max(o.Opacity-0.1, 0) // dead effect
 					o.R += o.R * 0.02
 					o.DeadTime = math.Max(o.DeadTime-1000./60., 0.)
 				}
 			}
 		}
-
-		if count == 0 {
-			log.WithField("time", time.Since(t)).Info("moveloop")
-			log.Println(len(obj.Objects))
-			count = 600
-		}
-		count--
 
 		obj.ObjMutex.Unlock()
 	}
@@ -157,8 +148,6 @@ func moveloop(ticker time.Ticker) { // manages the motion of all objects.
 func sendUpdates(ticker time.Ticker) {
 	for range ticker.C {
 		obj.ObjMutex.Lock()
-
-		t := time.Now()
 
 		for _, u := range obj.Users {
 			var sendData []byte = make([]byte, 32)
@@ -200,12 +189,6 @@ func sendUpdates(ticker time.Ticker) {
 				}
 			}
 		}
-
-		if count2 == 0 {
-			log.WithField("time", time.Since(t)).Info("sendUpdates")
-			count2 = 300
-		}
-		count2--
 
 		obj.ObjMutex.Unlock()
 	}
