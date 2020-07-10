@@ -11,7 +11,7 @@ If you want to be the maintainer of this project although this might be poor bec
 
 ybs1164@naver.com
 
-If you want to help this project, I would appreciate it if you could contact me anytime.
+If you want to help this project, I also would appreciate it if you could contact me anytime.
 
 ## 📚 Project Stack
 ### Front end (JS)
@@ -29,11 +29,11 @@ I would like to express my gratitude to the following researchers:
 
  - [K] YouTube
  - 피로⚛Firo_SF
- - 항해사
- - 케빈
+ - 항해사 (Voyager)
+ - 케빈 (Kevin)
 
 Plus, I would like to thank 
- - 레인우드
+ - 레인우드 (Rainwood)
 
 who made the foundation for this project.
 
