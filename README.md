@@ -11,7 +11,7 @@ If you want to be the maintainer of this project although this might be poor bec
 
 ybs1164@naver.com
 
-만약 이가 아니더라도 프로젝트에 도움을 주고 싶다면 언제든지 연락해주시면 감사하겠습니다.
+If you want to help this project, I would appreciate it if you could contact me anytime.
 
 ## 📚 Project Stack
 ### Front end (JS)
