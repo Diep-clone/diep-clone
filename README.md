@@ -34,7 +34,8 @@ I would like to express my gratitude to the following researchers:
 
 Plus, I would like to thank 
  - 레인우드
-, who made the foundation for this project.
+
+who made the foundation for this project.
 
 Undeveloped parts are arranged in the Projects column.
 
