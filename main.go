@@ -78,16 +78,16 @@ func moveloop(ticker time.Ticker) { // manages the motion of all objects.
 	for range ticker.C {
 		obj.ObjMutex.Lock()
 
-		obj.AddShape() // 도형 스폰
+		obj.AddShape() // Spawn Shapes
 
-		for _, u := range obj.Users { // 유저 세팅
+		for _, u := range obj.Users { // Users setting
 			u.PlayerSet()
 			u.CameraSet()
 		}
 
-		obj.Qt.Clear() // 쿼드트리 초기화
+		obj.Qt.Clear() // Clear Quadtree
 
-		for _, o := range obj.Objects { // 쿼드트리 충돌처리
+		for _, o := range obj.Objects { // Collision Quadtree
 			if !o.IsDead {
 				obj.Qt.Insert(o)
 
@@ -131,7 +131,7 @@ func moveloop(ticker time.Ticker) { // manages the motion of all objects.
 						o.DeadEvent(o, o.HitObject)
 					}
 					obj.ObjIDList = append(obj.ObjIDList, o.ID)
-					obj.Objects = append(obj.Objects[:i], obj.Objects[i+1:]...)
+					obj.Objects = append(obj.Objects[:o.Index], obj.Objects[o.Index+1:]...)
 					i--
 				} else {
 					o.Opacity = math.Max(o.Opacity-0.1, 0) // dead effect

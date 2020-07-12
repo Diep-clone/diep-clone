@@ -15,7 +15,7 @@ type Gun struct {
 	Damage    float64 `json:"damage"`
 	Health    float64 `json:"health"`
 	Radius    float64 `json:"radius"`
-	Bound     float64 `json:"bound"`
+	Bounce    float64 `json:"bound"`
 	Stance    float64 `json:"stance"`
 	LifeTime  float64 `json:"lifetime"`
 	IsBorder  bool    `json:"isborder"`
@@ -40,7 +40,7 @@ type Gun struct {
 	AutoShot  bool `json:"autoshot"`
 }
 
-func (obj *Object) Shot(objIndex int) {
+func (obj *Object) Shot() {
 	if obj.Guns == nil {
 		return
 	}
@@ -59,7 +59,13 @@ func (obj *Object) Shot(objIndex int) {
 			for GunOwner.Owner != nil {
 				GunOwner = GunOwner.Owner
 			}
-			if g.DelayTime <= 0 && g.WaitTime < g.ShotTime/((0.6-0.04*float64(GunOwner.Stats[6]))/g.Reload*1000) && g.Limit != 0 {
+			var reloadtime float64
+			if g.Reload == 0 {
+				reloadtime = 0.
+			} else {
+				reloadtime = ((0.6 - 0.04*float64(GunOwner.Stats[6])) / g.Reload * 1000)
+			}
+			if g.DelayTime <= 0 && (reloadtime == 0. || g.WaitTime < g.ShotTime/reloadtime) && g.Limit != 0 {
 				dir := obj.Dir + g.Dir + lib.RandomRange(-g.Rdir, g.Rdir)
 				var bullet Object = *NewObject(map[string]interface{}{
 					"type":         g.Type,
@@ -74,7 +80,7 @@ func (obj *Object) Shot(objIndex int) {
 					"h":            (8 + 6*float64(GunOwner.Stats[4])) * g.Health,
 					"damage":       (7 + 3*float64(GunOwner.Stats[5])) * g.Damage,
 					"r":            0.4 * g.Radius * 12.9 * math.Pow(1.01, float64(obj.Level)-1),
-					"bound":        g.Bound,
+					"bound":        g.Bounce,
 					"stance":       g.Stance,
 					"deadtime":     1000 * g.LifeTime,
 					"isShowHealth": false,
@@ -101,15 +107,15 @@ func (obj *Object) Shot(objIndex int) {
 				bullet.Owner = GunOwner
 				obj.Dx -= math.Cos(obj.Dir+g.Dir) * 0.1 * g.GunBound
 				obj.Dy -= math.Sin(obj.Dir+g.Dir) * 0.1 * g.GunBound
-				g.DelayTime = (0.6 - 0.04*float64(GunOwner.Stats[6])) / g.Reload * 1000
+				g.DelayTime = reloadtime
 				g.IsShot = true
-				if objIndex == -1 { // as subObject
+				if obj.Index == -1 { // as subObject
 					Objects[GunOwner.Index] = &bullet
 					GunOwner.Index = len(Objects)
 					Objects = append(Objects, GunOwner)
 				} else {
-					Objects[objIndex] = &bullet
-					objIndex = len(Objects)
+					Objects[obj.Index] = &bullet
+					obj.Index = len(Objects)
 					Objects = append(Objects, obj)
 				}
 			}

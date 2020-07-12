@@ -36,7 +36,7 @@ func TankTick(obj *Object) {
 
 func (o *Object) ChangeTank(c *Object) {
 	o.Type = c.Type
-	o.Bound = c.Bound
+	o.Bounce = c.Bounce
 	o.Stance = c.Stance
 	o.Sight = c.Sight
 	o.MaxStats = c.MaxStats
@@ -258,6 +258,7 @@ func NewTank(t string) *Object {
 			}
 		}
 	case "Trapper":
+		obj.Sight = 1.11
 		obj.Guns = []Gun{NewGun(obj, map[string]interface{}{
 			"type":     "Trap",
 			"health":   2,
@@ -282,16 +283,6 @@ func NewTank(t string) *Object {
 			}, nil, nil, nil, nil))
 			dir += math.Pi / 3. * 2.
 		}
-	case "Auto8":
-		obj.Sight = 1.11
-		for i := 0.; i < 8.; i++ {
-			obj.SubObjects = append(obj.SubObjects, AutoGun(obj, map[string]interface{}{
-				"speed":  1.2,
-				"damage": 0.4,
-				"radius": 1.2,
-				"bound":  0.333,
-			}, math.Pi*2./8.*i, math.Pi/2.))
-		}
 	case "Auto5":
 		obj.Sight = 1.11
 		for i := 0.; i < 5.; i++ {
@@ -312,14 +303,6 @@ func NewTank(t string) *Object {
 				"bound":  0.333,
 			}, math.Pi*2./3.*i, math.Pi/2.))
 		}
-	case "Auto1":
-		obj.Sight = 1.11
-		obj.SubObjects = append(obj.SubObjects, AutoGun(obj, map[string]interface{}{
-			"speed":  1.2,
-			"damage": 0.4,
-			"radius": 1.2,
-			"bound":  0.333,
-		}, 0, math.Pi/2.))
 	case "AutoTrapper":
 		obj.Sight = 1.11
 		obj.Guns = []Gun{NewGun(obj, map[string]interface{}{
@@ -456,13 +439,84 @@ func NewTank(t string) *Object {
 			gun,
 		}
 		// and Other tanks was Making by users
+	case "Dispersion":
+		for i := 0; i < 7; i++ {
+			obj.Guns = append(obj.Guns, NewGun(obj, map[string]interface{}{
+				"health": 0.7,
+				"damage": 0.5,
+				"rdir":   math.Pi / 9,
+			}, nil, nil, nil, nil))
+		}
+	case "Diffusion":
+		obj.Stats = [8]int{0, 0, 0, 0, 7, 7, 7, 5}
+		var gunlist []Gun
+		for i := 0; i < 8; i++ {
+			gunlist = append(gunlist, NewGun(obj, map[string]interface{}{
+				"damage":   0.4,
+				"reload":   0,
+				"lifetime": 2,
+				"sy":       0,
+				"rdir":     math.Pi,
+				"autoshot": true,
+			}, nil, nil, nil, nil))
+		}
+		var gun Gun = NewGun(obj, map[string]interface{}{
+			"health": 2,
+			"damage": 1.75,
+			"reload": 0.25,
+			"radius": 1.75,
+			"bound":  3,
+		}, nil, nil, nil, func(a *Object, b *Object) {
+			a.Guns = gunlist
+			a.Shot()
+		})
+		obj.Guns = []Gun{gun}
+	case "Deception":
+		obj.Sight = 1.11
+		obj.Guns = []Gun{NewGun(obj, map[string]interface{}{
+			"type":     "Trap",
+			"health":   2,
+			"reload":   0.667,
+			"radius":   0.8,
+			"lifetime": 24,
+			"sy":       1.2,
+		}, func(o *Object) {
+			if lib.Now()-o.SpawnTime > 3000 {
+				o.IsOwnCol = false
+				o.Controller = nil
+				Invisible(o, 5)
+			} else {
+				o.IsOwnCol = true
+			}
+
+			if o.IsShowName == false {
+				var GunOwner = o.Owner
+				for GunOwner.Owner != nil {
+					GunOwner = GunOwner.Owner
+				}
+				o.Dx += o.Dx * 0.1 * float64(GunOwner.Stats[3])
+				o.Dy += o.Dy * 0.1 * float64(GunOwner.Stats[3])
+				o.IsShowName = true
+			}
+
+			if !o.IsDead {
+				o.DeadTime -= 1000. / 60.
+				if o.DeadTime <= 0 {
+					o.DeadTime = -1
+					o.H = 0
+				}
+			}
+		}, func(a *Object, b *Object) {
+			DefaultCollision(a, b)
+			a.Opacity = math.Min(a.Opacity+0.1, 1)
+		}, nil, nil)}
 	case "Dropper":
 		obj.Sight = 1.11
 		obj.Stats = [8]int{0, 0, 0, 7, 7, 7, 7, 5}
 		for i := 0.; i < 2; i++ {
 			var gun Gun = NewGun(obj, map[string]interface{}{
 				"type":     "DropperBullet",
-				"speed":    0.6,
+				"speed":    0.55,
 				"damage":   0.7,
 				"health":   2,
 				"reload":   0.167,
@@ -479,7 +533,7 @@ func NewTank(t string) *Object {
 				"speed":    0.01,
 				"health":   2,
 				"radius":   0.8,
-				"reload":   0.667,
+				"reload":   0.333,
 				"waittime": 8,
 				"lifetime": 8,
 				"dir":      math.Pi,
@@ -507,6 +561,15 @@ func NewTank(t string) *Object {
 		}, nil, nil, nil)
 		oim.Owner = obj
 		obj.SubObjects = append(obj.SubObjects, oim)
+	case "Shielder":
+		obj.Stats = [8]int{0, 0, 0, 7, 7, 7, 7, 5}
+		obj.Guns = []Gun{NewGun(obj, map[string]interface{}{}, nil, nil, nil, nil)}
+		obj.SubObjects = []*Object{NewObject(map[string]interface{}{}, DefaultShieldTick, DefaultCollision, DefaultKillEvent, nil)}
+		obj.Collision = func(a *Object, b *Object) {
+			if a.SubObjects[0].H == 0 {
+				DefaultCollision(a, b)
+			}
+		}
 	case "Follower":
 		obj.Sight = 1.11
 		obj.Stats = [8]int{0, 0, 0, 7, 7, 7, 7, 5}
@@ -522,7 +585,7 @@ func NewTank(t string) *Object {
 				"reload":   0.667,
 				"lifetime": 0,
 				"sy":       1.2,
-				"isborder": false,
+				"isborder": true,
 				"limit":    8,
 			}, func(o *Object) {
 				o.Dir += 0.05
@@ -536,7 +599,43 @@ func NewTank(t string) *Object {
 					o.Sight = math.Atan2((o.Owner.Y+o.Controller.My)-o.Y, (o.Owner.X+o.Controller.Mx)-o.X)
 					o.IsBack = true
 				}
-			}, nil, nil, nil)}
+			}, nil, nil, nil),
+		}
+	case "Lifesteal":
+		obj.Stats = [8]int{0, 0, 0, 7, 7, 7, 5, 7}
+		obj.Sight = 1.11
+		obj.Guns = []Gun{NewGun(obj, map[string]interface{}{
+			"type":     "Drone",
+			"speed":    0.6,
+			"damage":   0.7,
+			"health":   2,
+			"gunbound": 0.4,
+			"reload":   0.333,
+			"autoshot": true,
+			"sy":       1.6,
+			"limit":    8,
+		}, nil, nil, nil, func(a *Object, b *Object) {
+			a.Owner.H += 10
+		})}
+		obj.SubObjects = append(obj.SubObjects, nil)
+		var oim = NewObject(map[string]interface{}{
+			"team":     "nil",
+			"type":     "TriangleGun",
+			"mh":       0,
+			"r":        1,
+			"damage":   0,
+			"isBorder": false,
+			"isOwnCol": false,
+		}, func(o *Object) {
+			o.R = o.Owner.R * 0.5
+			o.X = o.Owner.X
+			o.Y = o.Owner.Y
+			if o.Owner.H == 0 || o.Owner.IsDead == true {
+				o.IsDead = true
+			}
+		}, nil, nil, nil)
+		oim.Owner = obj
+		obj.SubObjects = append(obj.SubObjects, oim)
 	default:
 	}
 
@@ -632,8 +731,15 @@ func AutoGun(owner *Object, gunValue map[string]interface{}, dir, rdir float64) 
 	return o
 }
 
+func DefaultShieldTick(obj *Object) {
+	obj.R = obj.Owner.R + (obj.Sight * 5.)
+	obj.X = obj.Owner.X
+	obj.Y = obj.Owner.Y
+
+}
+
 func Invisible(o *Object, t float64) {
-	if o.IsShot || o.Controller == nil || o.Controller.IsMove {
+	if o.IsShot || o.Controller != nil && o.Controller.IsMove {
 		o.Opacity = math.Min(o.Opacity+0.1, 1)
 	} else {
 		o.Opacity = math.Max(o.Opacity-1./60./t, 0)

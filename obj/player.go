@@ -40,7 +40,7 @@ type Player struct {
 	Conn          *websocket.Conn
 	Mu            sync.Mutex
 	Camera        Camera
-	Mx            float64
+	Mx            float64 // Mouse Pos
 	My            float64
 	Mr            bool // right Mouse
 	Ml            bool // left Mouse
@@ -130,7 +130,7 @@ func (p *Player) ReadPump() {
 	}()
 
 	for {
-		_, message, err := p.Conn.ReadMessage() // 오류 발생 부분
+		_, message, err := p.Conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.WithFields(log.Fields{
@@ -155,7 +155,7 @@ func Event(p *Player, message []byte) {
 
 	switch socketType {
 	case 0: // user set
-		if _, ok := Users[p.ID]; ok { // 오류 발생 부분
+		if _, ok := Users[p.ID]; ok {
 			log.WithField("id", p.ID).Warn("Prevent Login")
 			return
 		}
@@ -212,17 +212,20 @@ func Event(p *Player, message []byte) {
 			"Stalker",
 			"Predator",
 			"Trapper",
-			"TriTrapper",*/
-			//"Auto8",
-			/*"Auto5",
+			"TriTrapper",
+			"Auto5",
 			"Auto3",
 			"AutoTrapper",
 			"Battleship",
 			"Spike",
 			"Skimmer",
 			"Rocketeer",*/
+			"Dispersion",
+			"Diffusion",
+			"Deception",
 			"Dropper",
 			"Follower",
+			"Lifesteal",
 		}
 		t := p.StartTime % int64(len(list))
 		var s string = list[t]

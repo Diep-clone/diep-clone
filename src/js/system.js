@@ -8,8 +8,8 @@ import { RGB, calByte } from './lib/util';
 let socket;
 
 /*
-    전체 게임 시스템을 담당하고 있습니다.
-    overall codes are like spaghetti.. 정돈이 필요한 파일입니다.
+    This file is responsible for the entire gaming system.
+    overall codes are like spaghetti..
 */
 
 export default class System {

@@ -1,8 +1,8 @@
 import { RGB } from '../lib/util';
 
 /*
-    다이피오의 콘솔에서 바꿀 수 있는 값들을 적어놓는 파일입니다.
-    지금은 값들만 있지만, 콘솔 관련 함수들도 여기에 추가해야 합니다.
+    A file that writes down the values that can be changed on the console of the diep.io.
+    Console-related functions should also be added here.
 */
 
 export let statColor = [

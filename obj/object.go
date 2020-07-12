@@ -44,7 +44,7 @@ type Object struct {
 		연구 결과 데미지 값이 바운드/ 스탠스 값에 영향을 주는 사실을 발견했습니다.
 		따라서 바운드/ 스탠스 시스템은 데미지와 관련된 값으로 재설계가 필요합니다.
 	*/
-	Bound   float64 `json:"bound"`
+	Bounce  float64 `json:"bound"`
 	Stance  float64 `json:"stance"`
 	Opacity float64 `json:"opacity"`
 
@@ -122,7 +122,7 @@ func (obj *Object) ObjectTick() {
 		return
 	}
 
-	obj.Shot(obj.Index)
+	obj.Shot()
 
 	if obj.Controller != nil && lib.Now()-int64(30000.*lib.GameSetting.GameSpeed) > obj.HitTime {
 		obj.H += obj.Mh / 60 / 10 * lib.GameSetting.GameSpeed
@@ -144,8 +144,8 @@ func (obj *Object) ObjectTick() {
 func DefaultCollision(a *Object, b *Object) {
 	dir := math.Atan2(a.Y-b.Y, a.X-b.X)
 
-	a.Dx += math.Cos(dir) * math.Min(b.Bound*a.Stance, 6)
-	a.Dy += math.Sin(dir) * math.Min(b.Bound*a.Stance, 6)
+	a.Dx += math.Cos(dir) * math.Min(b.Bounce*a.Stance, 6)
+	a.Dy += math.Sin(dir) * math.Min(b.Bounce*a.Stance, 6)
 
 	if a.Team == b.Team {
 		return

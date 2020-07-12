@@ -20,8 +20,8 @@ export const Obj = function(id) {
     'use strict';
 
     /*
-        이 객체는 무조건 system 의 objectList 에 포함되어 있습니다.
-        게임 내에서 충돌감지가 적용되는 모든 것들은 이 객체에 포함됩니다.
+        Most of these objects are contained in the objectList in the system.
+        Most of the things that conflict detection is applied to within the game are included in this object.
     */
 
     this.id = id;
