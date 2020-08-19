@@ -39,6 +39,10 @@ func serverWs(w http.ResponseWriter, r *http.Request) {
 	go client.ReadPump()
 }
 
+// TODO : Achievement
+// TODO : GameSpeed
+// TODO : GameMode
+
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	rand.Seed(time.Now().UnixNano())
@@ -96,7 +100,7 @@ func moveloop(ticker time.Ticker) { // manages the motion of all objects.
 					Y: o.Y - o.R,
 					W: o.R * 2,
 					H: o.R * 2,
-				}) { // 똑같은 오브젝트가 아니고, 죽지 않았으며, 이미 충돌감지가 처리되지 않았고, 주인이 같을 때 반동값을 주는가, 타 오브젝트의 주인이 자신의 오브젝트가 아닌가
+				}) {
 					if o != obj2 && !obj2.IsDead && !(o.IsCollision || obj2.IsCollision) && (obj2.Owner != o.Owner || obj2.IsOwnCol && o.IsOwnCol) && o != obj2.Owner && obj2 != o.Owner {
 						if (o.X-obj2.X)*(o.X-obj2.X)+(o.Y-obj2.Y)*(o.Y-obj2.Y) < (o.R+obj2.R)*(o.R+obj2.R) {
 							if o.Collision != nil {

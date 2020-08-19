@@ -3,11 +3,11 @@ import { RGB } from '../../lib/util';
 
 export default class DefaultUI {
     constructor(x, y, w, h, mx, my, c) {
-        this.x = x; // 여기에서 의미하는 xy 값은 절대 좌표값이 아니라 상대 좌표값을 의미합니다.
+        this.x = x;
         this.y = y;
         this.w = w || 0;
         this.h = h || 0;
-        this.mx = mx || "mid"; // "left" "mid" "right" 상위 오브젝트에 대해 중심점을 잡아주는 역할을 해줍니다.
+        this.mx = mx || "mid"; // "left" "mid" "right"
         this.my = my || "mid"; // "up" "mid" "down"
         this.color = c;
         this.childs = [];

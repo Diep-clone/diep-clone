@@ -46,8 +46,7 @@ export const Obj = function(id) {
     this.ctx = this.cv.getContext("2d");
 
     /*
-        오브젝트에 총구가 존재할 때, 불투명하지 않다면 오브젝트를 이미지로 처리합니다.
-        (이 방법이 아닌 것 같다면, 다이피오에서 확인해보세요. 이 방법이 맞다고 단언할 수 있습니다.)
+        When an object has a gun, it is treated as an image if it is not opaque.
     */
 
     this.hitTime = 0;
@@ -66,10 +65,10 @@ export const Obj = function(id) {
         this.y = data.y;
         if (system.playerSetting.id !== this.id) {
             /*
-                만약 자신이 직접 조종하는 탱크라면, 클라이언트에서 직접 방향값을 정해줍니다.
-                그렇지 않다면 방향값을 보다 부드럽게 만들어줍니다.
-                다이피오에서는 직접 조종하는 탱크의 위치도 클라이언트에서 약간 처리해주는 것 같은데,
-                아직 그 부분은 구현되지 못했습니다.
+                If it's a self-controlled tank, the client sets the directional value.
+                Otherwise, it will make the directional value smoother.
+                I think the client handles the location of the direct-controlled tank a little bit.
+                That part has not been implemented yet.
             */
             if (this.dir) {
                 let ccw = Math.cos(data.dir)*Math.sin(this.dir)-Math.sin(data.dir)*Math.cos(this.dir);
@@ -127,7 +126,7 @@ export const Obj = function(id) {
         this.color = colorType(data.type,data.team);
     };
 
-    this.DrawSet = function (camera) { // 그릴 때 중복되는 값들을 간결하게 보내줍니다.
+    this.DrawSet = function (camera) {
         let c = colorList[this.color]; // get color value
         if (this.hitTime > 60) { // hit effect
             c = c.getLightRGB((this.hitTime - 60) / 70);
@@ -146,7 +145,7 @@ export const Obj = function(id) {
         };
     }
 
-    this.SetCanvasSize = function (camera) { // 오브젝트를 이미지로 처리할 때의 중복되는 값들을 간결하게 보내줍니다.
+    this.SetCanvasSize = function (camera) {
         var {x, y, z, t, r, dir} = this.DrawSet(camera);
         let rr = r * getPolygonRadius(Math.abs(getObjectPoint(t)));
         var size = {x: rr * z * 2, y: rr * z * 2,};
@@ -267,12 +266,12 @@ export const Obj = function(id) {
 
     this.DrawName = function (ctx, camera) {
         /*
-            오브젝트의 이름과 점수를 그려주는 함수입니다.
-            아직 이 함수는 완벽하지 않습니다.
-            총 3가지가 불완전한데요,
-            하나는 레이어,
-            하나는 그리는 방식,
-            나머지 하나는 샌드박스 모드에서 치트를 사용할 때 이름의 색이 노란색으로 바뀌는 것입니다.
+            A function that draws the name and score of an object.
+            This function is not perfect yet.
+            Three things are incomplete in total.
+            One is layer,
+            One is the way to draw.
+            The other is that the name changes to yellow when you use the cheats in sandbox mode.
         */
 
         ctx.save();
@@ -314,12 +313,12 @@ export const Obj = function(id) {
 
     this.DrawHPBar = function(ctx, camera) {
         /*
-            오브젝트의 체력바를 그려주는 함수입니다.
-            아직 이 함수는 완벽하지 않습니다.
-            총 3가지가 불완전한데요,
-            하나는 레이어,
-            하나는 체력 바의 애니메이션,
-            나머지 하나는 오브젝트의 크기나 종류에 따른 체력 바의 길이입니다.
+            Function that draws the object's physical strength bar.
+            This function is not perfect yet.
+            Three things are incomplete in total.
+            One is layer,
+            One is the animation of the fitness bar.
+            The other is the length of the fitness bar, depending on the size or type of object.
         */
 
         let healthPercent = this.h/this.mh;

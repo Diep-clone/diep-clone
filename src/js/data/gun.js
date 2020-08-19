@@ -4,17 +4,12 @@ import { drawC } from '../lib/draw';
 export const Gun = function (paths, dir, color, isMoveDir, isStatic) {
     'use strict';
 
-    /*
-        이 객체는 독단적으로 행동할 수 없습니다.
-        무조건 Obj 객체에 종속되어 있으며, 위치도 종속된 Obj 객체를 따릅니다.
-    */
-
     this.paths = paths;
     this.dir = dir || 0;
     this.color = color;
     if (this.color == undefined) this.color = 1; // default gun color
     this.isMoveDir = isMoveDir || 0; // is Cannot Control Gun? (and Turn like bolt?) (using Smasher or Spike)
-    this.isStatic = isStatic || false; // 총구가 가로로 늘어나지 않는가? (using Skimmer or Rocketeer 's Gun)
+    this.isStatic = isStatic || false; // Doesn't the muzzle stretch horizontally? (using Skimmer or Rocketeer 's Gun)
     this.shotTime = []; // using gun's animation
     this.back = 0;
 
@@ -35,7 +30,7 @@ export const Gun = function (paths, dir, color, isMoveDir, isStatic) {
         }
     }
 
-    this.SetCanvasSize = function (camera, size, pos, r, dir) { // 오브젝트를 이미지로 처리할 때, 
+    this.SetCanvasSize = function (camera, size, pos, r, dir) {
         if (this.isMoveDir) {
             dir = 0;
         }

@@ -5,6 +5,8 @@ import (
 	"encoding/binary"
 )
 
+// TODO : Area
+
 var AreaList Area
 
 type Area struct {

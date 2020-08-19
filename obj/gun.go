@@ -109,6 +109,7 @@ func (obj *Object) Shot() {
 				obj.Dy -= math.Sin(obj.Dir+g.Dir) * 0.1 * g.GunBound
 				g.DelayTime = reloadtime
 				g.IsShot = true
+				// This command is Changing object's layer
 				if obj.Index == -1 { // as subObject
 					Objects[GunOwner.Index] = &bullet
 					GunOwner.Index = len(Objects)

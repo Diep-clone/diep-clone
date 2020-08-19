@@ -146,6 +146,7 @@ func (p *Player) ReadPump() {
 
 }
 
+// TODO : Stat System, Upgrade System
 // Event Catch Message
 func Event(p *Player, message []byte) {
 	ObjMutex.Lock()

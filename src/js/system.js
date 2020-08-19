@@ -7,7 +7,7 @@ import { drawBackground, drawText } from './lib/draw';
 import { RGB, calByte } from './lib/util';
 let socket;
 
-/*
+/* TODO :
     This file is responsible for the entire gaming system.
     overall codes are like spaghetti..
 */
@@ -461,11 +461,6 @@ export default class System {
         }
 
         this.ctx.clearRect(0,0,this.cv.width,this.cv.height); // clear canvas
-
-        if (this.gameSetting.isConnecting) { // connecting text
-            this.textinputanime = 1;
-            this.connectinga = Math.min(this.connectinga + 0.01 * tick,1);
-        }
         
         if (this.gameSetting.isGaming) {
             drawBackground(this.ctx, this.camera.x, this.camera.y, this.camera.z, this.cv.width, this.cv.height, this.area);
@@ -519,12 +514,17 @@ export default class System {
 
             this.gameui.draw(this.ctx, this.cv.width, this.cv.height, this.camera.uiz);
 
-        } else {
+        } else { // TODO : From this code to the requestAnimationFrame, all codes must be replaced by "ui.js".
             this.ctx.drawImage(this.img, // draw Background image
                 this.cv.width / 2 - this.img.width * this.camera.uiz / 2 / 2.4,
                 this.cv.height / 2 - this.img.height * this.camera.uiz / 2 / 2.4,
                 this.img.width * this.camera.uiz / 2.4,
                 this.img.height * this.camera.uiz / 2.4);
+        }
+        
+        if (this.gameSetting.isConnecting) { // connecting text
+            this.textinputanime = 1;
+            this.connectinga = Math.min(this.connectinga + 0.01 * tick,1);
         }
 
         if (this.gameSetting.isNaming || this.gameSetting.isConnecting) { // draw Black Alpha Panel

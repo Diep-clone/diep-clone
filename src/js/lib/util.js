@@ -1,9 +1,7 @@
 import { Gun } from '../data/gun.js';
 
 export const RGB = function(r, g, b) {
-    /*
-        store the color information as RGB code
-    */
+    // store the color information as RGB code
     this.r;
     this.g;
     this.b;
@@ -107,6 +105,7 @@ export const calByte = { // string's byte calculation functions
 	}
 }; // https://zzznara2.tistory.com/458
 
+// TODO : fix this func
 export const getPolygonRadius = function (p) {
     if (p === 0) return 1; // circle
     return Math.sqrt(Math.PI / (Math.sin(Math.PI / p) * Math.cos(Math.PI / p) * p)); // polygon
@@ -118,6 +117,7 @@ export const getObjectPoint = function (type) {
         case "Trap":
             return -3;
         case "Triangle":
+        case "TriangleGun":
         case "Drone":
         case "DropperBullet":
             return 3;
@@ -182,6 +182,7 @@ export const colorType = function(type, team){
     }
 }
 
+// TODO : FINISH THIS.
 export const gunList = { // Returns the width of a given text typed.
     "AutoGun":[
         new Gun([[0.6,0],[0.6,2],[-0.6,2],[-0.6, 0]]),

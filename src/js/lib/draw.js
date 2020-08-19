@@ -1,10 +1,6 @@
 import { backgroundColor, minimapBackgroundColor, minimapBorderColor } from '../data/console'
 import { RGB, getPolygonRadius, getObjectPoint } from './util';
 
-/* 
-    전체적인 그래픽을 담당하고 있는 파일입니다.
-*/
-
 export const drawCircle = function (ctx, x, y, z, r) {
     ctx.beginPath();
     ctx.arc(x * z, y * z,r * z, 0, Math.PI * 2);

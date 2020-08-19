@@ -37,13 +37,8 @@ type Object struct {
 	Damage float64 `json:"damage"`
 	GetDH  float64 `json:"getdh"` // get damage and health
 	Speed  float64 `json:"speed"`
-	/*
-		바운드 값은 상대방을 밀어내는 정도,
-		스탠스 값은 자신이 밀쳐지는 정도를 뜻합니다.
-		바운드/ 스탠스 시스템은 하자가 있습니다.
-		연구 결과 데미지 값이 바운드/ 스탠스 값에 영향을 주는 사실을 발견했습니다.
-		따라서 바운드/ 스탠스 시스템은 데미지와 관련된 값으로 재설계가 필요합니다.
-	*/
+	// TODO : should fix bounce system
+	// TODO : should change json name "bound" to "bounce"
 	Bounce  float64 `json:"bound"`
 	Stance  float64 `json:"stance"`
 	Opacity float64 `json:"opacity"`
@@ -57,19 +52,16 @@ type Object struct {
 	DeadTime  float64 `json:"deadTime"`
 
 	IsBorder     bool `json:"isBorder"`
-	IsOwnCol     bool `json:"isOwnCol"` // 부모 오브젝트와의 충돌감지가 되는가?
+	IsOwnCol     bool `json:"isOwnCol"` // Can this object collision Owner object?
 	IsDead       bool `json:"isDead"`
 	IsCollision  bool `json:"isCollision"` // Is finished collision detect?
 	IsShot       bool `json:"isShot"`
 	IsTargeted   bool `json:"isTargeted"`
 	IsShowHealth bool `json:"isShowHealth"`
 	IsShowName   bool `json:"isShowName"`
-	IsBack       bool // 드론이 주인에게 돌아가야 하는가?
+	IsBack       bool // Should drone object go back to Owner object?
 
-	/*
-		서브 오브젝트는 오브젝트에 붙어있는 오브젝트들입니다.
-		서브 오브젝트들은 히트박스, 체력값을 가지고 있지 않습니다.
-	*/
+	// SubObjects do not enable HitBox and Health.
 	SubObjects []*Object
 	HitObject  *Object
 	Target     *Object
@@ -81,13 +73,13 @@ type Object struct {
 
 //
 func (obj *Object) ObjectTick() {
-	obj.X += obj.Dx //* lib.GameSetting.GameSpeed // 좌표값에 속도 적용
-	obj.Y += obj.Dy //* lib.GameSetting.GameSpeed
+	obj.X += obj.Dx
+	obj.Y += obj.Dy
 
-	obj.Dx *= 0.97 //math.Pow(0.97, lib.GameSetting.GameSpeed) 감속 코드
-	obj.Dy *= 0.97 //math.Pow(0.97, lib.GameSetting.GameSpeed)
+	obj.Dx *= 0.97
+	obj.Dy *= 0.97
 
-	if obj.IsBorder { // 화면 밖으로 벗어나는가?
+	if obj.IsBorder {
 		if obj.X > lib.GameSetting.MapSize.X+lib.Grid*4 {
 			obj.X = lib.GameSetting.MapSize.X + lib.Grid*4
 		}
@@ -240,7 +232,7 @@ func (o *Object) SetController(p *Player) {
 }
 
 var objID = 1
-var ObjIDList []int // 썼던 오브젝트 id 리스트. 재활용함.
+var ObjIDList []int // Reuse obj's ID
 
 func NewObject(value map[string]interface{}, t func(*Object), c func(*Object, *Object), k func(*Object, *Object), d func(*Object, *Object)) *Object {
 	ID := objID

@@ -5,6 +5,8 @@ import (
 	"math"
 )
 
+// TODO : Should fix object AI
+
 func DefaultTrapTick(obj *Object) {
 	if lib.Now()-obj.SpawnTime > 3000 {
 		obj.IsOwnCol = false

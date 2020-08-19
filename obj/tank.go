@@ -34,6 +34,7 @@ func TankTick(obj *Object) {
 	}
 }
 
+// TODO : ChangeTank Method
 func (o *Object) ChangeTank(c *Object) {
 	o.Type = c.Type
 	o.Bounce = c.Bounce
@@ -47,6 +48,7 @@ func (o *Object) ChangeTank(c *Object) {
 	o.DeadEvent = c.DeadEvent
 }
 
+// TODO : other Tank
 func NewTank(t string) *Object {
 	var obj *Object = NewObject(map[string]interface{}{
 		"type":       t,
@@ -630,6 +632,7 @@ func NewTank(t string) *Object {
 			o.R = o.Owner.R * 0.5
 			o.X = o.Owner.X
 			o.Y = o.Owner.Y
+			o.Dir = o.Owner.Dir
 			if o.Owner.H == 0 || o.Owner.IsDead == true {
 				o.IsDead = true
 			}

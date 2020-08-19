@@ -8,6 +8,7 @@ import (
 
 var ShapeCount int
 
+// TODO : other Shape and Bosses
 func AddShape() {
 	for ; ShapeCount > 0; ShapeCount-- {
 		Objects = append(Objects, NewObject(map[string]interface{}{
@@ -25,6 +26,7 @@ func AddShape() {
 	}
 }
 
-func DefaultShapeTick(o *Object) { // shape ai
+// TODO : shape AI
+func DefaultShapeTick(o *Object) {
 	o.Dir += 0.005
 }
