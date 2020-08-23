@@ -566,12 +566,7 @@ func NewTank(t string) *Object {
 	case "Shielder":
 		obj.Stats = [8]int{0, 0, 0, 7, 7, 7, 7, 5}
 		obj.Guns = []Gun{NewGun(obj, map[string]interface{}{}, nil, nil, nil, nil)}
-		obj.SubObjects = []*Object{NewObject(map[string]interface{}{}, DefaultShieldTick, DefaultCollision, DefaultKillEvent, nil)}
-		obj.Collision = func(a *Object, b *Object) {
-			if a.SubObjects[0].H == 0 {
-				DefaultCollision(a, b)
-			}
-		}
+		obj.SubObjects = []*Object{NewObject(map[string]interface{}{}, DefaultShieldTick, nil, DefaultKillEvent, nil)}
 	case "Follower":
 		obj.Sight = 1.11
 		obj.Stats = [8]int{0, 0, 0, 7, 7, 7, 7, 5}
@@ -734,11 +729,28 @@ func AutoGun(owner *Object, gunValue map[string]interface{}, dir, rdir float64) 
 	return o
 }
 
-func DefaultShieldTick(obj *Object) {
-	obj.R = obj.Owner.R + (obj.Sight * 5.)
-	obj.X = obj.Owner.X
-	obj.Y = obj.Owner.Y
+func DefaultShieldTick(o *Object) {
+	o.R = o.Owner.R + (o.Sight * 5.)
+	o.X = o.Owner.X
+	o.Y = o.Owner.Y
 
+	for _, e := range Qt.Retrieve(Area{
+		X: o.X - o.R,
+		Y: o.Y - o.R,
+		W: o.R * 2,
+		H: o.R * 2,
+	}) {
+		if o != e && !e.IsDead && !(o.IsCollision || e.IsCollision) && (e.Owner != o.Owner || e.IsOwnCol && o.IsOwnCol) && o != e.Owner && e != o.Owner {
+			if lib.DirDis(o.Dir, math.Atan2(e.Y-o.Y, e.X-o.X)) < o.Speed && (o.X-e.X)*(o.X-e.X)+(o.Y-e.Y)*(o.Y-e.Y) < (o.R+e.R)*(o.R+e.R) {
+				if o.Collision != nil {
+					o.Collision(o, e)
+				}
+				if e.Collision != nil {
+					e.Collision(e, o)
+				}
+			}
+		}
+	}
 }
 
 func Invisible(o *Object, t float64) {

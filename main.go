@@ -94,24 +94,6 @@ func moveloop(ticker time.Ticker) { // manages the motion of all objects.
 		for _, o := range obj.Objects { // Collision Quadtree
 			if !o.IsDead {
 				obj.Qt.Insert(o)
-
-				for _, obj2 := range obj.Qt.Retrieve(obj.Area{
-					X: o.X - o.R,
-					Y: o.Y - o.R,
-					W: o.R * 2,
-					H: o.R * 2,
-				}) {
-					if o != obj2 && !obj2.IsDead && !(o.IsCollision || obj2.IsCollision) && (obj2.Owner != o.Owner || obj2.IsOwnCol && o.IsOwnCol) && o != obj2.Owner && obj2 != o.Owner {
-						if (o.X-obj2.X)*(o.X-obj2.X)+(o.Y-obj2.Y)*(o.Y-obj2.Y) < (o.R+obj2.R)*(o.R+obj2.R) {
-							if o.Collision != nil {
-								o.Collision(o, obj2)
-							}
-							if obj2.Collision != nil {
-								obj2.Collision(obj2, o)
-							}
-						}
-					}
-				}
 			}
 		}
 
@@ -122,6 +104,26 @@ func moveloop(ticker time.Ticker) { // manages the motion of all objects.
 			}
 
 			o.ObjectTick()
+		}
+
+		for _, o := range obj.Objects {
+			for _, e := range obj.Qt.Retrieve(obj.Area{
+				X: o.X - o.R,
+				Y: o.Y - o.R,
+				W: o.R * 2,
+				H: o.R * 2,
+			}) {
+				if o != e && !e.IsDead && !(o.IsCollision || e.IsCollision) && (e.Owner != o.Owner || e.IsOwnCol && o.IsOwnCol) && o != e.Owner && e != o.Owner {
+					if (o.X-e.X)*(o.X-e.X)+(o.Y-e.Y)*(o.Y-e.Y) < (o.R+e.R)*(o.R+e.R) {
+						if o.Collision != nil {
+							o.Collision(o, e)
+						}
+						if e.Collision != nil {
+							e.Collision(e, o)
+						}
+					}
+				}
+			}
 		}
 
 		for i := 0; i < len(obj.Objects); i++ {

@@ -207,9 +207,9 @@ func Event(p *Player, message []byte) {
 			"MachineGun",
 			"FlankGuard",
 			"Destroyer",
-			"Overlord",
+			"Overlord",*/
 			"Necromancer",
-			"Hunter",
+			/*"Hunter",
 			"Stalker",
 			"Predator",
 			"Trapper",
@@ -221,12 +221,12 @@ func Event(p *Player, message []byte) {
 			"Spike",
 			"Skimmer",
 			"Rocketeer",*/
-			"Dispersion",
+			/*"Dispersion",
 			"Diffusion",
 			"Deception",
 			"Dropper",
 			"Follower",
-			"Lifesteal",
+			"Lifesteal",*/
 		}
 		t := p.StartTime % int64(len(list))
 		var s string = list[t]
