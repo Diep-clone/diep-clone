@@ -113,7 +113,7 @@ func moveloop(ticker time.Ticker) { // manages the motion of all objects.
 				W: o.R * 2,
 				H: o.R * 2,
 			}) {
-				if o != e && !e.IsDead && !(o.IsCollision || e.IsCollision) && (e.Owner != o.Owner || e.IsOwnCol && o.IsOwnCol) && o != e.Owner && e != o.Owner {
+				if o != e && !e.IsDead && !(o.IsCollision || e.IsCollision) && (e.Owner != o.Owner || e.IsOwnCol && o.IsOwnCol) && o != e.Owner && e != o.Owner && o.HitObject != e {
 					if (o.X-e.X)*(o.X-e.X)+(o.Y-e.Y)*(o.Y-e.Y) < (o.R+e.R)*(o.R+e.R) {
 						if o.Collision != nil {
 							o.Collision(o, e)
@@ -130,6 +130,9 @@ func moveloop(ticker time.Ticker) { // manages the motion of all objects.
 			var o *obj.Object = obj.Objects[i]
 			o.Index = i
 			if o.IsDead {
+				if o.Controller != nil && o.HitObject != nil {
+					o.Controller.KillObject = o.HitObject
+				}
 				if o.DeadTime == -1 {
 					o.DeadTime = 300
 				} else if o.DeadTime <= 0 {
@@ -145,6 +148,7 @@ func moveloop(ticker time.Ticker) { // manages the motion of all objects.
 					o.DeadTime = math.Max(o.DeadTime-1000./60., 0.)
 				}
 			}
+			o.HitObject = nil
 		}
 
 		obj.ObjMutex.Unlock()

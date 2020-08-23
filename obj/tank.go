@@ -566,7 +566,17 @@ func NewTank(t string) *Object {
 	case "Shielder":
 		obj.Stats = [8]int{0, 0, 0, 7, 7, 7, 7, 5}
 		obj.Guns = []Gun{NewGun(obj, map[string]interface{}{}, nil, nil, nil, nil)}
-		obj.SubObjects = []*Object{NewObject(map[string]interface{}{}, DefaultShieldTick, nil, DefaultKillEvent, nil)}
+		var oim = NewObject(map[string]interface{}{
+			"type":     "Shield",
+			"team":     nil,
+			"level":    1,
+			"opacity":  0,
+			"isOwnCol": false,
+			"isDead":   true,
+			"deadTime": 0,
+		}, DefaultShieldTick, DefaultCollision, DefaultKillEvent, nil)
+		oim.Owner = obj
+		obj.SubObjects = []*Object{nil, oim}
 	case "Follower":
 		obj.Sight = 1.11
 		obj.Stats = [8]int{0, 0, 0, 7, 7, 7, 7, 5}
@@ -730,9 +740,34 @@ func AutoGun(owner *Object, gunValue map[string]interface{}, dir, rdir float64) 
 }
 
 func DefaultShieldTick(o *Object) {
-	o.R = o.Owner.R + (o.Sight * 5.)
+
 	o.X = o.Owner.X
 	o.Y = o.Owner.Y
+	o.Dx = 0
+	o.Dy = 0
+	o.Damage = o.Owner.Damage
+	o.Mh = o.Owner.Mh * (0.3 + 0.1*float64(o.Owner.Stats[4]))
+	o.Team = o.Owner.Team
+
+	if o.IsDead {
+		if o.DeadTime == -1 {
+			o.DeadTime = 25000 - float64(o.Owner.Stats[6])*3000
+		} else if o.DeadTime <= 0 {
+			o.IsDead = false
+			o.DeadTime = -1
+			o.H = o.Mh
+		} else {
+			o.Opacity = math.Max(o.Opacity-0.03, 0)
+			o.R += o.R * 0.02
+			o.DeadTime = math.Max(o.DeadTime-1000./60., 0.)
+		}
+
+		return
+	}
+
+	o.Dir = o.Owner.Dir
+	o.R = o.Owner.R + (float64(o.Level) * 5.)
+	o.Opacity = 0.4
 
 	for _, e := range Qt.Retrieve(Area{
 		X: o.X - o.R,
@@ -741,16 +776,18 @@ func DefaultShieldTick(o *Object) {
 		H: o.R * 2,
 	}) {
 		if o != e && !e.IsDead && !(o.IsCollision || e.IsCollision) && (e.Owner != o.Owner || e.IsOwnCol && o.IsOwnCol) && o != e.Owner && e != o.Owner {
-			if lib.DirDis(o.Dir, math.Atan2(e.Y-o.Y, e.X-o.X)) < o.Speed && (o.X-e.X)*(o.X-e.X)+(o.Y-e.Y)*(o.Y-e.Y) < (o.R+e.R)*(o.R+e.R) {
+			if (o.X-e.X)*(o.X-e.X)+(o.Y-e.Y)*(o.Y-e.Y) < (o.R+e.R)*(o.R+e.R) {
 				if o.Collision != nil {
 					o.Collision(o, e)
 				}
 				if e.Collision != nil {
-					e.Collision(e, o)
+					e.Collision(e, o.Owner)
 				}
 			}
 		}
 	}
+	o.Owner.HitObject = o.HitObject
+	o.HitObject = nil
 }
 
 func Invisible(o *Object, t float64) {
