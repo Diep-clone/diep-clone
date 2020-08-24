@@ -35,7 +35,6 @@ type Object struct {
 	Mh     float64 `json:"mh"`
 	Lh     float64 `json:"lh"` // last frame health
 	Damage float64 `json:"damage"`
-	GetDH  float64 `json:"getdh"` // get damage and health
 	Speed  float64 `json:"speed"`
 	// TODO : should fix bounce system
 	// TODO : should change json name "bound" to "bounce"
@@ -117,14 +116,11 @@ func (obj *Object) ObjectTick() {
 	obj.Shot()
 
 	if obj.Controller != nil && lib.Now()-int64(30000.*lib.GameSetting.GameSpeed) > obj.HitTime {
-		obj.H += obj.Mh / 60 / 10 * lib.GameSetting.GameSpeed
+		obj.H += obj.Mh / 60 / 10
 	}
 
-	obj.H += obj.GetDH * lib.GameSetting.GameSpeed
-	obj.GetDH = 0
-
 	if obj.H > obj.Mh {
-		obj.H = obj.Mh
+		obj.H = math.Max(obj.Mh, 0)
 	}
 
 	obj.Lh = obj.H
@@ -145,13 +141,14 @@ func DefaultCollision(a *Object, b *Object) {
 
 	a.HitTime = lib.Now()
 
-	if b.Lh-a.Damage*lib.GameSetting.GameSpeed <= 0 {
-		a.H -= b.Damage * (b.Lh / (a.Damage * lib.GameSetting.GameSpeed)) * lib.GameSetting.GameSpeed
+	if b.Lh-a.Damage <= 0 {
+		a.H -= b.Damage * (b.Lh / (a.Damage))
 	} else {
-		a.H -= b.Damage * lib.GameSetting.GameSpeed
+		a.H -= b.Damage
 	}
 
 	if a.H <= 0 {
+		a.H = 0
 		if b.KillEvent != nil {
 			b.KillEvent(b, a)
 		}

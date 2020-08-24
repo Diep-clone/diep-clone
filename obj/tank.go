@@ -21,7 +21,7 @@ func TankTick(obj *Object) {
 	}
 
 	if obj.Controller != nil {
-		obj.GetDH += obj.Mh / 60 / 30 * (0.03 + 0.12*float64(obj.Stats[0]))
+		obj.H += obj.Mh / 60 / 30 * (0.03 + 0.12*float64(obj.Stats[0]))
 
 		for i := 0; i < 8; i++ {
 			if obj.Stats[i] > obj.MaxStats[i] {
@@ -30,7 +30,7 @@ func TankTick(obj *Object) {
 			}
 		}
 	} else {
-		obj.GetDH -= obj.Mh / 60 / 10
+		obj.H -= obj.Mh / 60 / 10
 	}
 }
 
@@ -58,6 +58,7 @@ func NewTank(t string) *Object {
 		"exp":        23536,
 		"stats":      [8]int{0, 0, 0, 5, 7, 7, 7, 7},
 		"maxStats":   [8]int{7, 7, 7, 7, 7, 7, 7, 7},
+		"stance":     0.3,
 		"isShowName": true,
 	}, TankTick, DefaultCollision, DefaultKillEvent, nil)
 
@@ -549,7 +550,6 @@ func NewTank(t string) *Object {
 			"team":     "nil",
 			"type":     "Gun",
 			"mh":       0,
-			"r":        1,
 			"damage":   0,
 			"isBorder": false,
 			"isOwnCol": false,
@@ -564,17 +564,81 @@ func NewTank(t string) *Object {
 		oim.Owner = obj
 		obj.SubObjects = append(obj.SubObjects, oim)
 	case "Shielder":
-		obj.Stats = [8]int{0, 0, 0, 7, 7, 7, 7, 5}
+		obj.Stats = [8]int{0, 7, 0, 0, 7, 7, 7, 5}
 		obj.Guns = []Gun{NewGun(obj, map[string]interface{}{}, nil, nil, nil, nil)}
 		var oim = NewObject(map[string]interface{}{
 			"type":     "Shield",
 			"team":     nil,
 			"level":    1,
 			"opacity":  0,
+			"stance":   0,
 			"isOwnCol": false,
 			"isDead":   true,
 			"deadTime": 0,
 		}, DefaultShieldTick, DefaultCollision, DefaultKillEvent, nil)
+		oim.Owner = obj
+		obj.SubObjects = []*Object{nil, oim}
+	case "Mechanic":
+		obj.Stats = [8]int{0, 7, 0, 5, 7, 7, 7, 0}
+		obj.Guns = []Gun{NewGun(obj, map[string]interface{}{
+			"damage":   0.5,
+			"radius":   0.5,
+			"gunbound": 0.4,
+			"sx":       0.325,
+			"sy":       2.1,
+		}, nil, nil, nil, nil), NewGun(obj, map[string]interface{}{
+			"damage":   0.5,
+			"radius":   0.5,
+			"gunbound": 0.4,
+			"waittime": 0.5,
+			"sx":       -0.325,
+			"sy":       2.1,
+		}, nil, nil, nil, nil)}
+		var oim = NewObject(map[string]interface{}{
+			"type":     "MechanicArmor",
+			"team":     nil,
+			"level":    1,
+			"opacity":  0,
+			"stance":   0,
+			"isOwnCol": false,
+			"isDead":   true,
+			"deadTime": 0,
+		}, DefaultShieldTick, DefaultCollision, DefaultKillEvent, nil)
+		oim.Guns = []Gun{NewGun(obj, map[string]interface{}{
+			"speed":    0.75,
+			"damage":   2.5,
+			"health":   2,
+			"radius":   2,
+			"gunbound": 15,
+			"bound":    0.1,
+			"reload":   0.25,
+			"sy":       1.48,
+		}, nil, nil, nil, nil)}
+		oim.Owner = obj
+		obj.SubObjects = []*Object{nil, oim}
+	case "Cure":
+		obj.Stats = [8]int{0, 0, 0, 7, 7, 7, 7, 5}
+		obj.Guns = []Gun{NewGun(obj, map[string]interface{}{
+			"bound":  0,
+			"reload": 0.85,
+		}, nil, DefaultHealCollision, nil, nil)}
+		var oim = NewObject(map[string]interface{}{
+			"team":     "nil",
+			"type":     "Cross",
+			"mh":       0,
+			"r":        1,
+			"damage":   0,
+			"isBorder": false,
+			"isOwnCol": false,
+		}, func(o *Object) {
+			o.R = o.Owner.R * 0.5
+			o.X = o.Owner.X
+			o.Y = o.Owner.Y
+			o.Dir += 0.005
+			if o.Owner.H == 0 || o.Owner.IsDead == true {
+				o.IsDead = true
+			}
+		}, nil, nil, nil)
 		oim.Owner = obj
 		obj.SubObjects = []*Object{nil, oim}
 	case "Follower":
@@ -740,14 +804,21 @@ func AutoGun(owner *Object, gunValue map[string]interface{}, dir, rdir float64) 
 }
 
 func DefaultShieldTick(o *Object) {
-
 	o.X = o.Owner.X
 	o.Y = o.Owner.Y
+	o.Owner.Dx += o.Dx
+	o.Owner.Dy += o.Dy
 	o.Dx = 0
 	o.Dy = 0
 	o.Damage = o.Owner.Damage
 	o.Mh = o.Owner.Mh * (0.3 + 0.1*float64(o.Owner.Stats[4]))
 	o.Team = o.Owner.Team
+	o.SetController(o.Owner.Controller)
+
+	if o.Owner.H == 0 || o.Owner.IsDead == true {
+		o.DeadTime = 99999
+		o.IsDead = true
+	}
 
 	if o.IsDead {
 		if o.DeadTime == -1 {
@@ -757,8 +828,10 @@ func DefaultShieldTick(o *Object) {
 			o.DeadTime = -1
 			o.H = o.Mh
 		} else {
-			o.Opacity = math.Max(o.Opacity-0.03, 0)
-			o.R += o.R * 0.02
+			o.Opacity = math.Max(o.Opacity-0.05, 0)
+			if o.Opacity > 0 {
+				o.R += o.R * 0.02
+			}
 			o.DeadTime = math.Max(o.DeadTime-1000./60., 0.)
 		}
 
@@ -767,7 +840,7 @@ func DefaultShieldTick(o *Object) {
 
 	o.Dir = o.Owner.Dir
 	o.R = o.Owner.R + (float64(o.Level) * 5.)
-	o.Opacity = 0.4
+	o.Opacity = 0.5
 
 	for _, e := range Qt.Retrieve(Area{
 		X: o.X - o.R,
@@ -775,7 +848,7 @@ func DefaultShieldTick(o *Object) {
 		W: o.R * 2,
 		H: o.R * 2,
 	}) {
-		if o != e && !e.IsDead && !(o.IsCollision || e.IsCollision) && (e.Owner != o.Owner || e.IsOwnCol && o.IsOwnCol) && o != e.Owner && e != o.Owner {
+		if o != e && !e.IsDead && !(o.IsCollision || e.IsCollision) && (e.Owner != o.Owner || e.IsOwnCol && o.IsOwnCol) && o != e.Owner && e != o.Owner && o != e.HitObject {
 			if (o.X-e.X)*(o.X-e.X)+(o.Y-e.Y)*(o.Y-e.Y) < (o.R+e.R)*(o.R+e.R) {
 				if o.Collision != nil {
 					o.Collision(o, e)

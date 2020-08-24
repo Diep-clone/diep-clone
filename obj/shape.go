@@ -15,8 +15,6 @@ func AddShape() {
 			"type":   "Square",
 			"name":   "Square",
 			"team":   "shape",
-			"h":      10000,
-			"mh":     10000,
 			"x":      lib.RandomRange(-lib.GameSetting.MapSize.X, lib.GameSetting.MapSize.X),
 			"y":      lib.RandomRange(-lib.GameSetting.MapSize.Y, lib.GameSetting.MapSize.Y),
 			"dir":    lib.RandomRange(-math.Pi, math.Pi),

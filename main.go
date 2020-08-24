@@ -113,7 +113,7 @@ func moveloop(ticker time.Ticker) { // manages the motion of all objects.
 				W: o.R * 2,
 				H: o.R * 2,
 			}) {
-				if o != e && !e.IsDead && !(o.IsCollision || e.IsCollision) && (e.Owner != o.Owner || e.IsOwnCol && o.IsOwnCol) && o != e.Owner && e != o.Owner && o.HitObject != e {
+				if o != e && !e.IsDead && !(o.IsCollision || e.IsCollision) && (e.Owner != o.Owner || e.IsOwnCol && o.IsOwnCol) && o != e.Owner && e != o.Owner && o != e.HitObject {
 					if (o.X-e.X)*(o.X-e.X)+(o.Y-e.Y)*(o.Y-e.Y) < (o.R+e.R)*(o.R+e.R) {
 						if o.Collision != nil {
 							o.Collision(o, e)

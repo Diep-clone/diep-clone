@@ -47,6 +47,25 @@ func DefaultBulletTick(obj *Object) {
 	}
 }
 
+//
+func DefaultHealCollision(a *Object, b *Object) {
+	if a.Team == b.Team && b.Controller != nil {
+		b.H += 5 + (1.5 * float64(a.Stats[5]))
+		a.H -= (5 + (1.5 * float64(a.Stats[5]))) * 30
+
+		if b.Mh < b.H {
+			a.H += (b.H - b.Mh) * 30
+			b.H = b.Mh
+		}
+
+		if a.H <= 0 {
+			a.IsCollision = true
+		}
+	} else {
+		DefaultCollision(a, b)
+	}
+}
+
 func DefaultDroneTick(obj *Object) {
 	if obj.Owner.DeadTime == 0 {
 		obj.H = 0

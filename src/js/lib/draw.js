@@ -77,6 +77,8 @@ export const drawText = function (ctx, x, y, z, o, c, text, size, dir) {
 export const drawBar = function (ctx, x, y, r, l, z, o, p, c) {
     ctx.save();
 
+    p = Math.min(Math.max(p, 0), 1)
+
     ctx.globalAlpha = o;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";

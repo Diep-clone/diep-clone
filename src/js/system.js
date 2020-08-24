@@ -58,6 +58,7 @@ export default class System {
             "obj": null, // object
             "id": 0, // object's id
             "team": "",
+            "dir": 0,
             "level": 0,
             "stat": 0,
             "stats": [0,0,0,0,0,0,0,0],
@@ -483,7 +484,7 @@ export default class System {
                 y = this.input.mousePos.y/this.camera.z + this.camera.y;
             }
             if (this.playerSetting.obj) {
-                this.playerSetting.obj.dir = Math.atan2(y - this.playerSetting.obj.y, x - this.playerSetting.obj.x);
+                this.playerSetting.dir = Math.atan2(y - this.playerSetting.obj.y, x - this.playerSetting.obj.x);
             }
 
             view.setFloat32(5, x); // mouse pos
@@ -514,7 +515,7 @@ export default class System {
 
             this.gameui.draw(this.ctx, this.cv.width, this.cv.height, this.camera.uiz);
 
-        } else { // TODO : From this code to the requestAnimationFrame, all codes must be replaced by "ui.js".
+        } else { // TODO : From this code to the requestAnimationFrame func, all codes must be replaced by "ui.js".
             this.ctx.drawImage(this.img, // draw Background image
                 this.cv.width / 2 - this.img.width * this.camera.uiz / 2 / 2.4,
                 this.cv.height / 2 - this.img.height * this.camera.uiz / 2 / 2.4,

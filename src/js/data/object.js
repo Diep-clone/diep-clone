@@ -34,7 +34,7 @@ export const Obj = function(id) {
     this.x;
     this.y;
     this.r; // radius
-    this.dir;
+    this.dir = null;
     this.h; // health
     this.mh; // max health
     this.opacity;
@@ -82,6 +82,8 @@ export const Obj = function(id) {
             } else {
                 this.dir = data.dir;
             }
+        } else {
+            this.dir = system.playerSetting.dir;
         }
         this.r = data.r;
         this.h = data.h;
@@ -109,6 +111,9 @@ export const Obj = function(id) {
                 if (data.subobjs[i] == null) continue;
                 data.subobjs[i].isDead = this.isDead;
                 this.subobjs[i].ObjSet(data.subobjs[i]);
+                if (data.subobjs[i].dir === data.dir) {
+                    this.subobjs[i].dir = this.dir;
+                }
             }
         } else {
             data.subobjs.forEach((d) => {
@@ -127,11 +132,13 @@ export const Obj = function(id) {
     };
 
     this.DrawSet = function (camera) {
-        let c = colorList[this.color]; // get color value
-        if (this.hitTime > 60) { // hit effect
-            c = c.getLightRGB((this.hitTime - 60) / 70);
-        } else if (this.hitTime > 0) {
-            c = c.getRedRGB(this.hitTime / 60);
+        let c = (this.color<0)?null:colorList[this.color]; // get color value
+        if (c) {
+            if (this.hitTime > 60) { // hit effect
+                c = c.getLightRGB((this.hitTime - 60) / 70);
+            } else if (this.hitTime > 0) {
+                c = c.getRedRGB(this.hitTime / 60);
+            }
         }
         return {
             x: this.x - camera.x,
@@ -218,24 +225,25 @@ export const Obj = function(id) {
             let lx = (x * z - px) - Math.floor(x * z - px) - x;
             let ly = (y * z - py) - Math.floor(y * z - py) - y;
 
-            let drawObjb = function (obj) {
-                let {x, y, z, t, c, r, dir} = obj.DrawSet(camera);
+            {
+                let {x, y, z, t, c, r, dir} = this.DrawSet(camera);
                 let i = 0;
-                for (; i < obj.subobjs.length; i++) {
-                    if (obj.subobjs[i] === null) {
+                for (; i < this.subobjs.length; i++) {
+                    if (this.subobjs[i] === null) {
                         break;
                     }
-                    drawObjb(obj.subobjs[i]);
+                    this.subobjs[i].Draw(ctx, camera);
                 }
-                obj.guns.forEach((g) => {
-                    g.Draw(ctxx, camera, px / z + lx + x, py / z + ly + y, r, c, dir, obj.hitTime);
+                this.guns.forEach((g) => {
+                    g.Draw(ctxx, camera, px / z + lx + x, py / z + ly + y, r, c, dir, this.hitTime);
                 });
-                drawObj(ctxx, px / z + lx + x, py / z + ly + y, z, r, dir, t, 1, c);
-                for (i++; i < obj.subobjs.length; i++) {
-                    drawObjb(obj.subobjs[i]);
+                if (c) {
+                    drawObj(ctxx, px / z + lx + x, py / z + ly + y, z, r, dir, t, 1, c);
+                }
+                for (i++; i < this.subobjs.length; i++) {
+                    this.subobjs[i].Draw(ctx, camera);
                 }
             }
-            drawObjb(this);
 
             ctx.save();
             ctx.globalAlpha = o;
@@ -243,24 +251,23 @@ export const Obj = function(id) {
             ctx.drawImage(this.cv, Math.floor(x * z - px), Math.floor(y * z - py));
             ctx.restore();
         } else if (this.opacity > 0) {
-            let drawObjb = function(obj) {
-                var {x, y, z, t, c, r, dir, o} = obj.DrawSet(camera);
-                let i = 0;
-                for (; i < obj.subobjs.length; i++) {
-                    if (obj.subobjs[i] === null) {
-                        break;
-                    }
-                    drawObjb(obj.subobjs[i]);
+            var {x, y, z, t, c, r, dir, o} = this.DrawSet(camera);
+            let i = 0;
+            for (; i < this.subobjs.length; i++) {
+                if (this.subobjs[i] === null) {
+                    break;
                 }
-                obj.guns.forEach((g) => {
-                    g.Draw(ctx, camera, x, y, r, c, dir, obj.hitTime);
-                });
-                drawObj(ctx, x, y, z, r, dir, t, o, c);
-                for (i++; i < obj.subobjs.length; i++) {
-                    drawObjb(obj.subobjs[i]);
-                }
+                this.subobjs[i].Draw(ctx, camera);
             }
-            drawObjb(this);
+            this.guns.forEach((g) => {
+                g.Draw(ctx, camera, x, y, r, c, dir, this.hitTime);
+            });
+            if (c) {
+                drawObj(ctx, x, y, z, r, dir, t, o, c);
+            }
+            for (i++; i < this.subobjs.length; i++) {
+                this.subobjs[i].Draw(ctx, camera);
+            }
         }
     }
 

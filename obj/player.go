@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"math"
-	"strconv"
 	"sync"
 	"unicode/utf8"
 
@@ -181,7 +180,8 @@ func Event(p *Player, message []byte) {
 			value /= 2
 			if value%2 == 1 {
 				if obj := u.ControlObject; obj != nil {
-					obj.H = 0
+					obj.Mh = -1
+					obj.IsCollision = true
 				}
 			}
 		}
@@ -220,20 +220,22 @@ func Event(p *Player, message []byte) {
 			"Battleship",
 			"Spike",
 			"Skimmer",
-			"Rocketeer",*/
-			/*"Dispersion",
+			"Rocketeer",
+			"Dispersion",
 			"Diffusion",
 			"Deception",
 			"Dropper",
 			"Follower",
 			"Lifesteal",*/
 			"Shielder",
+			"Cure",
+			"Mechanic",
 		}
 		t := p.StartTime % int64(len(list))
 		var s string = list[t]
 
 		p.ControlObject = NewTank(s)
-		p.ControlObject.Team = strconv.Itoa(p.ID)
+		p.ControlObject.Team = "blue" //strconv.Itoa(p.ID)
 		p.ControlObject.Name = name
 		p.ControlObject.SetController(p)
 		Objects = append(Objects, p.ControlObject)

@@ -170,6 +170,8 @@ export const colorType = function(type, team){
             }
         default:
             switch (type){
+                case "Cross":
+                    return -1;
                 case "Gun":
                 case "TriangleGun":
                 case "AutoGun":
@@ -184,6 +186,13 @@ export const colorType = function(type, team){
 
 // TODO : FINISH THIS.
 export const gunList = { // Returns the width of a given text typed.
+    "Shield": [
+        new Gun([]),
+    ],
+    "Cross": [
+        new Gun([[0.45,0.45],[1.2,0.45],[1.2,-0.45],[0.45,-0.45],[0.45,-1.2],[-0.45,-1.2],[-0.45,-0.45],
+                [-1.2,-0.45],[-1.2,0.45],[-0.45,0.45],[-0.45,1.2],[0.45,1.2],[0.45,0.45]]),
+    ],
     "AutoGun":[
         new Gun([[0.6,0],[0.6,2],[-0.6,2],[-0.6, 0]]),
     ],
@@ -401,19 +410,20 @@ export const gunList = { // Returns the width of a given text typed.
         new Gun([[4,0],[4,1.193],[6,1.578],[-6,1.578],[-4,1.193],[4,1.193],[-4,1.193],[-4,0]],Math.PI, -1, 0, true)
     ],
     "Mechanic": [
-
+        new Gun([[0.5,0],[0.5,2.1],[0.15,2.1],[0.15, 0]]),
+        new Gun([[-0.15,0],[-0.15,2.1],[-0.5,2.1],[-0.5, 0]]),
     ],
     "MechanicArmor": [
-
+        new Gun([[0.6,0],[0.6,1.48],[-0.6,1.48],[-0.6, 0],[0.6,0]]),
     ],
     "Cure": [
-        new Gun([[0.42,0],[0.42,1.88],[-0.42,1.88],[-0.42, 0]]),
+        new Gun([[0.37,0],[0.37,1.83],[-0.37,1.83],[-0.37, 0]]),
     ],
     "Shielder": [
         new Gun([[0.42,0],[0.42,1.88],[-0.42,1.88],[-0.42, 0]]),
     ],
     "Follower" : [
-        new Gun([[0.7,0],[0.7,1.2],[-0.7,1.2],[-0.7, 0]])
+        new Gun([[0.7,0],[0.7,1.2],[-0.7,1.2],[-0.7, 0]]),
     ],
     "Lifesteal": [
         new Gun([[0.43,0],[0.73,1.4],[-0.73,1.4],[-0.43,0]]),
