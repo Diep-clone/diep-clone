@@ -34,16 +34,22 @@ func DefaultTrapTick(obj *Object) {
 }
 
 func DefaultBulletTick(obj *Object) {
+	if obj.IsDead {
+		if !obj.IsOwnCol {
+			obj.DeadTime = -1
+			obj.IsOwnCol = true
+		}
+		return
+	}
+
 	obj.IsOwnCol = false
 	obj.Dx += math.Cos(obj.Dir) * obj.Speed
 	obj.Dy += math.Sin(obj.Dir) * obj.Speed
 
-	if !obj.IsDead {
-		obj.DeadTime -= 1000. / 60.
-		if obj.DeadTime <= 0 {
-			obj.DeadTime = -1
-			obj.H = 0
-		}
+	obj.DeadTime -= 1000. / 60.
+	if obj.DeadTime <= 0 {
+		obj.DeadTime = -1
+		obj.H = 0
 	}
 }
 

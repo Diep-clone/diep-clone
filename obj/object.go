@@ -61,13 +61,15 @@ type Object struct {
 	IsBack       bool // Should drone object go back to Owner object?
 
 	// SubObjects do not enable HitBox and Health.
-	SubObjects []*Object
-	HitObject  *Object
-	Target     *Object
-	Tick       func(*Object)
-	Collision  func(*Object, *Object)
-	KillEvent  func(*Object, *Object)
-	DeadEvent  func(*Object, *Object)
+	SubObjects    []*Object
+	HitObjects    []*Object
+	LastHitObject *Object
+	Target        *Object
+
+	Tick      func(*Object)
+	Collision func(*Object, *Object)
+	KillEvent func(*Object, *Object)
+	DeadEvent func(*Object, *Object)
 }
 
 //
@@ -96,6 +98,7 @@ func (obj *Object) ObjectTick() {
 	if obj.H <= 0 && obj.Mh != 0 {
 		obj.IsDead = true
 		obj.H = 0
+		obj.IsCollision = true
 	}
 	for _, o := range obj.SubObjects {
 		if o == nil {
@@ -149,12 +152,13 @@ func DefaultCollision(a *Object, b *Object) {
 
 	if a.H <= 0 {
 		a.H = 0
+		a.IsDead = true
 		if b.KillEvent != nil {
 			b.KillEvent(b, a)
 		}
 	}
 
-	a.HitObject = b
+	a.HitObjects = append(a.HitObjects, b)
 	a.IsCollision = true
 }
 

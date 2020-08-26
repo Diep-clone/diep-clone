@@ -162,12 +162,12 @@ export const Obj = function(id) {
             objs.forEach((o) => {
                 if (o != null) {
                     let {px, py, w, h} = o.SetCanvasSize(camera);
-                    let ax = -(x + camera.x - o.x) * z + pos.x + 2 * camera.z + 2;
-                    let ay = -(y + camera.y - o.y) * z + pos.y + 2 * camera.z + 2;
-                    let x1 = Math.floor(ax - px);
-                    let x2 = Math.floor(ax - px + w);
-                    let y1 = Math.floor(ay - py);
-                    let y2 = Math.floor(ay - py + h);
+                    let ax = -(x + camera.x - o.x) * z + pos.x + 2 * z + 2;
+                    let ay = -(y + camera.y - o.y) * z + pos.y + 2 * z + 2;
+                    let x1 = /*Math.floor*/(ax - px);
+                    let x2 = /*Math.floor*/(ax - px + w);
+                    let y1 = /*Math.floor*/(ay - py);
+                    let y2 = /*Math.floor*/(ay - py + h);
         
                     if (x1 < 0) {
                         size.x -= x1;
@@ -202,8 +202,8 @@ export const Obj = function(id) {
             });
         };
         setSubobjCanvas(this.subobjs);
-        this.cv.width = size.x + 4 * camera.z + 4;
-        this.cv.height = size.y + 4 * camera.z + 4;
+        this.cv.width = Math.floor(size.x + 4 * camera.z) + 4;
+        this.cv.height = Math.floor(size.y + 4 * camera.z) + 4;
         pos.x += 2 * camera.z + 2;
         pos.y += 2 * camera.z + 2;
         this.ctx.lineWidth = 2 * camera.z;
@@ -220,30 +220,39 @@ export const Obj = function(id) {
     this.Draw = function (ctx, camera) {
         if ((this.guns.length > 0 || this.subobjs.length > 0) && this.opacity < 1){
             var {ctxx, px, py} = this.SetCanvasSize(camera);
-
+            
             let {x, y, z, o} = this.DrawSet(camera);
             let lx = (x * z - px) - Math.floor(x * z - px) - x;
             let ly = (y * z - py) - Math.floor(y * z - py) - y;
 
-            {
-                let {x, y, z, t, c, r, dir} = this.DrawSet(camera);
+            let drawO = function (obj) {
+                let {x, y, z, t, c, r, dir} = obj.DrawSet(camera);
                 let i = 0;
-                for (; i < this.subobjs.length; i++) {
-                    if (this.subobjs[i] === null) {
+                for (; i < obj.subobjs.length; i++) {
+                    if (obj.subobjs[i] === null) {
                         break;
                     }
-                    this.subobjs[i].Draw(ctx, camera);
+                    if (obj.subobjs[i].opacity < 1) {
+                        obj.subobjs[i].Draw(ctx,camera);
+                    } else {
+                        drawO(obj.subobjs[i]);
+                    }
                 }
-                this.guns.forEach((g) => {
-                    g.Draw(ctxx, camera, px / z + lx + x, py / z + ly + y, r, c, dir, this.hitTime);
+                obj.guns.forEach((g) => {
+                    g.Draw(ctxx, camera, px / z + lx + x, py / z + ly + y, r, c, dir, obj.hitTime);
                 });
                 if (c) {
                     drawObj(ctxx, px / z + lx + x, py / z + ly + y, z, r, dir, t, 1, c);
                 }
-                for (i++; i < this.subobjs.length; i++) {
-                    this.subobjs[i].Draw(ctx, camera);
+                for (i++; i < obj.subobjs.length; i++) {
+                    if (obj.subobjs[i].opacity < 1) {
+                        obj.subobjs[i].Draw(ctx,camera);
+                    } else {
+                        drawO(obj.subobjs[i]);
+                    }
                 }
             }
+            drawO(this);
 
             ctx.save();
             ctx.globalAlpha = o;

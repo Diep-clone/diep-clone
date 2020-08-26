@@ -20,7 +20,7 @@ func TankTick(obj *Object) {
 		obj.H *= obj.Mh / im
 	}
 
-	if obj.Controller != nil {
+	if obj.Controller != nil && obj.H > 0 {
 		obj.H += obj.Mh / 60 / 30 * (0.03 + 0.12*float64(obj.Stats[0]))
 
 		for i := 0; i < 8; i++ {
@@ -659,6 +659,10 @@ func NewTank(t string) *Object {
 				"isborder": true,
 				"limit":    8,
 			}, func(o *Object) {
+				if o.Owner.DeadTime == 0 {
+					o.H = 0
+					return
+				}
 				o.Dir += 0.05
 				if o.IsBack {
 					if o.Controller != nil && o.Controller.Mr {
@@ -702,6 +706,7 @@ func NewTank(t string) *Object {
 			o.X = o.Owner.X
 			o.Y = o.Owner.Y
 			o.Dir = o.Owner.Dir
+
 			if o.Owner.H == 0 || o.Owner.IsDead == true {
 				o.IsDead = true
 			}
@@ -748,7 +753,7 @@ func AutoGun(owner *Object, gunValue map[string]interface{}, dir, rdir float64) 
 			} else {
 				if (obj.Target.IsDead || obj.Owner == obj.Target || obj.Target.Team == obj.Team || !obj.Target.IsTargeted) && lib.Distance(obj.Target.X, obj.Target.Y, obj.X, obj.Y) > 500 {
 					obj.Target = target
-				} else {
+				} else if obj.Target != nil && lib.Distance(obj.Target.X, obj.Target.Y, obj.X, obj.Y) > 550 {
 					obj.Target = nil
 				}
 			}
@@ -784,7 +789,7 @@ func AutoGun(owner *Object, gunValue map[string]interface{}, dir, rdir float64) 
 				} else {
 					if (obj.Target.IsDead || obj.Owner == obj.Target || obj.Target.Team == obj.Team || !obj.Target.IsTargeted) && lib.Distance(obj.Target.X, obj.Target.Y, obj.X, obj.Y) > 500 {
 						obj.Target = target
-					} else {
+					} else if obj.Target != nil && lib.Distance(obj.Target.X, obj.Target.Y, obj.X, obj.Y) > 550 {
 						obj.Target = nil
 					}
 				}
@@ -813,6 +818,7 @@ func DefaultShieldTick(o *Object) {
 	o.Damage = o.Owner.Damage
 	o.Mh = o.Owner.Mh * (0.3 + 0.1*float64(o.Owner.Stats[4]))
 	o.Team = o.Owner.Team
+	o.Dir = o.Owner.Dir
 	o.SetController(o.Owner.Controller)
 
 	if o.Owner.H == 0 || o.Owner.IsDead == true {
@@ -838,7 +844,6 @@ func DefaultShieldTick(o *Object) {
 		return
 	}
 
-	o.Dir = o.Owner.Dir
 	o.R = o.Owner.R + (float64(o.Level) * 5.)
 	o.Opacity = 0.5
 
@@ -848,23 +853,23 @@ func DefaultShieldTick(o *Object) {
 		W: o.R * 2,
 		H: o.R * 2,
 	}) {
-		if o != e && !e.IsDead && !(o.IsCollision || e.IsCollision) && (e.Owner != o.Owner || e.IsOwnCol && o.IsOwnCol) && o != e.Owner && e != o.Owner && o != e.HitObject {
+		if o != e && !o.IsDead && !e.IsDead && !e.IsCollision && (e.Owner != o.Owner || e.IsOwnCol && o.IsOwnCol) && o != e.Owner && e != o.Owner && !lib.Contains(e.HitObjects, o) {
 			if (o.X-e.X)*(o.X-e.X)+(o.Y-e.Y)*(o.Y-e.Y) < (o.R+e.R)*(o.R+e.R) {
 				if o.Collision != nil {
 					o.Collision(o, e)
 				}
 				if e.Collision != nil {
-					e.Collision(e, o.Owner)
+					e.Collision(e, o)
 				}
 			}
 		}
 	}
-	o.Owner.HitObject = o.HitObject
-	o.HitObject = nil
+	o.Owner.HitObjects = append(o.Owner.HitObjects, o.HitObjects...)
+	o.HitObjects = nil
 }
 
 func Invisible(o *Object, t float64) {
-	if o.IsShot || o.Controller != nil && o.Controller.IsMove {
+	if !o.IsDead && (o.IsShot || o.Controller != nil) && o.Controller.IsMove {
 		o.Opacity = math.Min(o.Opacity+0.1, 1)
 	} else {
 		o.Opacity = math.Max(o.Opacity-1./60./t, 0)

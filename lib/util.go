@@ -3,6 +3,7 @@ package lib
 import (
 	"math"
 	"math/rand"
+	"reflect"
 	"time"
 )
 
@@ -77,4 +78,17 @@ func DirDis(d1, d2 float64) float64 {
 
 func Now() int64 {
 	return time.Now().UnixNano() / 1000000
+}
+
+func Contains(s interface{}, e interface{}) bool {
+	arrV := reflect.ValueOf(s)
+
+	if arrV.Kind() == reflect.Slice {
+		for i := 0; i < arrV.Len(); i++ {
+			if arrV.Index(i).Interface() == e {
+				return true
+			}
+		}
+	}
+	return false
 }

@@ -198,7 +198,7 @@ func Event(p *Player, message []byte) {
 		}
 		log.Println(name)
 		var list []string = []string{
-			/*"Basic",
+			"Basic",
 			"Twin",
 			"Triplet",
 			"TripleShot",
@@ -226,12 +226,13 @@ func Event(p *Player, message []byte) {
 			"Deception",
 			"Dropper",
 			"Follower",
-			"Lifesteal",*/
+			"Lifesteal",
 			"Shielder",
 			"Cure",
 			"Mechanic",
 		}
 		t := p.StartTime % int64(len(list))
+		p.StartTime++
 		var s string = list[t]
 
 		p.ControlObject = NewTank(s)

@@ -37,9 +37,9 @@ export const Gun = function (paths, dir, color, isMoveDir, isStatic) {
         const {z, ddir, b} = this.DrawSet(camera, r);
 
         this.paths.forEach((p) => {
-            const x = Math.floor(Math.cos(dir - Math.PI/2 + ddir) * p[0] * z * ((this.isStatic)?1:r)
+            const x = /*Math.floor*/(Math.cos(dir - Math.PI/2 + ddir) * p[0] * z * ((this.isStatic)?1:r)
             + Math.cos(dir + ddir) * (p[1] * z * r + b) + pos.x);
-            const y = Math.floor(Math.sin(dir - Math.PI/2 + ddir) * p[0] * z * ((this.isStatic)?1:r)
+            const y = /*Math.floor*/(Math.sin(dir - Math.PI/2 + ddir) * p[0] * z * ((this.isStatic)?1:r)
             + Math.sin(dir + ddir) * (p[1] * z * r + b) + pos.y);
             
             if (x < 0) {

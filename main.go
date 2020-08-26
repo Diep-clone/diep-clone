@@ -113,7 +113,7 @@ func moveloop(ticker time.Ticker) { // manages the motion of all objects.
 				W: o.R * 2,
 				H: o.R * 2,
 			}) {
-				if o != e && !e.IsDead && !(o.IsCollision || e.IsCollision) && (e.Owner != o.Owner || e.IsOwnCol && o.IsOwnCol) && o != e.Owner && e != o.Owner && o != e.HitObject {
+				if o != e && !o.IsDead && !e.IsDead && !e.IsCollision && (e.Owner != o.Owner || e.IsOwnCol && o.IsOwnCol) && o != e.Owner && e != o.Owner && !lib.Contains(e.HitObjects, o) {
 					if (o.X-e.X)*(o.X-e.X)+(o.Y-e.Y)*(o.Y-e.Y) < (o.R+e.R)*(o.R+e.R) {
 						if o.Collision != nil {
 							o.Collision(o, e)
@@ -129,15 +129,15 @@ func moveloop(ticker time.Ticker) { // manages the motion of all objects.
 		for i := 0; i < len(obj.Objects); i++ {
 			var o *obj.Object = obj.Objects[i]
 			o.Index = i
+			if len(o.HitObjects) > 0 {
+				o.LastHitObject = o.HitObjects[0]
+			}
 			if o.IsDead {
-				if o.Controller != nil && o.HitObject != nil {
-					o.Controller.KillObject = o.HitObject
-				}
 				if o.DeadTime == -1 {
 					o.DeadTime = 300
 				} else if o.DeadTime <= 0 {
 					if o.DeadEvent != nil {
-						o.DeadEvent(o, o.HitObject)
+						o.DeadEvent(o, o.LastHitObject)
 					}
 					obj.ObjIDList = append(obj.ObjIDList, o.ID)
 					obj.Objects = append(obj.Objects[:o.Index], obj.Objects[o.Index+1:]...)
@@ -148,7 +148,7 @@ func moveloop(ticker time.Ticker) { // manages the motion of all objects.
 					o.DeadTime = math.Max(o.DeadTime-1000./60., 0.)
 				}
 			}
-			o.HitObject = nil
+			o.HitObjects = nil
 		}
 
 		obj.ObjMutex.Unlock()
