@@ -221,6 +221,9 @@ export const Obj = function(id) {
         if ((this.guns.length > 0 || this.subobjs.length > 0) && this.opacity < 1){
             var {ctxx, px, py} = this.SetCanvasSize(camera);
             
+            px = Math.floor(px);
+            py = Math.floor(py);
+
             let {x, y, z, o} = this.DrawSet(camera);
             let lx = (x * z - px) - Math.floor(x * z - px) - x;
             let ly = (y * z - py) - Math.floor(y * z - py) - y;
