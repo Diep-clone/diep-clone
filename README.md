@@ -7,11 +7,6 @@ This repo is Diep.io's Clone Version.
 
 The goal of this project is to copy the web game diep.io as same as possible.
 Currently, this project is stopped practically due to the vacancy of lead programmer.
-If you want to be the maintainer of this project although this might be poor because it is my first github project, please contact:
-
-ybs1164@naver.com
-
-If you want to help this project, I also would appreciate it if you could contact me anytime.
 
 ## 📚 Project Stack
 ### Front end (JS)
