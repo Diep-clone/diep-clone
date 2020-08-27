@@ -225,8 +225,8 @@ export const Obj = function(id) {
             py = Math.floor(py);
 
             let {x, y, z, o} = this.DrawSet(camera);
-            let lx = (x * z - px) - Math.floor(x * z - px) - x;
-            let ly = (y * z - py) - Math.floor(y * z - py) - y;
+            let lx = (x * z - Math.floor(x * z)) / z - x;
+            let ly = (y * z - Math.floor(y * z)) / z - y;
 
             let drawO = function (obj) {
                 let {x, y, z, t, c, r, dir} = obj.DrawSet(camera);
