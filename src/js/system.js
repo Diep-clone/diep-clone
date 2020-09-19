@@ -1,10 +1,11 @@
 import * as data from './data/console';
-
 import { Obj } from './data/object';
 import UISystem from './data/ui/uisystem';
 import * as ui from './data/ui/ui';
 import { drawBackground, drawText } from './lib/draw';
 import { RGB, calByte } from './lib/util';
+import BackgroundPNG from '../../public/background.png';
+
 let socket;
 
 /* TODO :
@@ -17,7 +18,7 @@ export default class System {
         this.connect(); // connect
 
         this.img = new Image(); // main background
-        this.img.src = 'background.png';
+        this.img.src = BackgroundPNG;
 
         this.cv = document.getElementById("canvas"); // canvas
         this.ctx = this.cv.getContext("2d"); // ctx
