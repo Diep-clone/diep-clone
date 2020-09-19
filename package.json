@@ -13,8 +13,8 @@
     "go:build": "go build main.go",
     "build": "npm run go:build && npm run parcel:build"
   },
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "dependencies": {
+    "parcel-bundler": "^1.12.4"
   }
 }
